@@ -59,11 +59,12 @@ client.update() // force a tracker announce. will trigger more 'update' events a
 client.stop() // stop getting peers from the tracker, gracefully leave the swarm
 ```
 
-**TODO:** Add BitTorrent tracker server implementation!
+**TODO: Add a BitTorrent tracker server implementation to this package.**
 
 ```js
 var Server = require('bittorrent-tracker').Server
 
+// TODO
 ```
 
 ## license
