@@ -40,7 +40,8 @@ client.on('error', function (err) {
   // a tracker was unavailable or sent bad data to the client. you can probably ignore it
 })
 
-client.start() // start getting peers from the tracker
+// start getting peers from the tracker
+client.start()
 
 client.on('update', function (data) {
   console.log('got a response from tracker: ' + data.announce)
@@ -52,11 +53,14 @@ client.once('peer', function (addr) {
   console.log('found a peer: ' + addr) // 85.10.239.191:48623
 })
 
-client.complete() // announce that download has completed (and you are now a seeder)
+// announce that download has completed (and you are now a seeder)
+client.complete()
 
-client.update() // force a tracker announce. will trigger more 'update' events and maybe more 'peer' events
+// force a tracker announce. will trigger more 'update' events and maybe more 'peer' events
+client.update()
 
-client.stop() // stop getting peers from the tracker, gracefully leave the swarm
+// stop getting peers from the tracker, gracefully leave the swarm
+client.stop()
 ```
 
 **TODO: Add a BitTorrent tracker server implementation to this package.**
