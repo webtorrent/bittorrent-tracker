@@ -1,0 +1,44 @@
+{
+  "name": "bittorrent-tracker",
+  "description": "Simple, robust, BitTorrent tracker (client & server) implementation",
+  "version": "0.0.1",
+  "author": {
+    "name": "Feross Aboukhadijeh",
+    "email": "feross@feross.org",
+    "url": "http://feross.org/"
+  },
+  "bugs": {
+    "url": "https://github.com/feross/bittorrent-tracker/issues"
+  },
+  "dependencies": {
+    "bncode": "^0.5.2",
+    "compact2string": "^1.2.0",
+    "extend.js": "0.0.1",
+    "inherits": "^2.0.1",
+    "querystring": "^0.2.0"
+  },
+  "devDependencies": {
+    "parse-torrent": "^0.6.0",
+    "tape": "2.x"
+  },
+  "homepage": "http://webtorrent.io",
+  "keywords": [
+    "torrent",
+    "bittorrent",
+    "tracker",
+    "stream",
+    "peer",
+    "wire",
+    "p2p",
+    "peer-to-peer"
+  ],
+  "license": "MIT",
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/feross/bittorrent-tracker.git"
+  },
+  "scripts": {
+    "test": "tape test/*.js"
+  }
+}
