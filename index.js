@@ -54,6 +54,7 @@ Client.prototype.complete = function (opts) {
   var self = this
   opts = opts || {}
   opts.event = 'completed'
+  opts.downloaded = self._torrentLength
   self._request(opts)
 }
 
