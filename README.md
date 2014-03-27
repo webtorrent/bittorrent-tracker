@@ -85,6 +85,9 @@ server.on('listening', function () {
   console.log('tracker server is listening!')
 })
 
+// start tracker server listening!
+server.listen(port)
+
 // listen for individual tracker messages from peers:
 
 server.on('start', function (addr, params) {
