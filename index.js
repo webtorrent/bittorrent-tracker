@@ -117,7 +117,7 @@ Client.prototype._request = function (opts) {
     })
 
     req.on('error', function (err) {
-      self.emit('error', req)
+      self.emit('error', err)
     })
   })
 }
