@@ -188,10 +188,13 @@ function Server (opts) {
 
   self._trustProxy = !!opts.trustProxy
 
-  self._swarms = {}
+  self.torrents = {}
 
   self._server = http.createServer()
   self._server.on('request', self._onRequest.bind(self))
+  self._server.on('error', function (err) {
+    self.emit('error', err)
+  })
 }
 
 Server.prototype.listen = function (port) {
@@ -208,7 +211,17 @@ Server.prototype.close = function (cb) {
 
 Server.prototype._onRequest = function (req, res) {
   var self = this
+
+  function error (message) {
+    res.end(bncode.encode({
+      'failure reason': message
+    }))
+    self.emit('error', new Error(message))
+  }
+
+  var warning
   var s = req.url.split('?')
+
   if (s[0] === '/announce') {
     var params = querystring.parse(s[1])
 
@@ -221,9 +234,9 @@ Server.prototype._onRequest = function (req, res) {
     var infoHash = bytewiseDecodeURIComponent(params.info_hash)
     var peerId = bytewiseDecodeURIComponent(params.peer_id)
 
-    var swarm = self._swarms[infoHash]
+    var swarm = self.torrents[infoHash]
     if (!swarm) {
-      swarm = self._swarms[infoHash] = {
+      swarm = self.torrents[infoHash] = {
         complete: 0,
         incomplete: 0,
         peers: {}
@@ -233,7 +246,7 @@ Server.prototype._onRequest = function (req, res) {
     switch (params.event) {
       case 'started':
         if (peer) {
-          return
+          warning = 'unexpected `started` event from peer that is already in swarm'
         }
 
         var left = Number(params.left)
@@ -254,7 +267,7 @@ Server.prototype._onRequest = function (req, res) {
 
       case 'stopped':
         if (!peer) {
-          return
+          return error('unexpected `stopped` event from peer that is not in swarm')
         }
 
         if (peer.complete) {
@@ -269,8 +282,11 @@ Server.prototype._onRequest = function (req, res) {
         break
 
       case 'completed':
-        if (!peer || peer.complete) {
-          return
+        if (!peer) {
+          return error('unexpected `completed` event from peer that is not in swarm')
+        }
+        if (peer.complete) {
+          warning = 'unexpected `completed` event from peer that is already marked as completed'
         }
         peer.complete = true
 
@@ -283,7 +299,7 @@ Server.prototype._onRequest = function (req, res) {
       case '': // update
       case undefined:
         if (!peer) {
-          return
+          return error('unexpected `update` event from peer that is not in swarm')
         }
 
         self.emit('update', addr, params)
