@@ -306,11 +306,7 @@ Server.prototype._onRequest = function (req, res) {
         break
 
       default:
-        res.end(bncode.encode({
-          'failure reason': 'unexpected event: ' + params.event
-        }))
-        self.emit('error', new Error('unexpected event: ' + params.event))
-        return // early return
+        return error('unexpected event: ' + params.event) // early return
     }
 
     // send peers
@@ -318,12 +314,18 @@ Server.prototype._onRequest = function (req, res) {
       ? self._getPeersCompact(swarm)
       : self._getPeers(swarm)
 
-    res.end(bncode.encode({
+    var response = {
       complete: swarm.complete,
       incomplete: swarm.incomplete,
       peers: peers,
       interval: self._interval
-    }))
+    }
+
+    if (warning) {
+      response['warning message'] = warning
+    }
+
+    res.end(bncode.encode(response))
   }
 }
 
