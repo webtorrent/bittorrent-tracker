@@ -68,7 +68,39 @@ client.stop()
 ```js
 var Server = require('bittorrent-tracker').Server
 
-// TODO
+var server = new Server()
+
+// you must add an 'error' event handler!
+server.on('error', function (err) {
+  console.log(err.message)
+})
+
+server.on('listening', function () {
+  console.log('tracker server is listening!')
+})
+
+// listen for individual tracker messages from peers:
+
+server.on('start', function (addr, params) {
+  console.log('got start message from ' + addr)
+  console.log('params in the message: ' + JSON.stringify(params))
+})
+
+server.on('complete', function (addr, params) {})
+server.on('update', function (addr, params) {})
+server.on('stop', function (addr, params) {})
+
+// get info hashes for all torrents in the tracker server
+Object.keys(server.torrents)
+
+// get the number of seeders for a particular torrent
+server.torrents[infoHash].complete
+
+// get the number of leechers for a particular torrent
+server.torrents[infoHash].incomplete
+
+// get the peers who are in a particular torrent swarm
+server.torrents[infoHash].peers
 ```
 
 ## license
