@@ -1,6 +1,6 @@
 # bittorrent-tracker [![build](http://img.shields.io/travis/feross/bittorrent-tracker.svg)](https://travis-ci.org/feross/bittorrent-tracker) [![npm](http://img.shields.io/npm/v/bittorrent-tracker.svg)](https://npmjs.org/package/bittorrent-tracker) [![gittip](http://img.shields.io/gittip/feross.svg)](https://www.gittip.com/feross/)
 
-### Simple, robust, BitTorrent tracker (client & server) implementation
+#### Simple, robust, BitTorrent tracker (client & server) implementation
 
 Node.js implementation of a [BitTorrent tracker](https://wiki.theory.org/BitTorrentSpecification#Tracker_HTTP.2FHTTPS_Protocol), client and server.
 
@@ -12,13 +12,15 @@ participate in the torrent.
 Also see [bittorrent-dht](https://github.com/feross/bittorrent-dht). This module is used
 by [WebTorrent](http://webtorrent.io).
 
-## install
+### install
 
 ```
 npm install bittorrent-tracker
 ```
 
-## usage
+### usage
+
+#### client
 
 To connect to a tracker, just do this:
 
@@ -63,7 +65,9 @@ client.update()
 client.stop()
 ```
 
-**TODO: Add a BitTorrent tracker server implementation to this package.**
+#### server
+
+To start a BitTorrent tracker server to track swarms of peers:
 
 ```js
 var Server = require('bittorrent-tracker').Server
