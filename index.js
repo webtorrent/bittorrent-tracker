@@ -10,6 +10,13 @@ var http = require('http')
 var inherits = require('inherits')
 var querystring = require('querystring')
 var string2compact = require('string2compact')
+var dgram = require('dgram')
+var parseUrl = require('url').parse
+
+var CONNECTION_ID = Buffer.concat([fromInt32(0x417), fromInt32(0x27101980)]);
+var CONNECT = fromInt32(0);
+var ANNOUNCE = fromInt32(1);
+var EVENTS = {completed:1, started:2, stopped:3};
 
 inherits(Client, EventEmitter)
 
@@ -77,6 +84,77 @@ Client.prototype.setInterval = function (intervalMs) {
   }
 }
 
+Client.prototype._requestUdp = function(url, opts) {
+  var parsed = parseUrl(url)
+  var socket = dgram.createSocket('udp4')
+  var self = this
+
+  var timeout = setTimeout(function() {
+    socket.close()
+  }, 5000)
+
+  socket.on('error', function(err) {
+    self.emit('error', err)
+  })
+
+  socket.on('message', function(message, rinfo) {
+    var action = message.readUInt32BE(0)
+
+    switch (action) {
+      case 0:
+      if (message.length < 16) return self.emit('error', new Error('invalid udp handshake'))
+      announce(message.slice(8, 16), opts)
+      return;
+
+      case 1:
+      if (message.length < 20) return self.emit('error', new Error('invalid announce message'))
+
+      self.emit('update', {
+        announce: url,
+        complete: message.readUInt32BE(16),
+        incomplete: message.readUInt32BE(12)
+      })
+
+      for (var i = 20; i < message.length; i += 6) {
+        self.emit('peer', compact2string(message.slice(i, i+6)))
+      }
+
+      clearTimeout(timeout)
+      socket.close()
+    }
+  });
+
+  function announce(connectionId, opts) {
+    opts = opts || {}
+
+    send(Buffer.concat([
+      connectionId,
+      ANNOUNCE,
+      new Buffer(hat(32), 'hex'),
+      new Buffer(self._infoHash, 'hex'),
+      new Buffer(self._peerId, 'utf-8'),
+      fromInt32(0), fromInt32(opts.downloaded || 0), // fromUint32(0) to expand this to 64bit
+      fromInt32(0), fromInt32(opts.left || 0),
+      fromInt32(0), fromInt32(opts.uploaded || 0),
+      fromInt32(EVENTS[opts.event] || 0),
+      fromInt32(0),
+      fromInt32(0),
+      fromInt32(self._numWant),
+      fromInt16(self._port || 0)
+    ]));
+  };
+
+  function send(message) {
+    socket.send(message, 0, message.length, parsed.port, parsed.hostname)
+  };
+
+  send(Buffer.concat([
+    CONNECTION_ID,
+    CONNECT,
+    new Buffer(hat(32), 'hex')
+  ]));
+};
+
 /**
  * Send a request to the tracker
  */
@@ -100,6 +178,8 @@ Client.prototype._request = function (opts) {
   var q = querystring.stringify(opts)
 
   self._announce.forEach(function (announce) {
+    if (announce.indexOf('udp:') === 0) return self._requestUdp(announce, opts)
+
     var url = announce + '?' + q
     var req = http.get(url, function (res) {
       var data = ''
@@ -355,6 +435,18 @@ Server.prototype._getPeersCompact = function (swarm) {
 //
 // HELPERS
 //
+
+function fromInt16(n) {
+  var buf = new Buffer(2);
+  buf.writeUInt16BE(n, 0);
+  return buf;
+};
+
+function fromInt32(n) {
+  var buf = new Buffer(4);
+  buf.writeUInt32BE(n, 0);
+  return buf;
+};
 
 function bytewiseEncodeURIComponent (buf) {
   if (!Buffer.isBuffer(buf)) {
