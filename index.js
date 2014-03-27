@@ -1,20 +1,21 @@
 exports.Client = Client
-// TODO: exports.Server = Server
-// TODO: support connecting to UDP trackers (http://www.bittorrent.org/beps/bep_0015.html)
+exports.Server = Server
 
 var bncode = require('bncode')
 var compact2string = require('compact2string')
 var EventEmitter = require('events').EventEmitter
 var extend = require('extend.js')
+var hat = require('hat')
 var http = require('http')
 var inherits = require('inherits')
 var querystring = require('querystring')
+var string2compact = require('string2compact')
 
 inherits(Client, EventEmitter)
 
 function Client (peerId, port, torrent, opts) {
   var self = this
-  if (!(self instanceof Client)) return new Client(peerId, port, torrent)
+  if (!(self instanceof Client)) return new Client(peerId, port, torrent, opts)
   EventEmitter.call(self)
   self._opts = opts || {}
 
@@ -143,7 +144,7 @@ Client.prototype._handleResponse = function (data, announce) {
   if (interval && !self._opts.interval && self._intervalMs !== 0) {
     // use the interval the tracker recommends, UNLESS the user manually specifies an
     // interval they want to use
-    self.setInterval(interval)
+    self.setInterval(interval * 1000)
   }
 
   var trackerId = data['tracker id']
@@ -173,9 +174,180 @@ Client.prototype._handleResponse = function (data, announce) {
   }
 }
 
+inherits(Server, EventEmitter)
+
+function Server (opts) {
+  var self = this
+  if (!(self instanceof Server)) return new Server(opts)
+  EventEmitter.call(self)
+  opts = opts || {}
+
+  self._interval = opts.interval
+    ? opts.interval / 1000
+    : 10 * 60 // 10 min (in secs)
+
+  self._trustProxy = !!opts.trustProxy
+
+  self._swarms = {}
+
+  self._server = http.createServer()
+  self._server.on('request', self._onRequest.bind(self))
+}
+
+Server.prototype.listen = function (port) {
+  var self = this
+  self._server.listen(port, function () {
+    self.emit('listening')
+  })
+}
+
+Server.prototype.close = function (cb) {
+  var self = this
+  self._server.close(cb)
+}
+
+Server.prototype._onRequest = function (req, res) {
+  var self = this
+  var s = req.url.split('?')
+  if (s[0] === '/announce') {
+    var params = querystring.parse(s[1])
+
+    var ip = self._trustProxy
+      ? req.headers['x-forwarded-for'] || req.connection.remoteAddress
+      : req.connection.remoteAddress
+    var port = Number(params.port)
+    var addr = ip + ':' + port
+
+    var infoHash = bytewiseDecodeURIComponent(params.info_hash)
+    var peerId = bytewiseDecodeURIComponent(params.peer_id)
+
+    var swarm = self._swarms[infoHash]
+    if (!swarm) {
+      swarm = self._swarms[infoHash] = {
+        complete: 0,
+        incomplete: 0,
+        peers: {}
+      }
+    }
+    var peer = swarm.peers[addr]
+    switch (params.event) {
+      case 'started':
+        if (peer) {
+          return
+        }
+
+        var left = Number(params.left)
+
+        if (left === 0) {
+          swarm.complete += 1
+        } else {
+          swarm.incomplete += 1
+        }
+
+        peer = swarm.peers[addr] = {
+          ip: ip,
+          port: port,
+          peerId: peerId
+        }
+        self.emit('start', addr, params)
+        break
+
+      case 'stopped':
+        if (!peer) {
+          return
+        }
+
+        if (peer.complete) {
+          swarm.complete -= 1
+        } else {
+          swarm.incomplete -= 1
+        }
+
+        delete swarm.peers[addr]
+
+        self.emit('stop', addr, params)
+        break
+
+      case 'completed':
+        if (!peer || peer.complete) {
+          return
+        }
+        peer.complete = true
+
+        swarm.complete += 1
+        swarm.incomplete -= 1
+
+        self.emit('complete', addr, params)
+        break
+
+      case '': // update
+      case undefined:
+        if (!peer) {
+          return
+        }
+
+        self.emit('update', addr, params)
+        break
+
+      default:
+        res.end(bncode.encode({
+          'failure reason': 'unexpected event: ' + params.event
+        }))
+        self.emit('error', new Error('unexpected event: ' + params.event))
+        return // early return
+    }
+
+    // send peers
+    var peers = Number(params.compact) === 1
+      ? self._getPeersCompact(swarm)
+      : self._getPeers(swarm)
+
+    res.end(bncode.encode({
+      complete: swarm.complete,
+      incomplete: swarm.incomplete,
+      peers: peers,
+      interval: self._interval
+    }))
+  }
+}
+
+Server.prototype._getPeers = function (swarm) {
+  var self = this
+  var peers = []
+  for (var peerId in swarm.peers) {
+    var peer = swarm.peers[peerId]
+    peers.push({
+      'peer id': peer.peerId,
+      ip: peer.ip,
+      port: peer.port
+    })
+  }
+  return peers
+}
+
+Server.prototype._getPeersCompact = function (swarm) {
+  var self = this
+  var addrs = Object.keys(swarm.peers).map(function (peerId) {
+    var peer = swarm.peers[peerId]
+    return peer.ip + ':' + peer.port
+  })
+  return string2compact(addrs)
+}
+
+//
+// HELPERS
+//
+
 function bytewiseEncodeURIComponent (buf) {
   if (!Buffer.isBuffer(buf)) {
     buf = new Buffer(buf, 'hex')
   }
-  return escape(buf.toString('binary'))
+  return encodeURIComponent(buf.toString('binary'))
+}
+
+function bytewiseDecodeURIComponent (str) {
+  if (Buffer.isBuffer(str)) {
+    str = str.toString('utf8')
+  }
+  return (new Buffer(decodeURIComponent(str), 'binary').toString('hex'))
 }

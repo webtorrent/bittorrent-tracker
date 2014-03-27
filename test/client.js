@@ -5,7 +5,7 @@ var test = require('tape')
 
 var torrent = fs.readFileSync(__dirname + '/torrents/bitlove-intro.torrent')
 var parsedTorrent = parseTorrent(torrent)
-
+console.log(parsedTorrent.infoHash.toString('hex'))
 var peerId = new Buffer('01234567890123456789')
 var port = 6881
 
@@ -33,7 +33,7 @@ test('client.start()', function (t) {
 })
 
 test('client.stop()', function (t) {
-  t.plan(3)
+  t.plan(4)
 
   var client = new Client(peerId, port, parsedTorrent)
 
@@ -51,6 +51,10 @@ test('client.stop()', function (t) {
       t.equal(data.announce, 'http://t.bitlove.org/announce')
       t.equal(typeof data.complete, 'number')
       t.equal(typeof data.incomplete, 'number')
+    })
+
+    client.once('peer', function () {
+      t.pass('should get more peers on stop()')
     })
   }, 1000)
 })

@@ -14,11 +14,14 @@
     "bncode": "^0.5.2",
     "compact2string": "^1.2.0",
     "extend.js": "0.0.1",
+    "hat": "0.0.3",
     "inherits": "^2.0.1",
-    "querystring": "^0.2.0"
+    "querystring": "^0.2.0",
+    "string2compact": "^1.1.0"
   },
   "devDependencies": {
     "parse-torrent": "^0.6.0",
+    "portfinder": "^0.2.1",
     "tape": "2.x"
   },
   "homepage": "http://webtorrent.io",

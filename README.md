@@ -9,7 +9,7 @@ clients. The requests include metrics from clients that help the tracker keep ov
 statistics about the torrent. The response includes a peer list that helps the client
 participate in the torrent.
 
-Also see [BitTorrent DHT](https://github.com/feross/bittorrent-dht). This module is used
+Also see [bittorrent-dht](https://github.com/feross/bittorrent-dht). This module is used
 by [WebTorrent](http://webtorrent.io).
 
 ## install
