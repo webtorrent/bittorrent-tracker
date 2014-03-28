@@ -147,31 +147,37 @@ Client.prototype._requestUdp = function (announceUrl, opts) {
   var transactionId = new Buffer(hat(32), 'hex')
 
   var timeout = setTimeout(function () {
+    error('tracker request timed out')
+  }, 15000)
+
+  function error (message) {
+    self.emit('error', new Error(message))
     socket.close()
-  }, 5000)
+    clearTimeout(timeout)
+  }
 
   socket.on('error', function (err) {
-    self.emit('error', err)
+    error(err)
   })
 
   socket.on('message', function (message, rinfo) {
 
     if (message.length < 8 || message.readUInt32BE(4) !== transactionId.readUInt32BE(0)) {
-      return self.emit('error', new Error('tracker sent back invalid transaction id'))
+      return error(new Error('tracker sent back invalid transaction id'))
     }
 
     var action = message.readUInt32BE(0)
     switch (action) {
       case 0:
         if (message.length < 16) {
-          return self.emit('error', new Error('invalid udp handshake'))
+          return error(new Error('invalid udp handshake'))
         }
         announce(message.slice(8, 16), opts)
         return
 
       case 1:
         if (message.length < 20) {
-          return self.emit('error', new Error('invalid announce message'))
+          return error(new Error('invalid announce message'))
         }
 
         // TODO: this should be stored per tracker, not globally for all trackers
