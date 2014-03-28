@@ -17,7 +17,7 @@ by [WebTorrent](http://webtorrent.io).
 ## features
 
 - Includes client & server implementations
-- Supports UDP protocol ([BEP 15](http://www.bittorrent.org/beps/bep_0015.html)) (client only, for now)
+- Supports HTTP & UDP trackers ([BEP 15](http://www.bittorrent.org/beps/bep_0015.html)) (client only, for now)
 
 ## install
 
