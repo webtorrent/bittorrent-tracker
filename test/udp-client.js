@@ -12,8 +12,8 @@ parsedTorrent.announce = [ 'udp://tracker.publicbt.com:80' ]
 var peerId = new Buffer('01234567890123456789')
 var port = 6881
 
-test('udp: client.start()', function (t) {
-  t.plan(4)
+test('udp: client.start/update/stop()', function (t) {
+  t.plan(10)
 
   var client = new Client(peerId, port, parsedTorrent)
 
@@ -29,56 +29,25 @@ test('udp: client.start()', function (t) {
 
   client.once('peer', function (addr) {
     t.pass('there is at least one peer') // TODO: this shouldn't rely on an external server!
-    client.stop()
-  })
-
-  client.start()
-})
-
-test('udp: client.stop()', function (t) {
-  t.plan(3)
-
-  var client = new Client(peerId, port, parsedTorrent)
-
-  client.on('error', function (err) {
-    t.error(err)
-  })
-
-  client.start()
-
-  setTimeout(function () {
-    client.stop()
 
     client.once('update', function (data) {
       // receive one final update after calling stop
       t.equal(data.announce, 'udp://tracker.publicbt.com:80')
       t.equal(typeof data.complete, 'number')
       t.equal(typeof data.incomplete, 'number')
-    })
 
-  }, 1000)
-})
+      client.once('update', function (data) {
+        // received an update!
+        t.equal(data.announce, 'udp://tracker.publicbt.com:80')
+        t.equal(typeof data.complete, 'number')
+        t.equal(typeof data.incomplete, 'number')
+      })
 
-test('udp: client.update()', function (t) {
-  t.plan(3)
-
-  var client = new Client(peerId, port, parsedTorrent, { interval: 5000 })
-
-  client.on('error', function (err) {
-    t.error(err)
-  })
-
-  client.start()
-
-  client.once('update', function () {
-
-    client.once('update', function (data) {
-      // received an update!
-      t.equal(data.announce, 'udp://tracker.publicbt.com:80')
-      t.equal(typeof data.complete, 'number')
-      t.equal(typeof data.incomplete, 'number')
       client.stop()
     })
 
+    client.update()
   })
+
+  client.start()
 })
