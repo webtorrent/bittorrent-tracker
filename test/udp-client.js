@@ -3,12 +3,16 @@ var fs = require('fs')
 var parseTorrent = require('parse-torrent')
 var test = require('tape')
 
-var torrent = fs.readFileSync(__dirname + '/torrents/bitlove-intro.torrent')
+var torrent = fs.readFileSync(__dirname + '/torrents/leaves.torrent')
 var parsedTorrent = parseTorrent(torrent)
+
+// remove all tracker servers except a single UDP one, for now
+parsedTorrent.announce = [ 'udp://tracker.openbittorrent.com:80' ]
+
 var peerId = new Buffer('01234567890123456789')
 var port = 6881
 
-test('client.start()', function (t) {
+test('udp: client.start()', function (t) {
   t.plan(4)
 
   var client = new Client(peerId, port, parsedTorrent)
@@ -18,7 +22,7 @@ test('client.start()', function (t) {
   })
 
   client.once('update', function (data) {
-    t.equal(data.announce, 'http://t.bitlove.org/announce')
+    t.equal(data.announce, 'udp://tracker.openbittorrent.com:80')
     t.equal(typeof data.complete, 'number')
     t.equal(typeof data.incomplete, 'number')
   })
@@ -31,8 +35,8 @@ test('client.start()', function (t) {
   client.start()
 })
 
-test('client.stop()', function (t) {
-  t.plan(4)
+test('udp: client.stop()', function (t) {
+  t.plan(3)
 
   var client = new Client(peerId, port, parsedTorrent)
 
@@ -47,18 +51,15 @@ test('client.stop()', function (t) {
 
     client.once('update', function (data) {
       // receive one final update after calling stop
-      t.equal(data.announce, 'http://t.bitlove.org/announce')
+      t.equal(data.announce, 'udp://tracker.openbittorrent.com:80')
       t.equal(typeof data.complete, 'number')
       t.equal(typeof data.incomplete, 'number')
     })
 
-    client.once('peer', function () {
-      t.pass('should get more peers on stop()')
-    })
   }, 1000)
 })
 
-test('client.update()', function (t) {
+test('udp: client.update()', function (t) {
   t.plan(3)
 
   var client = new Client(peerId, port, parsedTorrent, { interval: 5000 })
@@ -73,7 +74,7 @@ test('client.update()', function (t) {
 
     client.once('update', function (data) {
       // received an update!
-      t.equal(data.announce, 'http://t.bitlove.org/announce')
+      t.equal(data.announce, 'udp://tracker.openbittorrent.com:80')
       t.equal(typeof data.complete, 'number')
       t.equal(typeof data.incomplete, 'number')
       client.stop()
@@ -81,5 +82,3 @@ test('client.update()', function (t) {
 
   })
 })
-
-// TODO: add test where tracker doesn't support compact
