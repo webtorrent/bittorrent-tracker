@@ -14,7 +14,7 @@ test('client.start()', function (t) {
   var client = new Client(peerId, port, parsedTorrent)
 
   client.on('error', function (err) {
-    t.fail(err.message)
+    t.error(err)
   })
 
   client.once('update', function (data) {
@@ -37,7 +37,7 @@ test('client.stop()', function (t) {
   var client = new Client(peerId, port, parsedTorrent)
 
   client.on('error', function (err) {
-    t.fail(err.message)
+    t.error(err)
   })
 
   client.start()
@@ -64,7 +64,7 @@ test('client.update()', function (t) {
   var client = new Client(peerId, port, parsedTorrent, { interval: 5000 })
 
   client.on('error', function (err) {
-    t.fail(err.message)
+    t.error(err)
   })
 
   client.start()
