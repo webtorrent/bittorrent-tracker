@@ -13,14 +13,9 @@ var string2compact = require('string2compact')
 var dgram = require('dgram')
 var parseUrl = require('url').parse
 
-var CONNECTION_ID = Buffer.concat([toUInt32(0x417), toUInt32(0x27101980)])
-var CONNECT = toUInt32(0)
-var ANNOUNCE = toUInt32(1)
-var EVENTS = {
-  completed: 1,
-  started: 2,
-  stopped: 3
-}
+var CONNECTION_ID = Buffer.concat([ toUInt32(0x417), toUInt32(0x27101980) ])
+var ACTIONS = { CONNECT: 0, ANNOUNCE: 1 }
+var EVENTS = { completed: 1, started: 2, stopped: 3 }
 
 inherits(Client, EventEmitter)
 
@@ -31,9 +26,13 @@ function Client (peerId, port, torrent, opts) {
   self._opts = opts || {}
 
   // required
-  self._peerId = peerId
+  self._peerId = Buffer.isBuffer(peerId)
+    ? peerId
+    : new Buffer(torrent.infoHash, 'utf8')
   self._port = port
-  self._infoHash = torrent.infoHash
+  self._infoHash = Buffer.isBuffer(torrent.infoHash)
+    ? torrent.infoHash
+    : new Buffer(torrent.infoHash, 'hex')
   self._torrentLength = torrent.length
   self._announce = torrent.announce
 
@@ -142,21 +141,26 @@ Client.prototype._requestHttp = function (announceUrl, opts) {
 }
 
 Client.prototype._requestUdp = function (announceUrl, opts) {
-  var parsed = parseUrl(announceUrl)
-  var socket = dgram.createSocket('udp4')
   var self = this
+  var parsedUrl = parseUrl(announceUrl)
+  var socket = dgram.createSocket('udp4')
+  var transactionId = new Buffer(hat(32), 'hex')
 
-  var timeout = setTimeout(function() {
+  var timeout = setTimeout(function () {
     socket.close()
   }, 5000)
 
-  socket.on('error', function(err) {
+  socket.on('error', function (err) {
     self.emit('error', err)
   })
 
-  socket.on('message', function(message, rinfo) {
-    var action = message.readUInt32BE(0)
+  socket.on('message', function (message, rinfo) {
 
+    if (message.length < 8 || message.readUInt32BE(4) !== transactionId.readUInt32BE(0)) {
+      return self.emit('error', new Error('tracker sent back invalid transaction id'))
+    }
+
+    var action = message.readUInt32BE(0)
     switch (action) {
       case 0:
         if (message.length < 16) {
@@ -170,49 +174,58 @@ Client.prototype._requestUdp = function (announceUrl, opts) {
           return self.emit('error', new Error('invalid announce message'))
         }
 
+        // TODO: this should be stored per tracker, not globally for all trackers
+        var interval = message.readUInt32BE(8)
+        if (interval && !self._opts.interval && self._intervalMs !== 0) {
+          // use the interval the tracker recommends, UNLESS the user manually specifies an
+          // interval they want to use
+          self.setInterval(interval * 1000)
+        }
+
         self.emit('update', {
           announce: announceUrl,
           complete: message.readUInt32BE(16),
           incomplete: message.readUInt32BE(12)
         })
 
-        for (var i = 20; i < message.length; i += 6) {
-          self.emit('peer', compact2string(message.slice(i, i+6)))
-        }
+        compact2string.multi(message.slice(20)).forEach(function (addr) {
+          self.emit('peer', addr)
+        })
 
         clearTimeout(timeout)
         socket.close()
     }
   })
 
+  function send (message) {
+    socket.send(message, 0, message.length, parsedUrl.port, parsedUrl.hostname)
+  }
+
   function announce (connectionId, opts) {
     opts = opts || {}
+    transactionId = new Buffer(hat(32), 'hex')
 
     send(Buffer.concat([
       connectionId,
-      ANNOUNCE,
-      new Buffer(hat(32), 'hex'),
-      new Buffer(self._infoHash, 'hex'),
-      new Buffer(self._peerId, 'utf-8'),
-      toUInt32(0), toUInt32(opts.downloaded || 0), // fromUint32(0) to expand this to 64bit
-      toUInt32(0), toUInt32(opts.left || 0),
-      toUInt32(0), toUInt32(opts.uploaded || 0),
+      toUInt32(ACTIONS.ANNOUNCE),
+      transactionId,
+      self._infoHash,
+      self._peerId,
+      toUInt32(0), toUInt32(opts.downloaded || 0), // 64bit
+      toUInt32(0), toUInt32(opts.left || 0), // 64bit
+      toUInt32(0), toUInt32(opts.uploaded || 0), // 64bit
       toUInt32(EVENTS[opts.event] || 0),
-      toUInt32(0),
-      toUInt32(0),
+      toUInt32(0), // ip address (optional)
+      toUInt32(0), // key (optional)
       toUInt32(self._numWant),
       toUInt16(self._port || 0)
     ]))
   }
 
-  function send (message) {
-    socket.send(message, 0, message.length, parsed.port, parsed.hostname)
-  }
-
   send(Buffer.concat([
     CONNECTION_ID,
-    CONNECT,
-    new Buffer(hat(32), 'hex')
+    toUInt32(ACTIONS.CONNECT),
+    transactionId
   ]))
 }
 
@@ -234,6 +247,7 @@ Client.prototype._handleResponse = function (data, announceUrl) {
     self.emit('warning', warning);
   }
 
+  // TODO: this should be stored per tracker, not globally for all trackers
   var interval = data.interval || data['min interval']
   if (interval && !self._opts.interval && self._intervalMs !== 0) {
     // use the interval the tracker recommends, UNLESS the user manually specifies an
@@ -241,6 +255,7 @@ Client.prototype._handleResponse = function (data, announceUrl) {
     self.setInterval(interval * 1000)
   }
 
+  // TODO: this should be stored per tracker, not globally for all trackers
   var trackerId = data['tracker id']
   if (trackerId) {
     // If absent, do not discard previous trackerId value
@@ -255,8 +270,7 @@ Client.prototype._handleResponse = function (data, announceUrl) {
 
   if (Buffer.isBuffer(data.peers)) {
     // tracker returned compact response
-    var addrs = compact2string.multi(data.peers)
-    addrs.forEach(function (addr) {
+    compact2string.multi(data.peers).forEach(function (addr) {
       self.emit('peer', addr)
     })
   } else if (Array.isArray(data.peers)) {
@@ -463,15 +477,9 @@ function toUInt32 (n) {
 }
 
 function bytewiseEncodeURIComponent (buf) {
-  if (!Buffer.isBuffer(buf)) {
-    buf = new Buffer(buf, 'hex')
-  }
   return encodeURIComponent(buf.toString('binary'))
 }
 
 function bytewiseDecodeURIComponent (str) {
-  if (Buffer.isBuffer(str)) {
-    str = str.toString('utf8')
-  }
   return (new Buffer(decodeURIComponent(str), 'binary').toString('hex'))
 }
