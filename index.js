@@ -117,7 +117,7 @@ Client.prototype._request = function (opts) {
     })
 
     req.on('error', function (err) {
-      self.emit('error', req)
+      self.emit('error', err)
     })
   })
 }
@@ -137,7 +137,7 @@ Client.prototype._handleResponse = function (data, announce) {
 
   var warning = data['warning message']
   if (warning) {
-    console.warn(warning)
+    self.emit('warning', warning);
   }
 
   var interval = data.interval || data['min interval']
