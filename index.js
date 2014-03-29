@@ -150,6 +150,10 @@ Client.prototype._requestUdp = function (announceUrl, opts) {
     error('tracker request timed out')
   }, 15000)
 
+  if (timeout.unref) {
+    timeout.unref()
+  }
+
   function error (message) {
     self.emit('error', new Error(message))
     socket.close()
