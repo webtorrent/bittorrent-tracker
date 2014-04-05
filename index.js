@@ -208,8 +208,8 @@ Client.prototype._requestUdp = function (announceUrl, opts) {
   })
 
   function send (message) {
-    if(parsedUrl.port==null) {
-      parsedUrl.port=80;
+    if (!parsedUrl.port) {
+      parsedUrl.port = 80;
     }
     socket.send(message, 0, message.length, parsedUrl.port, parsedUrl.hostname)
   }
