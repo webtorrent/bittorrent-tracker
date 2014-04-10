@@ -15,7 +15,7 @@ var parseUrl = require('url').parse
 
 var CONNECTION_ID = Buffer.concat([ toUInt32(0x417), toUInt32(0x27101980) ])
 var ACTIONS = { CONNECT: 0, ANNOUNCE: 1 }
-var EVENTS = { completed: 1, started: 2, stopped: 3 }
+var EVENTS = { completed: 1, started: 2, stopped: 3 }
 
 inherits(Client, EventEmitter)
 
