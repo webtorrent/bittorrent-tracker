@@ -28,7 +28,7 @@ function Client (peerId, port, torrent, opts) {
   // required
   self._peerId = Buffer.isBuffer(peerId)
     ? peerId
-    : new Buffer(torrent.infoHash, 'utf8')
+    : new Buffer(torrent.peerId, 'utf8')
   self._port = port
   self._infoHash = Buffer.isBuffer(torrent.infoHash)
     ? torrent.infoHash
