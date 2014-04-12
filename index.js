@@ -352,8 +352,8 @@ Server.prototype._onRequest = function (req, res) {
     var port = Number(params.port)
     var addr = ip + ':' + port
 
-    var infoHash = bytewiseDecodeURIComponent(params.info_hash)
-    var peerId = bytewiseDecodeURIComponent(params.peer_id)
+    var infoHash = bytewiseDecodeURIComponent(params.info_hash).toString('hex')
+    var peerId = bytewiseDecodeURIComponent(params.peer_id).toString('utf8')
 
     var swarm = self.torrents[infoHash]
     if (!swarm) {
@@ -494,5 +494,5 @@ function bytewiseEncodeURIComponent (buf) {
 }
 
 function bytewiseDecodeURIComponent (str) {
-  return (new Buffer(decodeURIComponent(str), 'binary').toString('hex'))
+  return new Buffer(decodeURIComponent(str), 'binary')
 }
