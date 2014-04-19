@@ -11,7 +11,6 @@
     "url": "https://github.com/feross/bittorrent-tracker/issues"
   },
   "dependencies": {
-    "bignum": "^0.6.2",
     "bncode": "^0.5.2",
     "compact2string": "^1.2.0",
     "extend.js": "0.0.1",
@@ -25,6 +24,9 @@
     "parse-torrent": "^0.6.0",
     "portfinder": "^0.2.1",
     "tape": "2.x"
+  },
+  "optionalDependencies": {
+    "bignum": "^0.6.2"
   },
   "homepage": "http://webtorrent.io",
   "keywords": [

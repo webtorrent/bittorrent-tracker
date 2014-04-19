@@ -1,7 +1,12 @@
 exports.Client = Client
 exports.Server = Server
 
-var bignum = require('bignum')
+// optional compiled dependency. if it doesn't compile, no big deal.
+var bignum
+try {
+  bignum = require('bignum')
+} catch (e) {}
+
 var bncode = require('bncode')
 var compact2string = require('compact2string')
 var dgram = require('dgram')
@@ -18,6 +23,7 @@ var url = require('url')
 var CONNECTION_ID = Buffer.concat([ toUInt32(0x417), toUInt32(0x27101980) ])
 var ACTIONS = { CONNECT: 0, ANNOUNCE: 1 }
 var EVENTS = { completed: 1, started: 2, stopped: 3 }
+var MAX_UINT = 4294967295
 
 inherits(Client, EventEmitter)
 
@@ -522,7 +528,16 @@ function toUInt32 (n) {
 }
 
 function toUInt64 (n) {
-  return bignum(n).toBuffer({ size: 8 })
+  if (typeof bignum === 'function') {
+    return bignum(n).toBuffer({ size: 8 })
+  } else {
+    // optional compiled dependency 'bignum' is not available, so round down to MAX_UINT.
+    // These values are only used for tracker stats anyway.
+    if (n > MAX_UINT) {
+      n = MAX_UINT
+    }
+    return Buffer.concat([toUInt32(0), toUInt32(n)])
+  }
 }
 
 function bytewiseEncodeURIComponent (buf) {
