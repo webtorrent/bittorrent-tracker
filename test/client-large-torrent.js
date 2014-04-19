@@ -8,6 +8,9 @@ var parsedTorrent = parseTorrent(torrent)
 var peerId = new Buffer('01234567890123456789')
 var port = 6881
 
+// remove all tracker servers except a single UDP one, for now
+parsedTorrent.announce = [ 'udp://tracker.publicbt.com:80/announce' ]
+
 test('client.start()', function (t) {
   t.plan(4)
 
@@ -18,7 +21,7 @@ test('client.start()', function (t) {
   })
 
   client.once('update', function (data) {
-    t.equal(data.announce, 'http://t.bitlove.org/announce')
+    t.equal(data.announce, 'udp://tracker.publicbt.com:80/announce')
     t.equal(typeof data.complete, 'number')
     t.equal(typeof data.incomplete, 'number')
   })

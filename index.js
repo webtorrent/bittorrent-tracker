@@ -1,6 +1,7 @@
 exports.Client = Client
 exports.Server = Server
 
+var bignum = require('bignum')
 var bncode = require('bncode')
 var compact2string = require('compact2string')
 var dgram = require('dgram')
@@ -225,9 +226,9 @@ Client.prototype._requestUdp = function (announceUrl, opts) {
       transactionId,
       self._infoHash,
       self._peerId,
-      toUInt32(0), toUInt32(opts.downloaded || 0), // 64bit
-      toUInt32(0), toUInt32(opts.left || 0), // 64bit
-      toUInt32(0), toUInt32(opts.uploaded || 0), // 64bit
+      toUInt64(opts.downloaded || 0),
+      toUInt64(opts.left || 0),
+      toUInt64(opts.uploaded || 0),
       toUInt32(EVENTS[opts.event] || 0),
       toUInt32(0), // ip address (optional)
       toUInt32(0), // key (optional)
@@ -518,6 +519,10 @@ function toUInt32 (n) {
   var buf = new Buffer(4)
   buf.writeUInt32BE(n, 0)
   return buf
+}
+
+function toUInt64 (n) {
+  return bignum(n).toBuffer({ size: 8 })
 }
 
 function bytewiseEncodeURIComponent (buf) {

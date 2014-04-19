@@ -3,6 +3,9 @@ var portfinder = require('portfinder')
 var Server = require('../').Server
 var test = require('tape')
 
+// TODO: add tests to verify that the correct downloaded/left/uploaded numbers are
+// being sent
+
 var infoHash = '4cb67059ed6bd08362da625b3ae77f6f4a075705'
 var peerId = '12345678901234567890'
 var torrentLength = 50000
