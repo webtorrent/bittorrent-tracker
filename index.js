@@ -3,15 +3,16 @@ exports.Server = Server
 
 var bncode = require('bncode')
 var compact2string = require('compact2string')
+var dgram = require('dgram')
 var EventEmitter = require('events').EventEmitter
 var extend = require('extend.js')
 var hat = require('hat')
 var http = require('http')
 var inherits = require('inherits')
+var parallel = require('run-parallel')
 var querystring = require('querystring')
 var string2compact = require('string2compact')
-var dgram = require('dgram')
-var parseUrl = require('url').parse
+var url = require('url')
 
 var CONNECTION_ID = Buffer.concat([ toUInt32(0x417), toUInt32(0x27101980) ])
 var ACTIONS = { CONNECT: 0, ANNOUNCE: 1 }
@@ -118,9 +119,9 @@ Client.prototype._request = function (opts) {
 
 Client.prototype._requestHttp = function (announceUrl, opts) {
   var self = this
-  var url = announceUrl + '?' + querystring.stringify(opts)
+  var fullUrl = announceUrl + '?' + querystring.stringify(opts)
 
-  var req = http.get(url, function (res) {
+  var req = http.get(fullUrl, function (res) {
     var data = ''
     if (res.statusCode !== 200) {
       res.resume() // consume the whole stream
@@ -142,7 +143,7 @@ Client.prototype._requestHttp = function (announceUrl, opts) {
 
 Client.prototype._requestUdp = function (announceUrl, opts) {
   var self = this
-  var parsedUrl = parseUrl(announceUrl)
+  var parsedUrl = url.parse(announceUrl)
   var socket = dgram.createSocket('udp4')
   var transactionId = new Buffer(hat(32), 'hex')
 
@@ -311,26 +312,52 @@ function Server (opts) {
 
   self.torrents = {}
 
-  self._server = http.createServer()
-  self._server.on('request', self._onRequest.bind(self))
-  self._server.on('error', function (err) {
-    self.emit('error', err)
-  })
+  // default to starting an http server unless the user explictly says no
+  if (opts.http !== false) {
+    self._httpServer = http.createServer()
+    self._httpServer.on('request', self._onHttpRequest.bind(self))
+    self._httpServer.on('error', function (err) {
+      self.emit('error', err)
+    })
+  }
+
+  // default to starting a udp server unless the user explicitly says no
+  if (opts.udp !== false) {
+    self._udpServer = dgram.createSocket('udp4')
+    self._udpServer.on('message', self._onUdpRequest.bind(self))
+  }
 }
 
 Server.prototype.listen = function (port) {
   var self = this
-  self._server.listen(port, function () {
+  var tasks = []
+
+  self._httpServer && tasks.push(function (cb) {
+    self._httpServer.listen(port, cb)
+  })
+  self._udpServer && tasks.push(function (cb) {
+    self._udpServer.bind(port, cb)
+  })
+
+  parallel(tasks, function (err) {
+    if (err) return self.emit('error', err)
     self.emit('listening')
   })
 }
 
 Server.prototype.close = function (cb) {
   var self = this
-  self._server.close(cb)
+  if (self._udpServer) {
+    self._udpServer.close()
+  }
+  if (self._httpServer) {
+    self._httpServer.close(cb)
+  } else {
+    cb(null)
+  }
 }
 
-Server.prototype._onRequest = function (req, res) {
+Server.prototype._onHttpRequest = function (req, res) {
   var self = this
 
   function error (message) {
@@ -448,6 +475,10 @@ Server.prototype._onRequest = function (req, res) {
 
     res.end(bncode.encode(response))
   }
+}
+
+Server.prototype._onUdpRequest = function (req, res) {
+  // TODO: implement UDP server
 }
 
 Server.prototype._getPeers = function (swarm) {
