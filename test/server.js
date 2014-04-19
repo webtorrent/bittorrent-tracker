@@ -3,12 +3,12 @@ var portfinder = require('portfinder')
 var Server = require('../').Server
 var test = require('tape')
 
-var peerId = new Buffer('12345678901234567890')
-var infoHash = new Buffer('4cb67059ed6bd08362da625b3ae77f6f4a075705', 'hex')
+var infoHash = '4cb67059ed6bd08362da625b3ae77f6f4a075705'
+var peerId = '12345678901234567890'
 var torrentLength = 50000
 
 test('server', function (t) {
-  t.plan(12)
+  t.plan(17)
 
   var server = new Server() // { interval: 50000, compactOnly: false }
 
@@ -26,12 +26,6 @@ test('server', function (t) {
   server.on('listening', function () {
     t.pass('server listening')
   })
-
-  // server.torrents //
-  // server.torrents[infoHash] //
-  // server.torrents[infoHash].complete //
-  // server.torrents[infoHash].incomplete //
-  // server.torrents[infoHash].peers //
 
   portfinder.getPort(function (err, port) {
     t.error(err, 'found free port')
@@ -51,6 +45,16 @@ test('server', function (t) {
       t.equal(data.announce, announceUrl)
       t.equal(data.complete, 0)
       t.equal(data.incomplete, 1)
+
+      t.equal(Object.keys(server.torrents).length, 1)
+      t.equal(server.torrents[infoHash].complete, 0)
+      t.equal(server.torrents[infoHash].incomplete, 1)
+      t.equal(Object.keys(server.torrents[infoHash].peers).length, 1)
+      t.deepEqual(server.torrents[infoHash].peers['127.0.0.1:6881'], {
+        ip: '127.0.0.1',
+        port: 6881,
+        peerId: peerId
+      })
 
       client.complete()
 
