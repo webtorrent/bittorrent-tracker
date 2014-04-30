@@ -18,15 +18,13 @@
     "inherits": "^2.0.1",
     "querystring": "^0.2.0",
     "run-parallel": "^0.3.0",
-    "string2compact": "^1.1.0"
+    "string2compact": "^1.1.0",
+    "bn.js": "^0.2.0"
   },
   "devDependencies": {
     "parse-torrent": "^0.9.0",
     "portfinder": "^0.2.1",
     "tape": "2.x"
-  },
-  "optionalDependencies": {
-    "bignum": "^0.6.2"
   },
   "homepage": "http://webtorrent.io",
   "keywords": [

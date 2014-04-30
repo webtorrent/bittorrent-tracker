@@ -1,12 +1,7 @@
 exports.Client = Client
 exports.Server = Server
 
-// optional compiled dependency. if it doesn't compile, no big deal.
-var bignum
-try {
-  bignum = require('bignum')
-} catch (e) {}
-
+var bn = require('bn.js')
 var bncode = require('bncode')
 var compact2string = require('compact2string')
 var dgram = require('dgram')
@@ -528,16 +523,12 @@ function toUInt32 (n) {
 }
 
 function toUInt64 (n) {
-  if (typeof bignum === 'function') {
-    return bignum(n).toBuffer({ size: 8 })
-  } else {
-    // optional compiled dependency 'bignum' is not available, so round down to MAX_UINT.
-    // These values are only used for tracker stats anyway.
-    if (n > MAX_UINT) {
-      n = MAX_UINT
-    }
-    return Buffer.concat([toUInt32(0), toUInt32(n)])
+  if (n > MAX_UINT || typeof n === 'string') {
+    var bytes = bn(n).toArray()
+    while (bytes.length < 8) bytes.unshift(0)
+    return new Buffer(bytes)
   }
+  return Buffer.concat([toUInt32(0), toUInt32(n)])
 }
 
 function bytewiseEncodeURIComponent (buf) {
