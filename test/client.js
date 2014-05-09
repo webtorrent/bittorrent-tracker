@@ -6,6 +6,7 @@ var test = require('tape')
 var torrent = fs.readFileSync(__dirname + '/torrents/bitlove-intro.torrent')
 var parsedTorrent = parseTorrent(torrent)
 var peerId = new Buffer('01234567890123456789')
+var announceUrl = 'http://t.bitlove.org/announce' // TODO: shouldn't rely on an external server!
 var port = 6881
 
 test('client.start()', function (t) {
@@ -18,13 +19,13 @@ test('client.start()', function (t) {
   })
 
   client.once('update', function (data) {
-    t.equal(data.announce, 'http://t.bitlove.org/announce')
+    t.equal(data.announce, announceUrl)
     t.equal(typeof data.complete, 'number')
     t.equal(typeof data.incomplete, 'number')
   })
 
   client.once('peer', function (addr) {
-    t.pass('there is at least one peer') // TODO: this shouldn't rely on an external server!
+    t.pass('there is at least one peer')
     client.stop()
   })
 
@@ -47,7 +48,7 @@ test('client.stop()', function (t) {
 
     client.once('update', function (data) {
       // receive one final update after calling stop
-      t.equal(data.announce, 'http://t.bitlove.org/announce')
+      t.equal(data.announce, announceUrl)
       t.equal(typeof data.complete, 'number')
       t.equal(typeof data.incomplete, 'number')
     })
@@ -73,13 +74,32 @@ test('client.update()', function (t) {
 
     client.once('update', function (data) {
       // received an update!
-      t.equal(data.announce, 'http://t.bitlove.org/announce')
+      t.equal(data.announce, announceUrl)
       t.equal(typeof data.complete, 'number')
       t.equal(typeof data.incomplete, 'number')
       client.stop()
     })
 
   })
+})
+
+test('client.scrape()', function (t) {
+  t.plan(4)
+
+  var client = new Client(peerId, port, parsedTorrent)
+
+  client.on('error', function (err) {
+    t.error(err)
+  })
+
+  client.once('scrape', function (data) {
+    t.equal(data.announce, announceUrl)
+    t.equal(typeof data.complete, 'number')
+    t.equal(typeof data.incomplete, 'number')
+    t.equal(typeof data.downloaded, 'number')
+  })
+  
+  client.scrape()
 })
 
 // TODO: add test where tracker doesn't support compact
