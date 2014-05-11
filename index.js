@@ -34,7 +34,6 @@ inherits(Tracker, EventEmitter)
  */
 function Tracker (client, announceUrl, interval, opts) {
   var self = this
-  if (!(self instanceof Tracker)) return new Tracker(client, announceUrl, interval, opts)
   EventEmitter.call(self)
   self._opts = opts || {}
   
