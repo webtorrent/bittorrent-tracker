@@ -18,6 +18,7 @@ by [WebTorrent](http://webtorrent.io).
 
 - Includes client & server implementations
 - Supports HTTP & UDP trackers ([BEP 15](http://www.bittorrent.org/beps/bep_0015.html))
+- Supports tracker scrape
 
 ## install
 
@@ -53,9 +54,9 @@ client.on('error', function (err) {
 client.start()
 
 client.on('update', function (data) {
-  console.log('got a response from tracker: ' + data.announce)
-  console.log('number of seeders on this tracker: ' + data.complete)
-  console.log('number of leechers on this tracker: ' + data.incomplete)
+  console.log('got an announce response from tracker: ' + data.announce)
+  console.log('number of seeders in the swarm: ' + data.complete)
+  console.log('number of leechers in the swarm: ' + data.incomplete)
 })
 
 client.once('peer', function (addr) {
@@ -70,6 +71,16 @@ client.update()
 
 // stop getting peers from the tracker, gracefully leave the swarm
 client.stop()
+
+// scrape
+client.scape()
+
+client.on('scrape', function (data) {
+  console.log('got a scrape response from tracker: ' + data.announce)
+  console.log('number of seeders in the swarm: ' + data.complete)
+  console.log('number of leechers in the swarm: ' + data.incomplete)
+  console.log('number of total downloads of this torrent: ' + data.incomplete)
+})
 ```
 
 ### server
