@@ -3,7 +3,7 @@
 exports.Client = Client
 exports.Server = Server
 
-var bn = require('bn.js')
+var BN = require('bn.js')
 var bncode = require('bncode')
 var compact2string = require('compact2string')
 var dgram = require('dgram')
@@ -702,7 +702,7 @@ function toUInt32 (n) {
 
 function toUInt64 (n) {
   if (n > MAX_UINT || typeof n === 'string') {
-    var bytes = bn(n).toArray()
+    var bytes = new BN(n).toArray()
     while (bytes.length < 8) {
       bytes.unshift(0)
     }

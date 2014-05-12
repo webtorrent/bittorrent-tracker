@@ -19,7 +19,7 @@
     "querystring": "^0.2.0",
     "run-parallel": "^1.0.0",
     "string2compact": "^1.1.0",
-    "bn.js": "^0.3.1"
+    "bn.js": "^0.4.3"
   },
   "devDependencies": {
     "parse-torrent": "^1.1.0",
