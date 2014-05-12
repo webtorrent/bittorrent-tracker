@@ -67,11 +67,14 @@ test('server', function (t) {
         t.equal(data.incomplete, 0)
 
         client.scrape()
+
         client.once('scrape', function (data) {
           t.equal(data.announce, announceUrl)
           t.equal(typeof data.complete, 'number')
           t.equal(typeof data.incomplete, 'number')
           t.equal(typeof data.downloaded, 'number')
+
+          client.stop()
 
           client.once('update', function (data) {
             t.equal(data.announce, announceUrl)
@@ -80,8 +83,6 @@ test('server', function (t) {
 
             server.close()
           })
-          
-          client.stop()
         })
       })
     })
