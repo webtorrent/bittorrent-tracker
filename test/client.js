@@ -98,7 +98,7 @@ test('client.scrape()', function (t) {
     t.equal(typeof data.incomplete, 'number')
     t.equal(typeof data.downloaded, 'number')
   })
-  
+
   client.scrape()
 })
 
