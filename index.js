@@ -71,7 +71,7 @@ Tracker.prototype.complete = function (opts) {
   var self = this
   opts = opts || {}
   opts.event = 'completed'
-  opts.downloaded = self._torrentLength
+  opts.downloaded = opts.downloaded || self.torrentLength || 0
   self._request(opts)
 }
 
@@ -126,12 +126,15 @@ Tracker.prototype._request = function (opts) {
     info_hash: bytewiseEncodeURIComponent(self.client._infoHash),
     peer_id: bytewiseEncodeURIComponent(self.client._peerId),
     port: self.client._port,
-    left: self.client._torrentLength - (opts.downloaded || 0),
     compact: 1,
     numwant: self.client._numWant,
     uploaded: 0, // default, user should provide real value
     downloaded: 0 // default, user should provide real value
   }, opts)
+
+  if (self.client.torrentLength !== undefined) {
+    opts.left = self.client.torrentLength - (opts.downloaded || 0)
+  }
 
   if (self._trackerId) {
     opts.trackerid = self._trackerId
@@ -269,7 +272,7 @@ Tracker.prototype._requestUdp = function (requestUrl, opts) {
       self.client._infoHash,
       self.client._peerId,
       toUInt64(opts.downloaded || 0),
-      toUInt64(opts.left || 0),
+      opts.left ? toUInt64(opts.left) : new Buffer('FFFFFFFFFFFFFFFF', 'hex'),
       toUInt64(opts.uploaded || 0),
       toUInt32(EVENTS[opts.event] || 0),
       toUInt32(0), // ip address (optional)
@@ -392,7 +395,7 @@ function Client (peerId, port, torrent, opts) {
   self._infoHash = Buffer.isBuffer(torrent.infoHash)
     ? torrent.infoHash
     : new Buffer(torrent.infoHash, 'hex')
-  self._torrentLength = torrent.length
+  self.torrentLength = torrent.length
   self._announce = torrent.announce
 
   // optional
