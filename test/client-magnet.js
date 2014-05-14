@@ -1,19 +1,15 @@
 var Client = require('../').Client
 var fs = require('fs')
-var parseTorrent = require('parse-torrent')
+var magnet = require('magnet-uri')
 var test = require('tape')
 
-var torrent = fs.readFileSync(__dirname + '/torrents/leaves.torrent')
-var parsedTorrent = parseTorrent(torrent)
-
-// remove all tracker servers except a single UDP one, for now
-var announceUrl = 'udp://tracker.publicbt.com:80'
-parsedTorrent.announce = [ announceUrl ]
-
+var uri = 'magnet:?xt=urn:btih:d2474e86c95b19b8bcfdb92bc12c9d44667cfa36&dn=Leaves+of+Grass+by+Walt+Whitman.epub&tr=udp%3A%2F%2Ftracker.openbittorrent.com%3A80'
+var parsedTorrent = magnet(uri)
 var peerId = new Buffer('01234567890123456789')
+var announceUrl = 'udp://tracker.openbittorrent.com:80' // TODO: shouldn't rely on an external server!
 var port = 6881
 
-test('udp: client.start/update/stop()', function (t) {
+test('magnet + udp: client.start/update/stop()', function (t) {
   t.plan(10)
 
   var client = new Client(peerId, port, parsedTorrent)

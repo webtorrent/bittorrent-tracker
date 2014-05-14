@@ -3,13 +3,15 @@ var fs = require('fs')
 var parseTorrent = require('parse-torrent')
 var test = require('tape')
 
+// TODO: add test where tracker doesn't support compact
+
 var torrent = fs.readFileSync(__dirname + '/torrents/bitlove-intro.torrent')
 var parsedTorrent = parseTorrent(torrent)
 var peerId = new Buffer('01234567890123456789')
 var announceUrl = 'http://t.bitlove.org/announce' // TODO: shouldn't rely on an external server!
 var port = 6881
 
-test('client.start()', function (t) {
+test('torrent: client.start()', function (t) {
   t.plan(4)
 
   var client = new Client(peerId, port, parsedTorrent)
@@ -32,7 +34,7 @@ test('client.start()', function (t) {
   client.start()
 })
 
-test('client.stop()', function (t) {
+test('torrent: client.stop()', function (t) {
   t.plan(4)
 
   var client = new Client(peerId, port, parsedTorrent)
@@ -59,7 +61,7 @@ test('client.stop()', function (t) {
   }, 1000)
 })
 
-test('client.update()', function (t) {
+test('torrent: client.update()', function (t) {
   t.plan(3)
 
   var client = new Client(peerId, port, parsedTorrent, { interval: 5000 })
@@ -83,7 +85,7 @@ test('client.update()', function (t) {
   })
 })
 
-test('client.scrape()', function (t) {
+test('torrent: client.scrape()', function (t) {
   t.plan(4)
 
   var client = new Client(peerId, port, parsedTorrent)
@@ -101,5 +103,3 @@ test('client.scrape()', function (t) {
 
   client.scrape()
 })
-
-// TODO: add test where tracker doesn't support compact

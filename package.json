@@ -22,6 +22,7 @@
     "bn.js": "^0.4.3"
   },
   "devDependencies": {
+    "magnet-uri": "^2.0.1",
     "parse-torrent": "^1.1.0",
     "portfinder": "^0.2.1",
     "tape": "2.x"
