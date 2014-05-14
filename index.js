@@ -399,6 +399,10 @@ function Client (peerId, port, torrent, opts) {
   self._numWant = self._opts.numWant || 80
   self._intervalMs = self._opts.interval || (30 * 60 * 1000) // default: 30 minutes
 
+  if (typeof torrent.announce === 'string') {
+    // magnet-uri returns a string if the magnet uri only contains one 'tr' parameter
+    torrent.announce = [torrent.announce]
+  }
   self._trackers = torrent.announce.map(function (announceUrl) {
     return new Tracker(self, announceUrl, self._opts)
   })
