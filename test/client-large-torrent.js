@@ -11,7 +11,7 @@ var port = 6881
 // remove all tracker servers except a single UDP one, for now
 parsedTorrent.announce = [ 'udp://tracker.publicbt.com:80/announce' ]
 
-test('client.start()', function (t) {
+test('large torrent: client.start()', function (t) {
   t.plan(4)
 
   var client = new Client(peerId, port, parsedTorrent)

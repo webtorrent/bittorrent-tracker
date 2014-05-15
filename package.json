@@ -1,7 +1,7 @@
 {
   "name": "bittorrent-tracker",
   "description": "Simple, robust, BitTorrent tracker (client & server) implementation",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "author": {
     "name": "Feross Aboukhadijeh",
     "email": "feross@feross.org",
@@ -19,9 +19,10 @@
     "querystring": "^0.2.0",
     "run-parallel": "^1.0.0",
     "string2compact": "^1.1.0",
-    "bn.js": "^0.3.1"
+    "bn.js": "^0.4.3"
   },
   "devDependencies": {
+    "magnet-uri": "^2.0.1",
     "parse-torrent": "^1.1.0",
     "portfinder": "^0.2.1",
     "tape": "2.x"
