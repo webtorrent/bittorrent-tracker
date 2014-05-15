@@ -180,13 +180,11 @@ Tracker.prototype._requestUdp = function (requestUrl, opts) {
 
   function error (message) {
     self.client.emit('error', new Error(message + ' (connecting to tracker ' + requestUrl + ')'))
-    socket.close()
+    try { socket.close() } catch (e) { }
     clearTimeout(timeout)
   }
 
-  socket.on('error', function (err) {
-    error(err)
-  })
+  socket.on('error', error)
 
   socket.on('message', function (message, rinfo) {
 
