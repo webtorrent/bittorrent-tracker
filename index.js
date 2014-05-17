@@ -151,7 +151,7 @@ Tracker.prototype._requestHttp = function (requestUrl, opts) {
     var data = ''
     if (res.statusCode !== 200) {
       res.resume() // consume the whole stream
-      self.client.emit('error', new Error('Invalid response code ' + res.statusCode + ' from tracker'))
+      self.client.emit('error', new Error('Invalid response code ' + res.statusCode + ' from tracker ' + requestUrl))
       return
     }
     res.on('data', function (chunk) {
@@ -182,14 +182,12 @@ Tracker.prototype._requestUdp = function (requestUrl, opts) {
   }
 
   function error (message) {
-    self.client.emit('error', new Error(message))
-    socket.close()
+    self.client.emit('error', new Error(message + ' (connecting to tracker ' + requestUrl + ')'))
+    try { socket.close() } catch (e) { }
     clearTimeout(timeout)
   }
 
-  socket.on('error', function (err) {
-    error(err)
-  })
+  socket.on('error', error)
 
   socket.on('message', function (message, rinfo) {
 
