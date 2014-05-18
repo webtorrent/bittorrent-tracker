@@ -11,7 +11,7 @@ var peerId = '12345678901234567890'
 var torrentLength = 50000
 
 test('server', function (t) {
-  t.plan(21)
+  t.plan(22)
 
   var server = new Server() // { interval: 50000, compactOnly: false }
 
@@ -74,15 +74,26 @@ test('server', function (t) {
           t.equal(typeof data.incomplete, 'number')
           t.equal(typeof data.downloaded, 'number')
 
-          client.stop()
-
-          client.once('update', function (data) {
-            t.equal(data.announce, announceUrl)
-            t.equal(data.complete, 0)
-            t.equal(data.incomplete, 0)
-
-            server.close()
+          var client2 = new Client(peerId.split('').reverse().join(''), 6882, {
+            infoHash: infoHash,
+            length: torrentLength,
+            announce: [ announceUrl ]
           })
+
+          client2.once('peer', function (addr) {
+            t.equal(addr, '127.0.0.1:6881')
+            client.stop()
+
+            client.once('update', function (data) {
+              t.equal(data.announce, announceUrl)
+              t.equal(data.complete, 0)
+              t.equal(data.incomplete, 0)
+
+              server.close()
+            })
+          })
+
+          client2.start()
         })
       })
     })
