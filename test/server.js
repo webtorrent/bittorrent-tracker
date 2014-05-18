@@ -11,7 +11,7 @@ var peerId = '12345678901234567890'
 var torrentLength = 50000
 
 test('server', function (t) {
-  t.plan(22)
+  t.plan(23)
 
   var server = new Server() // { interval: 50000, compactOnly: false }
 
@@ -82,6 +82,7 @@ test('server', function (t) {
 
           client2.once('peer', function (addr) {
             t.equal(addr, '127.0.0.1:6881')
+            client2.stop()
             client.stop()
 
             client.once('update', function (data) {
