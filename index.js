@@ -453,6 +453,20 @@ Client.prototype.setInterval = function (intervalMs) {
 
 inherits(Server, EventEmitter)
 
+/**
+ * A BitTorrent tracker server.
+ *
+ * A "BitTorrent tracker" is an HTTP service which responds to GET requests from
+ * BitTorrent clients. The requests include metrics from clients that help the tracker
+ * keep overall statistics about the torrent. The response includes a peer list that
+ * helps the client participate in the torrent.
+ *
+ * @param {Object}  opts            options
+ * @param {Number}  opts.interval   interval in ms that clients should announce on
+ * @param {Number}  opts.trustProxy Trust 'x-forwarded-for' header from reverse proxy
+ * @param {boolean} opts.http       Start an http server? (default: true)
+ * @param {boolean} opts.udp        Start a udp server? (default: true)
+ */
 function Server (opts) {
   var self = this
   if (!(self instanceof Server)) return new Server(opts)
