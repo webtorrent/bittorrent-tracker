@@ -7,11 +7,12 @@ var test = require('tape')
 // being sent
 
 var infoHash = '4cb67059ed6bd08362da625b3ae77f6f4a075705'
-var peerId = '12345678901234567890'
+var peerId = '01234567890123456789'
+var peerId2 = '12345678901234567890'
 var torrentLength = 50000
 
 test('server', function (t) {
-  t.plan(23)
+  t.plan(26)
 
   var server = new Server() // { interval: 50000, compactOnly: false }
 
@@ -19,9 +20,6 @@ test('server', function (t) {
     t.fail(err.message)
   })
 
-  server.on('start', function () {
-    t.pass('got start message')
-  })
   server.on('complete', function () {})
   server.on('update', function () {})
   server.on('stop', function () {})
@@ -43,6 +41,10 @@ test('server', function (t) {
     })
 
     client.start()
+
+    server.once('start', function () {
+      t.pass('got start message from client1')
+    })
 
     client.once('update', function (data) {
       t.equal(data.announce, announceUrl)
@@ -74,27 +76,39 @@ test('server', function (t) {
           t.equal(typeof data.incomplete, 'number')
           t.equal(typeof data.downloaded, 'number')
 
-          var client2 = new Client(peerId.split('').reverse().join(''), 6882, {
+          var client2 = new Client(peerId2, 6882, {
             infoHash: infoHash,
             length: torrentLength,
             announce: [ announceUrl ]
           })
 
-          client2.once('peer', function (addr) {
-            t.equal(addr, '127.0.0.1:6881')
-            client2.stop()
-            client.stop()
+          client2.start()
 
-            client.once('update', function (data) {
-              t.equal(data.announce, announceUrl)
-              t.equal(data.complete, 0)
-              t.equal(data.incomplete, 0)
-
-              server.close()
-            })
+          server.once('start', function () {
+            t.pass('got start message from client2')
           })
 
-          client2.start()
+          client2.once('peer', function (addr) {
+            t.equal(addr, '127.0.0.1:6881')
+
+            client2.stop()
+            client2.once('update', function (data) {
+              t.equal(data.announce, announceUrl)
+              t.equal(data.complete, 1)
+              t.equal(data.incomplete, 0)
+
+              client.stop()
+              client.once('update', function (data) {
+                t.equal(data.announce, announceUrl)
+                t.equal(data.complete, 0)
+                t.equal(data.incomplete, 0)
+
+                server.close()
+              })
+            })
+
+          })
+
         })
       })
     })
