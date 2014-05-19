@@ -4,6 +4,7 @@ exports.Server = Server
 var BN = require('bn.js')
 var bncode = require('bncode')
 var compact2string = require('compact2string')
+var concat = require('concat-stream')
 var dgram = require('dgram')
 var EventEmitter = require('events').EventEmitter
 var extend = require('extend.js')
@@ -146,18 +147,14 @@ Tracker.prototype._requestHttp = function (requestUrl, opts) {
   var fullUrl = requestUrl + '?' + querystring.stringify(opts)
 
   var req = http.get(fullUrl, function (res) {
-    var data = ''
     if (res.statusCode !== 200) {
       res.resume() // consume the whole stream
       self.client.emit('error', new Error('Invalid response code ' + res.statusCode + ' from tracker ' + requestUrl))
       return
     }
-    res.on('data', function (chunk) {
-      data += chunk
-    })
-    res.on('end', function () {
+    res.pipe(concat(function (data) {
       self._handleResponse(requestUrl, data)
-    })
+    }))
   })
 
   req.on('error', function (err) {
@@ -640,7 +637,6 @@ Server.prototype._onHttpRequest = function (req, res) {
     if (warning) {
       response['warning message'] = warning
     }
-
     res.end(bncode.encode(response))
 
   } else if (s[0] === '/scrape') { // unofficial scrape message
@@ -698,6 +694,7 @@ Server.prototype._getPeersCompact = function (swarm) {
     var peer = swarm.peers[peerId]
     return peer.ip + ':' + peer.port
   })
+
   return string2compact(addrs)
 }
 
