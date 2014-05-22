@@ -153,7 +153,7 @@ Tracker.prototype._requestHttp = function (requestUrl, opts) {
       return
     }
     res.pipe(concat(function (data) {
-      self._handleResponse(requestUrl, data)
+      if (data && data.length) self._handleResponse(requestUrl, data)
     }))
   })
 
