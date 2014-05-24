@@ -92,8 +92,13 @@ var Server = require('bittorrent-tracker').Server
 
 var server = new Server()
 
-// you must add an 'error' event handler!
 server.on('error', function (err) {
+  // fatal server error!
+  console.log(err.message)
+})
+
+server.on('warning', function (err) {
+  // client sent bad data. probably not a problem, just a buggy client.
   console.log(err.message)
 })
 
