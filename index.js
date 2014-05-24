@@ -181,7 +181,7 @@ Tracker.prototype._requestUdp = function (requestUrl, opts) {
     }, 15000)
   }
 
-  if (timeout.unref) {
+  if (timeout && timeout.unref) {
     timeout.unref()
   }
 
@@ -236,7 +236,10 @@ Tracker.prototype._requestUdp = function (requestUrl, opts) {
           self.client.emit('peer', addr)
         })
 
-        clearTimeout(timeout)
+        if (timeout) {
+          clearTimeout(timeout)
+          timeout = null
+        }
         try { socket.close() } catch (err) {}
         return
 
@@ -252,7 +255,10 @@ Tracker.prototype._requestUdp = function (requestUrl, opts) {
           incomplete: msg.readUInt32BE(16)
         })
 
-        clearTimeout(timeout)
+        if (timeout) {
+          clearTimeout(timeout)
+          timeout = null
+        }
         try { socket.close() } catch (err) {}
         return
 
@@ -263,7 +269,10 @@ Tracker.prototype._requestUdp = function (requestUrl, opts) {
 
         self.client.emit('error', new Error(msg.slice(8).toString()))
 
-        clearTimeout(timeout)
+        if (timeout) {
+          clearTimeout(timeout)
+          timeout = null
+        }
         try { socket.close() } catch (err) {}
         return
     }
@@ -278,8 +287,11 @@ Tracker.prototype._requestUdp = function (requestUrl, opts) {
 
   function error (message) {
     self.client.emit('error', new Error(message + ' (connecting to tracker ' + requestUrl + ')'))
+    if (timeout) {
+      clearTimeout(timeout)
+      timeout = null
+    }
     try { socket.close() } catch (err) { }
-    clearTimeout(timeout)
   }
 
   function genTransactionId () {
