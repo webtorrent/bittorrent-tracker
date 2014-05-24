@@ -17,6 +17,10 @@ test('server', function (t) {
     t.fail(err.message)
   })
 
+  server.on('warning', function (err) {
+    t.fail(err.message)
+  })
+
   server.on('complete', function () {})
   server.on('update', function () {})
   server.on('stop', function () {})
