@@ -170,15 +170,12 @@ Tracker.prototype._requestUdp = function (requestUrl, opts) {
   var socket = dgram.createSocket('udp4')
   var transactionId = new Buffer(hat(32), 'hex')
 
-  var timeout = setTimeout(function () {
-    error('tracker request timed out')
-  }, 15000)
-
-  if (opts.event !== EVENTS.stopped) {
+  if (opts.event !== 'stopped') {
     // if we're sending a stopped message, we don't really care if it arrives, so don't
     // set a timer
     var timeout = setTimeout(function () {
-      try { socket.close() } catch (err) {}
+      timeout = null
+      cleanup()
       error('tracker request timed out')
     }, 15000)
   }
@@ -217,6 +214,7 @@ Tracker.prototype._requestUdp = function (requestUrl, opts) {
         return
 
       case 1: // announce
+        cleanup()
         if (msg.length < 20) {
           return error('invalid announce message')
         }
@@ -237,46 +235,28 @@ Tracker.prototype._requestUdp = function (requestUrl, opts) {
         compact2string.multi(msg.slice(20)).forEach(function (addr) {
           self.client.emit('peer', addr)
         })
-
-        if (timeout) {
-          clearTimeout(timeout)
-          timeout = null
-        }
-        try { socket.close() } catch (err) {}
-        return
+        break
 
       case 2: // scrape
+        cleanup()
         if (msg.length < 20) {
           return error('invalid scrape message')
         }
-
         self.client.emit('scrape', {
           announce: self._announceUrl,
           complete: msg.readUInt32BE(8),
           downloaded: msg.readUInt32BE(12),
           incomplete: msg.readUInt32BE(16)
         })
-
-        if (timeout) {
-          clearTimeout(timeout)
-          timeout = null
-        }
-        try { socket.close() } catch (err) {}
-        return
+        break
 
       case 3: // error
+        cleanup()
         if (msg.length < 8) {
           return error('invalid error message')
         }
-
         self.client.emit('error', new Error(msg.slice(8).toString()))
-
-        if (timeout) {
-          clearTimeout(timeout)
-          timeout = null
-        }
-        try { socket.close() } catch (err) {}
-        return
+        break
     }
   })
 
@@ -289,11 +269,15 @@ Tracker.prototype._requestUdp = function (requestUrl, opts) {
 
   function error (message) {
     self.client.emit('error', new Error(message + ' (connecting to tracker ' + requestUrl + ')'))
+    cleanup()
+  }
+
+  function cleanup () {
     if (timeout) {
       clearTimeout(timeout)
       timeout = null
     }
-    try { socket.close() } catch (err) { }
+    try { socket.close() } catch (err) {}
   }
 
   function genTransactionId () {
