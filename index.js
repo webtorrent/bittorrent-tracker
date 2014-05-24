@@ -23,6 +23,8 @@ var ACTIONS = { CONNECT: 0, ANNOUNCE: 1, SCRAPE: 2, ERROR: 3 }
 var EVENTS = { update: 0, completed: 1, started: 2, stopped: 3 }
 var MAX_UINT = 4294967295
 
+var REMOVE_IPV6_RE = /^::ffff:/
+
 inherits(Tracker, EventEmitter)
 
 /**
@@ -579,7 +581,7 @@ Server.prototype._onHttpRequest = function (req, res) {
   if (s[0] === '/announce') {
     var ip = self._trustProxy
       ? req.headers['x-forwarded-for'] || req.connection.remoteAddress
-      : req.connection.remoteAddress
+      : req.connection.remoteAddress.replace(REMOVE_IPV6_RE, '') // force ipv4
     var port = Number(params.port)
     var addr = ip + ':' + port
     var peerId = bytewiseDecodeURIComponent(params.peer_id).toString('utf8')
