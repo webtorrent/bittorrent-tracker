@@ -1,6 +1,8 @@
 var Client = require('../').Client
 var fs = require('fs')
 var parseTorrent = require('parse-torrent')
+var portfinder = require('portfinder')
+var Server = require('../').Server
 var test = require('tape')
 
 var torrent = fs.readFileSync(__dirname + '/torrents/sintel-5gb.torrent')
@@ -8,28 +10,44 @@ var parsedTorrent = parseTorrent(torrent)
 var peerId = new Buffer('01234567890123456789')
 var port = 6881
 
-// remove all tracker servers except a single UDP one, for now
-parsedTorrent.announce = [ 'udp://tracker.publicbt.com:80/announce' ]
-
 test('large torrent: client.start()', function (t) {
-  t.plan(4)
+  t.plan(5)
 
-  var client = new Client(peerId, port, parsedTorrent)
+  var server = new Server({ http: false })
 
-  client.on('error', function (err) {
-    t.error(err)
+  server.on('error', function (err) {
+    t.fail(err.message)
   })
 
-  client.once('update', function (data) {
-    t.equal(data.announce, 'udp://tracker.publicbt.com:80/announce')
-    t.equal(typeof data.complete, 'number')
-    t.equal(typeof data.incomplete, 'number')
+  server.on('warning', function (err) {
+    t.fail(err.message)
   })
 
-  client.once('peer', function (addr) {
-    t.pass('there is at least one peer') // TODO: this shouldn't rely on an external server!
-    client.stop()
-  })
+  portfinder.getPort(function (err, port) {
+    t.error(err, 'found free port')
+    server.listen(port)
 
-  client.start()
+    // remove all tracker servers except a single UDP one, for now
+    parsedTorrent.announce = [ 'udp://127.0.0.1:' + port + '/announce' ]
+
+    var client = new Client(peerId, port, parsedTorrent)
+
+    client.on('error', function (err) {
+      t.error(err)
+    })
+
+    client.once('update', function (data) {
+      t.equal(data.announce, 'udp://127.0.0.1:' + port + '/announce')
+      t.equal(typeof data.complete, 'number')
+      t.equal(typeof data.incomplete, 'number')
+    })
+
+    client.once('peer', function (addr) {
+      t.pass('there is at least one peer') // TODO: this shouldn't rely on an external server!
+      client.stop()
+      server.close()
+    })
+
+    client.start()
+  })
 })
