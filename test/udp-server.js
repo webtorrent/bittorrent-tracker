@@ -9,7 +9,7 @@ var peerId2 = '12345678901234567890'
 var torrentLength = 50000
 
 test('server', function (t) {
-  t.plan(26)
+  t.plan(27)
 
   var server = new Server({ http: false })
 
@@ -100,7 +100,9 @@ test('server', function (t) {
                 t.equal(data.complete, 0)
                 t.equal(data.incomplete, 0)
 
-                server.close()
+                server.close(function () {
+                  t.pass('server close')
+                })
               })
             })
           })

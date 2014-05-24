@@ -8,10 +8,9 @@ var test = require('tape')
 var torrent = fs.readFileSync(__dirname + '/torrents/sintel-5gb.torrent')
 var parsedTorrent = parseTorrent(torrent)
 var peerId = new Buffer('01234567890123456789')
-var port = 6881
 
 test('large torrent: client.start()', function (t) {
-  t.plan(5)
+  t.plan(6)
 
   var server = new Server({ http: false })
 
@@ -30,7 +29,7 @@ test('large torrent: client.start()', function (t) {
     // remove all tracker servers except a single UDP one, for now
     parsedTorrent.announce = [ 'udp://127.0.0.1:' + port + '/announce' ]
 
-    var client = new Client(peerId, port, parsedTorrent)
+    var client = new Client(peerId, 6881, parsedTorrent)
 
     client.on('error', function (err) {
       t.error(err)
@@ -45,7 +44,9 @@ test('large torrent: client.start()', function (t) {
     client.once('peer', function (addr) {
       t.pass('there is at least one peer') // TODO: this shouldn't rely on an external server!
       client.stop()
-      server.close()
+      server.close(function () {
+        t.pass('server close')
+      })
     })
 
     client.start()
