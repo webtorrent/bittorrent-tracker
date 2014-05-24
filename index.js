@@ -173,6 +173,7 @@ Tracker.prototype._requestUdp = function (requestUrl, opts) {
   var timeout = setTimeout(function () {
     error('tracker request timed out')
   }, 15000)
+  socket.unref()
 
   if (timeout.unref) {
     timeout.unref()
