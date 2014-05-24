@@ -230,7 +230,7 @@ Tracker.prototype._requestUdp = function (requestUrl, opts) {
         })
 
         clearTimeout(timeout)
-        socket.close()
+        try { socket.close() } catch (err) {}
         return
 
       case 2: // scrape
@@ -246,7 +246,7 @@ Tracker.prototype._requestUdp = function (requestUrl, opts) {
         })
 
         clearTimeout(timeout)
-        socket.close()
+        try { socket.close() } catch (err) {}
         return
 
       case 3: // error
@@ -257,7 +257,7 @@ Tracker.prototype._requestUdp = function (requestUrl, opts) {
         self.client.emit('error', new Error(msg.slice(8).toString()))
 
         clearTimeout(timeout)
-        socket.close()
+        try { socket.close() } catch (err) {}
         return
     }
   })
@@ -271,7 +271,7 @@ Tracker.prototype._requestUdp = function (requestUrl, opts) {
 
   function error (message) {
     self.client.emit('error', new Error(message + ' (connecting to tracker ' + requestUrl + ')'))
-    try { socket.close() } catch (e) { }
+    try { socket.close() } catch (err) { }
     clearTimeout(timeout)
   }
 
@@ -849,7 +849,7 @@ Server.prototype._onUdpRequest = function (msg, rinfo) {
 
   function send (buf) {
     socket.send(buf, 0, buf.length, rinfo.port, rinfo.address, function () {
-      socket.close()
+      try { socket.close() } catch (err) {}
     })
   }
 
