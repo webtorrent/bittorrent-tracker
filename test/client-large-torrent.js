@@ -41,14 +41,19 @@ test('large torrent: client.start()', function (t) {
       t.equal(typeof data.incomplete, 'number')
     })
 
+    client.start()
+
     client.once('peer', function (addr) {
       t.pass('there is at least one peer') // TODO: this shouldn't rely on an external server!
-      client.stop()
-      server.close(function () {
-        t.pass('server close')
-      })
-    })
 
-    client.start()
+      client.stop()
+
+      client.once('update', function () {
+        server.close(function () {
+          t.pass('server close')
+        })
+      })
+
+    })
   })
 })
