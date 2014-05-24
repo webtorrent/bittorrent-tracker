@@ -13,11 +13,13 @@
   "dependencies": {
     "bn.js": "^0.7.1",
     "bncode": "^0.5.3",
+    "buffer-equal": "0.0.0",
     "compact2string": "^1.2.0",
     "concat-stream": "^1.4.5",
     "extend.js": "0.0.1",
     "hat": "0.0.3",
     "inherits": "^2.0.1",
+    "ip": "^0.3.0",
     "querystring": "^0.2.0",
     "run-parallel": "^1.0.0",
     "string2compact": "^1.1.1"
