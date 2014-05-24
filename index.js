@@ -17,14 +17,14 @@ var string2compact = require('string2compact')
 var url = require('url')
 
 var CONNECTION_ID = Buffer.concat([ toUInt32(0x417), toUInt32(0x27101980) ])
-var ACTIONS = { CONNECT: 0, ANNOUNCE: 1, SCRAPE: 2 }
+var ACTIONS = { CONNECT: 0, ANNOUNCE: 1, SCRAPE: 2, ERROR: 3 }
 var EVENTS = { completed: 1, started: 2, stopped: 3 }
 var MAX_UINT = 4294967295
 
 inherits(Tracker, EventEmitter)
 
 /**
- * An individual torrent tracker
+ * An individual torrent tracker (used by Client)
  *
  * @param {Client} client       parent bittorrent tracker client
  * @param {string} announceUrl  announce url of tracker
@@ -176,35 +176,34 @@ Tracker.prototype._requestUdp = function (requestUrl, opts) {
     timeout.unref()
   }
 
-  function error (message) {
-    self.client.emit('error', new Error(message + ' (connecting to tracker ' + requestUrl + ')'))
-    try { socket.close() } catch (e) { }
-    clearTimeout(timeout)
-  }
+  send(Buffer.concat([
+    CONNECTION_ID,
+    toUInt32(ACTIONS.CONNECT),
+    transactionId
+  ]))
 
   socket.on('error', error)
 
-  socket.on('message', function (message, rinfo) {
-
-    if (message.length < 8 || message.readUInt32BE(4) !== transactionId.readUInt32BE(0)) {
+  socket.on('message', function (msg, rinfo) {
+    if (msg.length < 8 || msg.readUInt32BE(4) !== transactionId.readUInt32BE(0)) {
       return error('tracker sent back invalid transaction id')
     }
 
-    var action = message.readUInt32BE(0)
+    var action = msg.readUInt32BE(0)
     switch (action) {
       case 0: // handshake
-        if (message.length < 16) {
+        if (msg.length < 16) {
           return error('invalid udp handshake')
         }
-        announce(message.slice(8, 16), opts)
+        announce(msg.slice(8, 16), opts)
         return
 
       case 1: // announce
-        if (message.length < 20) {
+        if (msg.length < 20) {
           return error('invalid announce message')
         }
 
-        var interval = message.readUInt32BE(8)
+        var interval = msg.readUInt32BE(8)
         if (interval && !self._opts.interval && self._intervalMs !== 0) {
           // use the interval the tracker recommends, UNLESS the user manually specifies an
           // interval they want to use
@@ -213,11 +212,11 @@ Tracker.prototype._requestUdp = function (requestUrl, opts) {
 
         self.client.emit('update', {
           announce: self._announceUrl,
-          complete: message.readUInt32BE(16),
-          incomplete: message.readUInt32BE(12)
+          complete: msg.readUInt32BE(16),
+          incomplete: msg.readUInt32BE(12)
         })
 
-        compact2string.multi(message.slice(20)).forEach(function (addr) {
+        compact2string.multi(msg.slice(20)).forEach(function (addr) {
           self.client.emit('peer', addr)
         })
 
@@ -226,22 +225,39 @@ Tracker.prototype._requestUdp = function (requestUrl, opts) {
         return
 
       case 2: // scrape
-        if (message.length < 20) {
+        if (msg.length < 20) {
           return error('invalid scrape message')
         }
 
         self.client.emit('scrape', {
           announce: self._announceUrl,
-          complete: message.readUInt32BE(8),
-          downloaded: message.readUInt32BE(12),
-          incomplete: message.readUInt32BE(16)
+          complete: msg.readUInt32BE(8),
+          downloaded: msg.readUInt32BE(12),
+          incomplete: msg.readUInt32BE(16)
         })
+
+        clearTimeout(timeout)
+        socket.close()
+        return
+
+      case 3: // error
+        if (msg.length < 8) {
+          return error('invalid error message')
+        }
+
+        self.client.emit('error', new Error(msg.slice(8).toString()))
 
         clearTimeout(timeout)
         socket.close()
         return
     }
   })
+
+  function error (message) {
+    self.client.emit('error', new Error(message + ' (connecting to tracker ' + requestUrl + ')'))
+    try { socket.close() } catch (e) { }
+    clearTimeout(timeout)
+  }
 
   function send (message) {
     if (!parsedUrl.port) {
@@ -285,12 +301,6 @@ Tracker.prototype._requestUdp = function (requestUrl, opts) {
       self.client._infoHash
     ]))
   }
-
-  send(Buffer.concat([
-    CONNECTION_ID,
-    toUInt32(ACTIONS.CONNECT),
-    transactionId
-  ]))
 }
 
 Tracker.prototype._handleResponse = function (requestUrl, data) {
