@@ -3,9 +3,6 @@ var portfinder = require('portfinder')
 var Server = require('../').Server
 var test = require('tape')
 
-// TODO: add tests to verify that the correct downloaded/left/uploaded numbers are
-// being sent
-
 var infoHash = '4cb67059ed6bd08362da625b3ae77f6f4a075705'
 var peerId = '01234567890123456789'
 var peerId2 = '12345678901234567890'
@@ -14,7 +11,7 @@ var torrentLength = 50000
 test('server', function (t) {
   t.plan(26)
 
-  var server = new Server() // { interval: 50000, compactOnly: false }
+  var server = new Server({ udp: false }) // { interval: 50000, compactOnly: false }
 
   server.on('error', function (err) {
     t.fail(err.message)
@@ -106,9 +103,7 @@ test('server', function (t) {
                 server.close()
               })
             })
-
           })
-
         })
       })
     })
