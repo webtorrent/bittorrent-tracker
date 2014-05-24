@@ -90,7 +90,10 @@ To start a BitTorrent tracker server to track swarms of peers:
 ```js
 var Server = require('bittorrent-tracker').Server
 
-var server = new Server()
+var server = new Server({
+  udp: true, // enable udp server? [default=true]
+  http: true // enable http server? [default=true]
+})
 
 server.on('error', function (err) {
   // fatal server error!
