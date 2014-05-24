@@ -170,7 +170,9 @@ Tracker.prototype._requestUdp = function (requestUrl, opts) {
   var socket = dgram.createSocket('udp4')
   var transactionId = new Buffer(hat(32), 'hex')
 
-  socket.unref()
+  var timeout = setTimeout(function () {
+    error('tracker request timed out')
+  }, 15000)
 
   if (opts.event !== EVENTS.stopped) {
     // if we're sending a stopped message, we don't really care if it arrives, so don't
