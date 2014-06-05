@@ -172,15 +172,16 @@ Tracker.prototype._requestUdp = function (requestUrl, opts) {
   var socket = dgram.createSocket('udp4')
   var transactionId = new Buffer(hat(32), 'hex')
 
-  if (opts.event !== 'stopped') {
-    // if we're sending a stopped message, we don't really care if it arrives, so don't
-    // set a timer
-    var timeout = setTimeout(function () {
-      timeout = null
-      cleanup()
+  var stopped = opts.event === 'stopped'
+  // if we're sending a stopped message, we don't really care if it arrives, so set
+  // a short timer and don't call error
+  var timeout = setTimeout(function () {
+    timeout = null
+    cleanup()
+    if (!stopped) {
       error('tracker request timed out')
-    }, 15000)
-  }
+    }
+  }, stopped ? 1500 : 15000)
 
   if (timeout && timeout.unref) {
     timeout.unref()
@@ -264,7 +265,7 @@ Tracker.prototype._requestUdp = function (requestUrl, opts) {
 
   function send (message) {
     if (!parsedUrl.port) {
-      parsedUrl.port = 80;
+      parsedUrl.port = 80
     }
     socket.send(message, 0, message.length, parsedUrl.port, parsedUrl.hostname)
   }
@@ -334,7 +335,7 @@ Tracker.prototype._handleResponse = function (requestUrl, data) {
 
   var warning = data['warning message']
   if (warning) {
-    self.client.emit('warning', warning);
+    self.client.emit('warning', warning)
   }
 
   if (requestUrl === self._announceUrl) {
