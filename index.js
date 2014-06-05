@@ -110,12 +110,10 @@ Tracker.prototype.scrape = function (opts) {
 
 Tracker.prototype.setInterval = function (intervalMs) {
   var self = this
-  if (self._interval) {
-    clearInterval(self._interval)
-  }
+  clearInterval(self._interval)
 
   self._intervalMs = intervalMs
-  if (self._intervalMs) {
+  if (intervalMs) {
     self._interval = setInterval(self.update.bind(self), self._intervalMs)
   }
 }
@@ -497,7 +495,7 @@ function Server (opts) {
   EventEmitter.call(self)
   opts = opts || {}
 
-  self._interval = opts.interval
+  self._intervalMs = opts.interval
     ? opts.interval / 1000
     : 10 * 60 // 10 min (in secs)
 
@@ -666,7 +664,7 @@ Server.prototype._onHttpRequest = function (req, res) {
       complete: swarm.complete,
       incomplete: swarm.incomplete,
       peers: peers,
-      interval: self._interval
+      interval: self._intervalMs
     }
 
     if (warning) {
@@ -683,7 +681,7 @@ Server.prototype._onHttpRequest = function (req, res) {
       incomplete: swarm.incomplete,
       downloaded: swarm.complete, // TODO: this only provides a lower-bound
       flags: {
-        min_request_interval: self._interval
+        min_request_interval: self._intervalMs
       }
     }
 
@@ -830,7 +828,7 @@ Server.prototype._onUdpRequest = function (msg, rinfo) {
     send(Buffer.concat([
       toUInt32(ACTIONS.ANNOUNCE),
       toUInt32(transactionId),
-      toUInt32(self._interval),
+      toUInt32(self._intervalMs),
       toUInt32(swarm.incomplete),
       toUInt32(swarm.complete),
       peers
