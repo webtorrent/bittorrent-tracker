@@ -265,7 +265,7 @@ Tracker.prototype._requestUdp = function (requestUrl, opts) {
 
   function send (message) {
     if (!parsedUrl.port) {
-      parsedUrl.port = 80;
+      parsedUrl.port = 80
     }
     socket.send(message, 0, message.length, parsedUrl.port, parsedUrl.hostname)
   }
@@ -335,7 +335,7 @@ Tracker.prototype._handleResponse = function (requestUrl, data) {
 
   var warning = data['warning message']
   if (warning) {
-    self.client.emit('warning', warning);
+    self.client.emit('warning', warning)
   }
 
   if (requestUrl === self._announceUrl) {
