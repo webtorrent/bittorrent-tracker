@@ -519,9 +519,13 @@ function Server (opts) {
   }
 }
 
-Server.prototype.listen = function (port) {
+Server.prototype.listen = function (port, onlistening) {
   var self = this
   var tasks = []
+
+  if (onlistening) {
+    self.once('listening', onlistening)
+  }
 
   self._httpServer && tasks.push(function (cb) {
     self._httpServer.listen(port, cb)
