@@ -36,6 +36,7 @@ inherits(Tracker, EventEmitter)
  * @param {Object} opts         optional options
  */
 function Tracker (client, announceUrl, opts) {
+  debug('new tracker for ' + announceUrl)
   var self = this
   EventEmitter.call(self)
   self._opts = opts || {}
@@ -51,9 +52,11 @@ function Tracker (client, announceUrl, opts) {
   } else {
     self._requestImpl = self._requestHttp
   }
+
 }
 
 Tracker.prototype.start = function (opts) {
+  debug('sent `start` to ' + self._announceUrl)
   var self = this
   opts = opts || {}
   opts.event = 'started'
@@ -63,6 +66,7 @@ Tracker.prototype.start = function (opts) {
 }
 
 Tracker.prototype.stop = function (opts) {
+  debug('sent `stop` to ' + self._announceUrl)
   var self = this
   opts = opts || {}
   opts.event = 'stopped'
@@ -72,6 +76,7 @@ Tracker.prototype.stop = function (opts) {
 }
 
 Tracker.prototype.complete = function (opts) {
+  debug('sent `complete` to ' + self._announceUrl)
   var self = this
   opts = opts || {}
   opts.event = 'completed'
@@ -80,6 +85,7 @@ Tracker.prototype.complete = function (opts) {
 }
 
 Tracker.prototype.update = function (opts) {
+  debug('sent `update` to ' + self._announceUrl)
   var self = this
   opts = opts || {}
   self._request(opts)
@@ -98,9 +104,12 @@ Tracker.prototype.scrape = function (opts) {
   }
 
   if (!self._scrapeUrl) {
+    debug('scrape not supported by ' + self._announceUrl)
     self.client.emit('error', new Error('scrape not supported for announceUrl ' + self._announceUrl))
     return
   }
+
+  debug('sent `scrape` to ' + self._announceUrl)
 
   opts = extend({
     info_hash: bytewiseEncodeURIComponent(self.client._infoHash)
@@ -428,7 +437,6 @@ function Client (peerId, port, torrent, opts) {
     torrent.announce = [torrent.announce]
   }
   self._trackers = torrent.announce.map(function (announceUrl) {
-    debug('creating tracker for ' + announceUrl)
     return new Tracker(self, announceUrl, self._opts)
   })
 }
