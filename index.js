@@ -6,6 +6,7 @@ var bncode = require('bncode')
 var bufferEqual = require('buffer-equal')
 var compact2string = require('compact2string')
 var concat = require('concat-stream')
+var debug = require('debug')('bittorrent-tracker')
 var dgram = require('dgram')
 var EventEmitter = require('events').EventEmitter
 var extend = require('extend.js')
@@ -400,6 +401,7 @@ inherits(Client, EventEmitter)
  * @param {Number} opts.interval   interval in ms to send announce requests to the tracker
  */
 function Client (peerId, port, torrent, opts) {
+
   var self = this
   if (!(self instanceof Client)) return new Client(peerId, port, torrent, opts)
   EventEmitter.call(self)
@@ -414,17 +416,19 @@ function Client (peerId, port, torrent, opts) {
     ? torrent.infoHash
     : new Buffer(torrent.infoHash, 'hex')
   self.torrentLength = torrent.length
-  self._announce = torrent.announce
 
   // optional
   self._numWant = self._opts.numWant || 80
   self._intervalMs = self._opts.interval || (30 * 60 * 1000) // default: 30 minutes
+
+  debug('new tracker client for ' + self._infoHash.toString('hex'))
 
   if (typeof torrent.announce === 'string') {
     // magnet-uri returns a string if the magnet uri only contains one 'tr' parameter
     torrent.announce = [torrent.announce]
   }
   self._trackers = torrent.announce.map(function (announceUrl) {
+    debug('creating tracker for ' + announceUrl)
     return new Tracker(self, announceUrl, self._opts)
   })
 }
