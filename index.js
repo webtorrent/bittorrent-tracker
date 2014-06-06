@@ -585,7 +585,7 @@ Server.prototype._onHttpRequest = function (req, res) {
     return error('bittorrent-tracker server only supports announcing one torrent at a time')
   }
 
-  if (s[0] === '/announce') {
+  if (s[0] === '/announce' || s[0] === '/') {
     var ip = self._trustProxy
       ? req.headers['x-forwarded-for'] || req.connection.remoteAddress
       : req.connection.remoteAddress.replace(REMOVE_IPV6_RE, '') // force ipv4
