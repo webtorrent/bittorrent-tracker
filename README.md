@@ -35,6 +35,7 @@ To connect to a tracker, just do this:
 ```js
 var Client = require('bittorrent-tracker').Client
 var parseTorrent = require('parse-torrent')
+var fs = require('fs')
 
 var torrent = fs.readFileSync(__dirname + '/torrents/bitlove-intro.torrent')
 var parsedTorrent = parseTorrent(torrent) // { infoHash: 'xxx', length: xx, announce: ['xx', 'xx'] }
@@ -73,7 +74,7 @@ client.update()
 client.stop()
 
 // scrape
-client.scape()
+client.scrape()
 
 client.on('scrape', function (data) {
   console.log('got a scrape response from tracker: ' + data.announce)
