@@ -13,7 +13,7 @@
   "dependencies": {
     "bn.js": "^0.10.0",
     "bncode": "^0.5.3",
-    "buffer-equal": "0.0.0",
+    "buffer-equal": "0.0.1",
     "compact2string": "^1.2.0",
     "concat-stream": "^1.4.5",
     "debug": "^1.0.0",
