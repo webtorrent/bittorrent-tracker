@@ -36,12 +36,13 @@ inherits(Tracker, EventEmitter)
  * @param {Object} opts         optional options
  */
 function Tracker (client, announceUrl, opts) {
-  debug('new tracker for ' + announceUrl)
   var self = this
   EventEmitter.call(self)
   self._opts = opts || {}
 
   self.client = client
+
+  debug('new tracker for ' + announceUrl)
 
   self._announceUrl = announceUrl
   self._intervalMs = self.client._intervalMs // use client interval initially
@@ -56,38 +57,40 @@ function Tracker (client, announceUrl, opts) {
 }
 
 Tracker.prototype.start = function (opts) {
-  debug('sent `start` to ' + self._announceUrl)
   var self = this
   opts = opts || {}
   opts.event = 'started'
-  self._request(opts)
 
+  debug('sent `start` to ' + self._announceUrl)
+  self._request(opts)
   self.setInterval(self._intervalMs) // start announcing on intervals
 }
 
 Tracker.prototype.stop = function (opts) {
-  debug('sent `stop` to ' + self._announceUrl)
   var self = this
   opts = opts || {}
   opts.event = 'stopped'
-  self._request(opts)
 
+  debug('sent `stop` to ' + self._announceUrl)
+  self._request(opts)
   self.setInterval(0) // stop announcing on intervals
 }
 
 Tracker.prototype.complete = function (opts) {
-  debug('sent `complete` to ' + self._announceUrl)
   var self = this
   opts = opts || {}
   opts.event = 'completed'
   opts.downloaded = opts.downloaded || self.torrentLength || 0
+
+  debug('sent `complete` to ' + self._announceUrl)
   self._request(opts)
 }
 
 Tracker.prototype.update = function (opts) {
-  debug('sent `update` to ' + self._announceUrl)
   var self = this
   opts = opts || {}
+
+  debug('sent `update` to ' + self._announceUrl)
   self._request(opts)
 }
 
