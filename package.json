@@ -7,6 +7,9 @@
     "email": "feross@feross.org",
     "url": "http://feross.org/"
   },
+  "browser": {
+    "./server.js": false
+  },
   "bugs": {
     "url": "https://github.com/feross/bittorrent-tracker/issues"
   },
