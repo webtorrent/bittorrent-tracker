@@ -33,7 +33,7 @@ npm install bittorrent-tracker
 To connect to a tracker, just do this:
 
 ```js
-var Client = require('bittorrent-tracker').Client
+var Client = require('bittorrent-tracker')
 var parseTorrent = require('parse-torrent')
 var fs = require('fs')
 

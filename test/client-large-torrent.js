@@ -1,4 +1,4 @@
-var Client = require('../').Client
+var Client = require('../')
 var fs = require('fs')
 var parseTorrent = require('parse-torrent')
 var portfinder = require('portfinder')

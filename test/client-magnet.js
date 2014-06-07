@@ -1,4 +1,4 @@
-var Client = require('../').Client
+var Client = require('../')
 var fs = require('fs')
 var magnet = require('magnet-uri')
 var portfinder = require('portfinder')

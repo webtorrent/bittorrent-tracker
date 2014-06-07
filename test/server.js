@@ -1,4 +1,4 @@
-var Client = require('../').Client
+var Client = require('../')
 var portfinder = require('portfinder')
 var Server = require('../').Server
 var test = require('tape')
