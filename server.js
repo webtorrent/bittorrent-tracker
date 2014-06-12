@@ -1,6 +1,6 @@
 module.exports = Server
 
-var bncode = require('bncode')
+var bencode = require('bencode')
 var bufferEqual = require('buffer-equal')
 var common = require('./lib/common')
 var dgram = require('dgram')
@@ -216,7 +216,7 @@ Server.prototype._onHttpRequest = function (req, res) {
     if (warning) {
       response['warning message'] = warning
     }
-    res.end(bncode.encode(response))
+    res.end(bencode.encode(response))
 
   } else if (s[0] === '/scrape') { // unofficial scrape message
     var swarm = self._getSwarm(infoHash)
@@ -231,11 +231,11 @@ Server.prototype._onHttpRequest = function (req, res) {
       }
     }
 
-    res.end(bncode.encode(response))
+    res.end(bencode.encode(response))
   }
 
   function error (message) {
-    res.end(bncode.encode({
+    res.end(bencode.encode({
       'failure reason': message
     }))
 

@@ -1,7 +1,7 @@
 module.exports = Client
 
 var BN = require('bn.js')
-var bncode = require('bncode')
+var bencode = require('bencode')
 var common = require('./lib/common')
 var compact2string = require('compact2string')
 var concat = require('concat-stream')
@@ -412,7 +412,7 @@ Tracker.prototype._handleResponse = function (requestUrl, data) {
   var self = this
 
   try {
-    data = bncode.decode(data)
+    data = bencode.decode(data)
   } catch (err) {
     return self.client.emit('error', new Error('Error decoding tracker response: ' + err.message))
   }
