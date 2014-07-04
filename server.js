@@ -12,7 +12,6 @@ var parallel = require('run-parallel')
 var querystring = require('querystring')
 var string2compact = require('string2compact')
 
-
 var REMOVE_IPV6_RE = /^::ffff:/
 
 inherits(Server, EventEmitter)
@@ -78,7 +77,7 @@ Server.prototype.listen = function (port, onlistening) {
 
   parallel(tasks, function (err) {
     if (err) return self.emit('error', err)
-    self.emit('listening')
+    self.emit('listening', port)
   })
 }
 

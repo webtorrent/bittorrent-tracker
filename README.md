@@ -106,8 +106,8 @@ server.on('warning', function (err) {
   console.log(err.message)
 })
 
-server.on('listening', function () {
-  console.log('tracker server is listening!')
+server.on('listening', function (port) {
+  console.log('tracker server is now listening on ' + port)
 })
 
 // start tracker server listening!
@@ -136,6 +136,8 @@ server.torrents[infoHash].incomplete
 // get the peers who are in a particular torrent swarm
 server.torrents[infoHash].peers
 ```
+
+The http server will handle requests for the following paths: `/announce`, `/scrape`. Requests for other paths will not be handled.
 
 ## license
 
