@@ -116,10 +116,10 @@ Server.prototype._onHttpRequest = function (req, res) {
 
   // TODO: detect when required params are missing
   // TODO: support multiple info_hash parameters as a concatenation of individual requests
-  var infoHash = bytewiseDecodeURIComponent(params.info_hash).toString('hex')
+  var infoHash = params.info_hash && bytewiseDecodeURIComponent(params.info_hash).toString('hex')
 
   if (!infoHash) {
-    return error('bittorrent-tracker server only supports announcing one torrent at a time')
+    return error('missing info hash')
   }
 
   if (s[0] === '/announce' || s[0] === '/') {
