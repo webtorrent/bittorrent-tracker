@@ -69,10 +69,10 @@ Server.prototype.listen = function (port, onlistening) {
   }
 
   self._httpServer && tasks.push(function (cb) {
-    self._httpServer.listen(port, cb)
+    self._httpServer.listen(port.http || port, cb)
   })
   self._udpServer && tasks.push(function (cb) {
-    self._udpServer.bind(port, cb)
+    self._udpServer.bind(port.udp || port, cb)
   })
 
   parallel(tasks, function (err) {
