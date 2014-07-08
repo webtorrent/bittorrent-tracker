@@ -15,7 +15,7 @@
   },
   "dependencies": {
     "bencode": "^0.6.0",
-    "bn.js": "^0.11.7",
+    "bn.js": "^0.13.2",
     "buffer-equal": "0.0.1",
     "compact2string": "^1.2.0",
     "concat-stream": "^1.4.5",
@@ -32,7 +32,7 @@
     "magnet-uri": "^2.0.1",
     "parse-torrent": "^1.1.0",
     "portfinder": "^0.2.1",
-    "tape": "2.x"
+    "tape": "^2.13.3"
   },
   "homepage": "http://webtorrent.io",
   "keywords": [
