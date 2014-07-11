@@ -8,6 +8,8 @@ var test = require('tape')
 var torrent = fs.readFileSync(__dirname + '/torrents/bitlove-intro.torrent')
 var parsedTorrent = parseTorrent(torrent)
 var peerId1 = new Buffer('01234567890123456789')
+var peerId2 = new Buffer('12345678901234567890')
+var peerId3 = new Buffer('23456789012345678901')
 var announceUrl = ''
 var port = 6881
 
@@ -195,4 +197,44 @@ test('udp: client.scrape()', function (t) {
   testClientScrape(t, 'udp')
 })
 
+function testClientAnnounceWithNumWant (t, serverType) {
+  t.plan(1)
+  createServer(t, serverType, function (server) {
+    var client1 = new Client(peerId1, port, parsedTorrent)
+    client1.on('error', function (err) {
+      t.error(err)
+    })
+
+    client1.start()
+    client1.once('update', function (data) {
+      var client2 = new Client(peerId2, port + 1, parsedTorrent)
+      client2.on('error', function (err) {
+        t.error(err)
+      })
+      client2.start()
+      client2.once('update', function () {
+        var client3 = new Client(peerId3, port + 2, parsedTorrent, { numWant: 1 })
+        client3.on('error', function (err) {
+          t.error(err)
+        })
+        client3.start()
+        client3.on('peer', function () {
+          t.pass('got one peer (this should only fire once)')
+
+          client1.stop()
+          client2.stop()
+          client3.stop()
+          server.close()
+        })
+      })
+    })
+  })
+}
+
+test('http: client announce with numWant', function (t) {
+  testClientAnnounceWithNumWant(t, 'http')
+})
+
+test('udp: client announce with numWant', function (t) {
+  testClientAnnounceWithNumWant(t, 'udp')
 })
