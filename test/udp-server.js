@@ -49,10 +49,10 @@ test('udp server', function (t) {
       t.equal(data.incomplete, 1)
 
       t.equal(Object.keys(server.torrents).length, 1)
-      t.equal(server.torrents[infoHash].complete, 0)
-      t.equal(server.torrents[infoHash].incomplete, 1)
-      t.equal(Object.keys(server.torrents[infoHash].peers).length, 1)
-      t.deepEqual(server.torrents[infoHash].peers['127.0.0.1:6881'], {
+      t.equal(server.getSwarm(infoHash).complete, 0)
+      t.equal(server.getSwarm(infoHash).incomplete, 1)
+      t.equal(Object.keys(server.getSwarm(infoHash).peers).length, 1)
+      t.deepEqual(server.getSwarm(infoHash).peers['127.0.0.1:6881'], {
         ip: '127.0.0.1',
         port: 6881,
         peerId: peerId

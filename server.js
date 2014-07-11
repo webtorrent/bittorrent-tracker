@@ -94,11 +94,19 @@ Server.prototype.close = function (cb) {
   }
 }
 
-Server.prototype._getSwarm = function (infoHash) {
+Server.prototype.getSwarm = function (infoHash) {
   var self = this
-  var swarm = self.torrents[infoHash]
+  var binaryInfoHash = Buffer.isBuffer(infoHash)
+    ? infoHash.toString('binary')
+    : new Buffer(infoHash, 'hex').toString('binary')
+  return self._getSwarm(binaryInfoHash)
+}
+
+Server.prototype._getSwarm = function (binaryInfoHash) {
+  var self = this
+  var swarm = self.torrents[binaryInfoHash]
   if (!swarm) {
-    swarm = self.torrents[infoHash] = {
+    swarm = self.torrents[binaryInfoHash] = {
       complete: 0,
       incomplete: 0,
       peers: {}
@@ -116,13 +124,13 @@ Server.prototype._onHttpRequest = function (req, res) {
 
   if (s[0] === '/announce') {
     var infoHash = typeof params.info_hash === 'string' &&
-      common.bytewiseDecodeURIComponent(params.info_hash).toString('hex')
+      common.bytewiseDecodeURIComponent(params.info_hash).toString('binary')
     var port = Number(params.port)
     var peerId = typeof params.peer_id === 'string' &&
       common.bytewiseDecodeURIComponent(params.peer_id).toString('utf8')
 
     if (!infoHash) return error('invalid info_hash')
-    if (infoHash.length !== 40) return error('invalid info_hash')
+    if (infoHash.length !== 20) return error('invalid info_hash')
     if (!port) return error('invalid port')
     if (!peerId) return error('invalid peer_id')
 
@@ -222,9 +230,7 @@ Server.prototype._onHttpRequest = function (req, res) {
       params.info_hash = [ params.info_hash ]
     } else if (params.info_hash == null) {
       // if info_hash param is omitted, stats for all torrents are returned
-      params.info_hash = Object.keys(self.torrents).map(function (infoHashHex) {
-        return common.bytewiseEncodeURIComponent(new Buffer(infoHashHex, 'hex'))
-      })
+      params.info_hash = Object.keys(self.torrents)
     }
 
     if (!Array.isArray(params.info_hash)) return error('invalid info_hash')
@@ -237,13 +243,13 @@ Server.prototype._onHttpRequest = function (req, res) {
     }
 
     params.info_hash.some(function (infoHash) {
-      var infoHashHex = common.bytewiseDecodeURIComponent(infoHash).toString('hex')
-      if (infoHashHex.length !== 40) {
+      infoHash = common.bytewiseDecodeURIComponent(infoHash).toString('binary')
+      if (infoHash.length !== 20) {
         error('invalid info_hash')
         return true // early return
       }
 
-      var swarm = self._getSwarm(infoHashHex)
+      var swarm = self._getSwarm(infoHash)
 
       response.files[infoHash] = {
         complete: swarm.complete,
@@ -297,7 +303,7 @@ Server.prototype._onUdpRequest = function (msg, rinfo) {
       connectionId
     ]))
   } else if (action === common.ACTIONS.ANNOUNCE) {
-    var infoHash = msg.slice(16, 36).toString('hex') // 20 bytes
+    var infoHash = msg.slice(16, 36).toString('binary') // 20 bytes
     var peerId = msg.slice(36, 56).toString('utf8') // 20 bytes
     var downloaded = fromUInt64(msg.slice(56, 64))
     var left = fromUInt64(msg.slice(64, 72))
@@ -405,7 +411,7 @@ Server.prototype._onUdpRequest = function (msg, rinfo) {
     ]))
 
   } else if (action === common.ACTIONS.SCRAPE) { // scrape message
-    var infoHash = msg.slice(16, 36).toString('hex') // 20 bytes
+    var infoHash = msg.slice(16, 36).toString('binary') // 20 bytes
 
     // TODO: support multiple info_hash scrape
     if (msg.length > 36) {

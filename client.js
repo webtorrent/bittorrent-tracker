@@ -461,7 +461,7 @@ Tracker.prototype._handleResponse = function (requestUrl, data) {
   } else if (requestUrl === self._scrapeUrl) {
     // NOTE: the unofficial spec says to use the 'files' key but i've seen 'host' in practice
     data = data.files || data.host || {}
-    data = data[common.bytewiseEncodeURIComponent(self.client._infoHash)]
+    data = data[self.client._infoHash.toString('binary')]
 
     if (!data) {
       self.client.emit('warning', new Error('invalid scrape response'))

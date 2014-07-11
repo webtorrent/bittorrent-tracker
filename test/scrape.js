@@ -14,16 +14,19 @@ var infoHash1 = 'aaa67059ed6bd08362da625b3ae77f6f4a075aaa'
 var encodedInfoHash1 = common.bytewiseEncodeURIComponent(
   new Buffer(infoHash1, 'hex')
 )
+var binaryinfoHash1 = new Buffer(infoHash1, 'hex').toString('binary')
 var infoHash2 = 'bbb67059ed6bd08362da625b3ae77f6f4a075bbb'
 var encodedInfoHash2 = common.bytewiseEncodeURIComponent(
   new Buffer(infoHash2, 'hex')
 )
+var binaryinfoHash2 = new Buffer(infoHash2, 'hex').toString('binary')
 
 var bitlove = fs.readFileSync(__dirname + '/torrents/bitlove-intro.torrent')
 var parsedBitlove = parseTorrent(bitlove)
 var encodedBitlove = common.bytewiseEncodeURIComponent(
   new Buffer(parsedBitlove.infoHash, 'hex')
 )
+var binaryBitlove = new Buffer(parsedBitlove.infoHash, 'hex').toString('binary')
 var peerId = new Buffer('01234567890123456789')
 
 test('server: single info_hash scrape', function (t) {
@@ -50,10 +53,10 @@ test('server: single info_hash scrape', function (t) {
           data = bencode.decode(data)
           t.ok(data.files)
           t.equal(Object.keys(data.files).length, 1)
-          t.ok(data.files[encodedInfoHash1])
-          t.equal(typeof data.files[encodedInfoHash1].complete, 'number')
-          t.equal(typeof data.files[encodedInfoHash1].incomplete, 'number')
-          t.equal(typeof data.files[encodedInfoHash1].downloaded, 'number')
+          t.ok(data.files[binaryinfoHash1])
+          t.equal(typeof data.files[binaryinfoHash1].complete, 'number')
+          t.equal(typeof data.files[binaryinfoHash1].incomplete, 'number')
+          t.equal(typeof data.files[binaryinfoHash1].downloaded, 'number')
 
           server.close(function () {
             t.end()
@@ -91,15 +94,15 @@ test('server: multiple info_hash scrape', function (t) {
           t.ok(data.files)
           t.equal(Object.keys(data.files).length, 2)
 
-          t.ok(data.files[encodedInfoHash1])
-          t.equal(typeof data.files[encodedInfoHash1].complete, 'number')
-          t.equal(typeof data.files[encodedInfoHash1].incomplete, 'number')
-          t.equal(typeof data.files[encodedInfoHash1].downloaded, 'number')
+          t.ok(data.files[binaryinfoHash1])
+          t.equal(typeof data.files[binaryinfoHash1].complete, 'number')
+          t.equal(typeof data.files[binaryinfoHash1].incomplete, 'number')
+          t.equal(typeof data.files[binaryinfoHash1].downloaded, 'number')
 
-          t.ok(data.files[encodedInfoHash2])
-          t.equal(typeof data.files[encodedInfoHash2].complete, 'number')
-          t.equal(typeof data.files[encodedInfoHash2].incomplete, 'number')
-          t.equal(typeof data.files[encodedInfoHash2].downloaded, 'number')
+          t.ok(data.files[binaryinfoHash2])
+          t.equal(typeof data.files[binaryinfoHash2].complete, 'number')
+          t.equal(typeof data.files[binaryinfoHash2].incomplete, 'number')
+          t.equal(typeof data.files[binaryinfoHash2].downloaded, 'number')
 
           server.close(function () {
             t.end()
@@ -149,10 +152,10 @@ test('server: all info_hash scrape', function (t) {
             t.ok(data.files)
             t.equal(Object.keys(data.files).length, 1)
 
-            t.ok(data.files[encodedBitlove])
-            t.equal(typeof data.files[encodedBitlove].complete, 'number')
-            t.equal(typeof data.files[encodedBitlove].incomplete, 'number')
-            t.equal(typeof data.files[encodedBitlove].downloaded, 'number')
+            t.ok(data.files[binaryBitlove])
+            t.equal(typeof data.files[binaryBitlove].complete, 'number')
+            t.equal(typeof data.files[binaryBitlove].incomplete, 'number')
+            t.equal(typeof data.files[binaryBitlove].downloaded, 'number')
 
             client.stop()
             server.close(function () {
