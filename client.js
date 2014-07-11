@@ -45,7 +45,7 @@ function Client (peerId, port, torrent, opts) {
   self.torrentLength = torrent.length
 
   // optional
-  self._numWant = self._opts.numWant || 80
+  self._numWant = self._opts.numWant || 50
   self._intervalMs = self._opts.interval || (30 * 60 * 1000) // default: 30 minutes
 
   debug('new tracker client for ' + self._infoHash.toString('hex'))
