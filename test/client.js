@@ -45,6 +45,10 @@ test('http: client.start()', function (t) {
       t.error(err)
     })
 
+    client.on('warning', function (err) {
+      t.error(err)
+    })
+
     client.once('update', function (data) {
       t.equal(data.announce, announceUrl)
       t.equal(typeof data.complete, 'number')
@@ -73,6 +77,10 @@ test('http: client.stop()', function (t) {
     var client = new Client(peerId, port, parsedTorrent)
 
     client.on('error', function (err) {
+      t.error(err)
+    })
+
+    client.on('warning', function (err) {
       t.error(err)
     })
 
@@ -106,6 +114,10 @@ test('http: client.update()', function (t) {
       t.error(err)
     })
 
+    client.on('warning', function (err) {
+      t.error(err)
+    })
+
     client.start()
 
     client.once('update', function () {
@@ -134,6 +146,10 @@ test('http: client.scrape()', function (t) {
     var client = new Client(peerId, port, parsedTorrent)
 
     client.on('error', function (err) {
+      t.error(err)
+    })
+
+    client.on('warning', function (err) {
       t.error(err)
     })
 
