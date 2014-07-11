@@ -241,7 +241,7 @@ Tracker.prototype._requestHttp = function (requestUrl, opts) {
   var req = http.get(fullUrl, function (res) {
     if (res.statusCode !== 200) {
       res.resume() // consume the whole stream
-      self.client.emit('error', new Error('Invalid response code ' + res.statusCode + ' from tracker ' + requestUrl))
+      self.client.emit('warning', new Error('Invalid response code ' + res.statusCode + ' from tracker ' + requestUrl))
       return
     }
     res.pipe(concat(function (data) {
@@ -250,7 +250,7 @@ Tracker.prototype._requestHttp = function (requestUrl, opts) {
   })
 
   req.on('error', function (err) {
-    self.client.emit('error', err)
+    self.client.emit('warning', err)
   })
 }
 
@@ -418,12 +418,12 @@ Tracker.prototype._handleResponse = function (requestUrl, data) {
   }
   var failure = data['failure reason']
   if (failure) {
-    return self.client.emit('error', new Error(failure))
+    return self.client.emit('warning', new Error(failure))
   }
 
   var warning = data['warning message']
   if (warning) {
-    self.client.emit('warning', warning)
+    self.client.emit('warning', new Error(warning))
   }
 
   if (requestUrl === self._announceUrl) {
@@ -464,7 +464,7 @@ Tracker.prototype._handleResponse = function (requestUrl, data) {
     data = data[common.bytewiseEncodeURIComponent(self.client._infoHash)]
 
     if (!data) {
-      self.client.emit('error', new Error('invalid scrape response'))
+      self.client.emit('warning', new Error('invalid scrape response'))
     } else {
       // TODO: optionally handle data.flags.min_request_interval (separate from announce interval)
       self.client.emit('scrape', {
