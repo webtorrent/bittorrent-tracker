@@ -13,38 +13,36 @@ var peerId = new Buffer('01234567890123456789')
 var announceUrl = ''
 var port = 6881
 
-function createServer (cb) {
+function createServer (t, cb) {
   var server = new Server({ udp: false })
 
   server.on('error', function (err) {
-    cb(err)
+    t.error(err)
   })
 
   server.on('warning', function (err) {
-    cb(err)
+    t.error(err)
   })
 
   portfinder.getPort(function (err, port) {
-    if (err) return cb(err)
+    if (err) return t.error(err)
 
     announceUrl = 'http://127.0.0.1:' + port + '/announce'
     parsedTorrent.announce = [ announceUrl ]
 
     server.listen(port)
-    cb(null, server)
+    cb(server)
   })
 }
 
-test('torrent: client.start()', function (t) {
-  t.plan(6)
+test('http: client.start()', function (t) {
+  t.plan(5)
 
-  createServer(function (err, server) {
-    t.error(err)
-
+  createServer(t, function (server) {
     var client = new Client(peerId, port, parsedTorrent)
 
     client.on('error', function (err) {
-      t.fail(err)
+      t.error(err)
     })
 
     client.once('update', function (data) {
@@ -68,15 +66,14 @@ test('torrent: client.start()', function (t) {
   })
 })
 
-test('torrent: client.stop()', function (t) {
-  t.plan(5)
+test('http: client.stop()', function (t) {
+  t.plan(4)
 
-  createServer(function (err, server) {
-    t.error(err)
+  createServer(t, function (server) {
     var client = new Client(peerId, port, parsedTorrent)
 
     client.on('error', function (err) {
-      t.fail(err)
+      t.error(err)
     })
 
     client.start()
@@ -99,15 +96,14 @@ test('torrent: client.stop()', function (t) {
   })
 })
 
-test('torrent: client.update()', function (t) {
-  t.plan(5)
+test('http: client.update()', function (t) {
+  t.plan(4)
 
-  createServer(function (err, server) {
-    t.error(err)
+  createServer(t, function (server) {
     var client = new Client(peerId, port, parsedTorrent, { interval: 5000 })
 
     client.on('error', function (err) {
-      t.fail(err)
+      t.error(err)
     })
 
     client.start()
@@ -131,15 +127,14 @@ test('torrent: client.update()', function (t) {
   })
 })
 
-test('torrent: client.scrape()', function (t) {
-  t.plan(6)
+test('http: client.scrape()', function (t) {
+  t.plan(5)
 
-  createServer(function (err, server) {
-    t.error(err)
+  createServer(t, function (server) {
     var client = new Client(peerId, port, parsedTorrent)
 
     client.on('error', function (err) {
-      t.fail(err)
+      t.error(err)
     })
 
     client.once('scrape', function (data) {

@@ -8,7 +8,7 @@ var peerId = '01234567890123456789'
 var peerId2 = '12345678901234567890'
 var torrentLength = 50000
 
-test('server', function (t) {
+test('udp server', function (t) {
   t.plan(27)
 
   var server = new Server({ http: false })
