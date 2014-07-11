@@ -253,6 +253,9 @@ Server.prototype._onHttpRequest = function (req, res) {
     })
 
     res.end(bencode.encode(response))
+
+  } else {
+    error('only /announce and /scrape are valid endpoints')
   }
 
   function error (message) {
