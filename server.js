@@ -12,6 +12,8 @@ var parallel = require('run-parallel')
 var querystring = require('querystring')
 var string2compact = require('string2compact')
 
+var NUM_ANNOUNCE_PEERS = 50
+var MAX_ANNOUNCE_PEERS = 82
 var REMOVE_IPV6_RE = /^::ffff:/
 
 inherits(Server, EventEmitter)
@@ -141,6 +143,11 @@ Server.prototype._onHttpRequest = function (req, res) {
     var swarm = self._getSwarm(infoHash)
     var peer = swarm.peers[addr]
 
+    var numWant = Math.min(
+      Number(params.numwant) || NUM_ANNOUNCE_PEERS,
+      MAX_ANNOUNCE_PEERS
+    )
+
     switch (params.event) {
       case 'started':
         if (peer) {
@@ -210,8 +217,8 @@ Server.prototype._onHttpRequest = function (req, res) {
 
     // send peers
     var peers = Number(params.compact) === 1
-      ? self._getPeersCompact(swarm)
-      : self._getPeers(swarm)
+      ? self._getPeersCompact(swarm, numWant)
+      : self._getPeers(swarm, numWant)
 
     var response = {
       complete: swarm.complete,
@@ -329,6 +336,10 @@ Server.prototype._onUdpRequest = function (msg, rinfo) {
     var swarm = self._getSwarm(infoHash)
     var peer = swarm.peers[addr]
 
+    // never send more than MAX_ANNOUNCE_PEERS or else the UDP packet will get bigger than
+    // 512 bytes which is not safe
+    numWant = Math.min(numWant || NUM_ANNOUNCE_PEERS, MAX_ANNOUNCE_PEERS)
+
     switch (event) {
       case common.EVENTS.started:
         if (peer) {
@@ -394,12 +405,7 @@ Server.prototype._onUdpRequest = function (msg, rinfo) {
     }
 
     // send peers
-    var peers = self._getPeersCompact(swarm)
-
-    // never send more than 70 peers or else the UDP packet will get too big
-    if (peers.length >= 70 * 6) {
-      peers = peers.slice(0, 70 * 6)
-    }
+    var peers = self._getPeersCompact(swarm, numWant)
 
     send(Buffer.concat([
       common.toUInt32(common.ACTIONS.ANNOUNCE),
@@ -445,32 +451,34 @@ Server.prototype._onUdpRequest = function (msg, rinfo) {
   }
 }
 
-Server.prototype._getPeers = function (swarm) {
+Server.prototype._getPeers = function (swarm, numWant) {
   var self = this
   var peers = []
   for (var peerId in swarm.peers) {
     var peer = swarm.peers[peerId]
+    if (!peer) continue // ignore null values
     peers.push({
       'peer id': peer.peerId,
       ip: peer.ip,
       port: peer.port
     })
+    if (peers.length === numWant) break
   }
   return peers
 }
 
-Server.prototype._getPeersCompact = function (swarm) {
+Server.prototype._getPeersCompact = function (swarm, numWant) {
   var self = this
-  var addrs = []
+  var peers = []
 
-  Object.keys(swarm.peers).forEach(function (peerId) {
+  for (var peerId in swarm.peers) {
     var peer = swarm.peers[peerId]
-    if (peer) {
-      addrs.push(peer.ip + ':' + peer.port)
-    }
-  })
+    if (!peer) continue // ignore null values
+    peers.push(peer.ip + ':' + peer.port)
+    if (peers.length === numWant) break
+  }
 
-  return string2compact(addrs)
+  return string2compact(peers)
 }
 
 // HELPER FUNCTIONS
