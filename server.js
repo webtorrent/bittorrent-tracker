@@ -114,13 +114,11 @@ Server.prototype._onHttpRequest = function (req, res) {
   var s = req.url.split('?')
   var params = querystring.parse(s[1])
 
-  // TODO: detect when required params are missing
   // TODO: support multiple info_hash parameters as a concatenation of individual requests
   var infoHash = params.info_hash && bytewiseDecodeURIComponent(params.info_hash).toString('hex')
 
-  if (!infoHash) {
-    return error('missing info hash')
-  }
+  if (!infoHash) return error('missing info_hash')
+  if (infoHash.length !== 40) return error('invalid info_hash')
 
   if (s[0] === '/announce' || s[0] === '/') {
     var ip = self._trustProxy
@@ -128,7 +126,10 @@ Server.prototype._onHttpRequest = function (req, res) {
       : req.connection.remoteAddress.replace(REMOVE_IPV6_RE, '') // force ipv4
     var port = Number(params.port)
     var addr = ip + ':' + port
-    var peerId = bytewiseDecodeURIComponent(params.peer_id).toString('utf8')
+    var peerId = params.peer_id && bytewiseDecodeURIComponent(params.peer_id).toString('utf8')
+
+    if (!port) return error('missing port')
+    if (!peerId) return error('missing peer_id')
 
     var swarm = self._getSwarm(infoHash)
     var peer = swarm.peers[addr]
@@ -197,7 +198,7 @@ Server.prototype._onHttpRequest = function (req, res) {
         break
 
       default:
-        return error('unexpected event: ' + params.event) // early return
+        return error('invalid event') // early return
     }
 
     // send peers

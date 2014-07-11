@@ -17,11 +17,11 @@ function createServer (cb) {
   var server = new Server({ udp: false })
 
   server.on('error', function (err) {
-    t.fail(err.message)
+    cb(err)
   })
 
   server.on('warning', function (err) {
-    t.fail(err.message)
+    cb(err)
   })
 
   portfinder.getPort(function (err, port) {
