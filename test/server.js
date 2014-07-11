@@ -8,10 +8,11 @@ var peerId = '01234567890123456789'
 var peerId2 = '12345678901234567890'
 var torrentLength = 50000
 
-test('http server', function (t) {
+function serverTest (t, serverType) {
   t.plan(27)
 
-  var server = new Server({ udp: false }) // { interval: 50000, compactOnly: false }
+  var opts = serverType === 'http' ? { udp: false } : { http: false }
+  var server = new Server(opts)
 
   server.on('error', function (err) {
     t.fail(err.message)
@@ -110,4 +111,12 @@ test('http server', function (t) {
       })
     })
   })
+}
+
+test('http server', function (t) {
+  serverTest(t, 'http')
+})
+
+test('udp server', function (t) {
+  serverTest(t, 'http')
 })
