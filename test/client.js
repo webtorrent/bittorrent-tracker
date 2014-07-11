@@ -5,16 +5,15 @@ var portfinder = require('portfinder')
 var Server = require('../').Server
 var test = require('tape')
 
-// TODO: add test where tracker doesn't support compact
-
 var torrent = fs.readFileSync(__dirname + '/torrents/bitlove-intro.torrent')
 var parsedTorrent = parseTorrent(torrent)
-var peerId = new Buffer('01234567890123456789')
+var peerId1 = new Buffer('01234567890123456789')
 var announceUrl = ''
 var port = 6881
 
-function createServer (t, cb) {
-  var server = new Server({ udp: false })
+function createServer (t, serverType, cb) {
+  var opts = serverType === 'http' ? { udp: false } : { http: false }
+  var server = new Server(opts)
 
   server.on('error', function (err) {
     t.error(err)
@@ -27,7 +26,7 @@ function createServer (t, cb) {
   portfinder.getPort(function (err, port) {
     if (err) return t.error(err)
 
-    announceUrl = 'http://127.0.0.1:' + port + '/announce'
+    announceUrl = serverType + '://127.0.0.1:' + port + '/announce'
     parsedTorrent.announce = [ announceUrl ]
 
     server.listen(port)
@@ -35,11 +34,10 @@ function createServer (t, cb) {
   })
 }
 
-test('http: client.start()', function (t) {
+function testClientStart (t, serverType) {
   t.plan(5)
-
-  createServer(t, function (server) {
-    var client = new Client(peerId, port, parsedTorrent)
+  createServer(t, serverType, function (server) {
+    var client = new Client(peerId1, port, parsedTorrent)
 
     client.on('error', function (err) {
       t.error(err)
@@ -68,13 +66,20 @@ test('http: client.start()', function (t) {
 
     client.start()
   })
+}
+
+test('http: client.start()', function (t) {
+  testClientStart(t, 'http')
 })
 
-test('http: client.stop()', function (t) {
-  t.plan(4)
+test('udp: client.start()', function (t) {
+  testClientStart(t, 'udp')
+})
 
-  createServer(t, function (server) {
-    var client = new Client(peerId, port, parsedTorrent)
+function testClientStop (t, serverType) {
+  t.plan(4)
+  createServer(t, serverType, function (server) {
+    var client = new Client(peerId1, port, parsedTorrent)
 
     client.on('error', function (err) {
       t.error(err)
@@ -102,13 +107,20 @@ test('http: client.stop()', function (t) {
 
     }, 1000)
   })
+}
+
+test('http: client.stop()', function (t) {
+  testClientStop(t, 'http')
 })
 
-test('http: client.update()', function (t) {
-  t.plan(4)
+test('udp: client.stop()', function (t) {
+  testClientStop(t, 'udp')
+})
 
-  createServer(t, function (server) {
-    var client = new Client(peerId, port, parsedTorrent, { interval: 5000 })
+function testClientUpdate (t, serverType) {
+  t.plan(4)
+  createServer(t, serverType, function (server) {
+    var client = new Client(peerId1, port, parsedTorrent, { interval: 5000 })
 
     client.on('error', function (err) {
       t.error(err)
@@ -137,13 +149,20 @@ test('http: client.update()', function (t) {
       })
     })
   })
+}
+
+test('http: client.update()', function (t) {
+  testClientUpdate(t, 'http')
 })
 
-test('http: client.scrape()', function (t) {
-  t.plan(5)
+test('udp: client.update()', function (t) {
+  testClientUpdate(t, 'udp')
+})
 
-  createServer(t, function (server) {
-    var client = new Client(peerId, port, parsedTorrent)
+function testClientScrape (t, serverType) {
+  t.plan(5)
+  createServer(t, serverType, function (server) {
+    var client = new Client(peerId1, port, parsedTorrent)
 
     client.on('error', function (err) {
       t.error(err)
@@ -166,4 +185,14 @@ test('http: client.scrape()', function (t) {
 
     client.scrape()
   })
+}
+
+test('http: client.scrape()', function (t) {
+  testClientScrape(t, 'http')
+})
+
+test('udp: client.scrape()', function (t) {
+  testClientScrape(t, 'udp')
+})
+
 })
