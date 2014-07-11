@@ -220,7 +220,13 @@ Server.prototype._onHttpRequest = function (req, res) {
   } else if (s[0] === '/scrape') { // unofficial scrape message
     if (typeof params.info_hash === 'string') {
       params.info_hash = [ params.info_hash ]
+    } else if (params.info_hash == null) {
+      // if info_hash param is omitted, stats for all torrents are returned
+      params.info_hash = Object.keys(self.torrents).map(function (infoHashHex) {
+        return common.bytewiseEncodeURIComponent(new Buffer(infoHashHex, 'hex'))
+      })
     }
+
     if (!Array.isArray(params.info_hash)) return error('invalid info_hash')
 
     var response = {
