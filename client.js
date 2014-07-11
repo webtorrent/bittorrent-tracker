@@ -192,7 +192,7 @@ Tracker.prototype.scrape = function (opts) {
   debug('sent `scrape` to ' + self._announceUrl)
 
   opts = extend({
-    info_hash: bytewiseEncodeURIComponent(self.client._infoHash)
+    info_hash: common.bytewiseEncodeURIComponent(self.client._infoHash)
   }, opts)
 
   self._requestImpl(self._scrapeUrl, opts)
@@ -214,8 +214,8 @@ Tracker.prototype.setInterval = function (intervalMs) {
 Tracker.prototype._request = function (opts) {
   var self = this
   opts = extend({
-    info_hash: bytewiseEncodeURIComponent(self.client._infoHash),
-    peer_id: bytewiseEncodeURIComponent(self.client._peerId),
+    info_hash: common.bytewiseEncodeURIComponent(self.client._infoHash),
+    peer_id: common.bytewiseEncodeURIComponent(self.client._peerId),
     port: self.client._port,
     compact: 1,
     numwant: self.client._numWant,
@@ -461,7 +461,7 @@ Tracker.prototype._handleResponse = function (requestUrl, data) {
   } else if (requestUrl === self._scrapeUrl) {
     // NOTE: the unofficial spec says to use the 'files' key but i've seen 'host' in practice
     data = data.files || data.host || {}
-    data = data[bytewiseEncodeURIComponent(self.client._infoHash)]
+    data = data[common.bytewiseEncodeURIComponent(self.client._infoHash)]
 
     if (!data) {
       self.client.emit('error', new Error('invalid scrape response'))
@@ -498,8 +498,4 @@ function toUInt64 (n) {
     return new Buffer(bytes)
   }
   return Buffer.concat([common.toUInt32(0), common.toUInt32(n)])
-}
-
-function bytewiseEncodeURIComponent (buf) {
-  return encodeURIComponent(buf.toString('binary'))
 }

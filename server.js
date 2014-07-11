@@ -116,10 +116,10 @@ Server.prototype._onHttpRequest = function (req, res) {
 
   if (s[0] === '/announce') {
     var infoHash = typeof params.info_hash === 'string' &&
-      bytewiseDecodeURIComponent(params.info_hash).toString('hex')
+      common.bytewiseDecodeURIComponent(params.info_hash).toString('hex')
     var port = Number(params.port)
     var peerId = typeof params.peer_id === 'string' &&
-      bytewiseDecodeURIComponent(params.peer_id).toString('utf8')
+      common.bytewiseDecodeURIComponent(params.peer_id).toString('utf8')
 
     if (!infoHash) return error('invalid info_hash')
     if (infoHash.length !== 40) return error('invalid info_hash')
@@ -231,7 +231,7 @@ Server.prototype._onHttpRequest = function (req, res) {
     }
 
     params.info_hash.some(function (infoHash) {
-      var infoHashHex = bytewiseDecodeURIComponent(infoHash).toString('hex')
+      var infoHashHex = common.bytewiseDecodeURIComponent(infoHash).toString('hex')
       if (infoHashHex.length !== 40) {
         error('invalid info_hash')
         return true // early return
@@ -472,8 +472,4 @@ function fromUInt64 (buf) {
   var lowUnsigned = (low >= 0) ? low : TWO_PWR_32 + low
 
   return high * TWO_PWR_32 + lowUnsigned
-}
-
-function bytewiseDecodeURIComponent (str) {
-  return new Buffer(decodeURIComponent(str), 'binary')
 }
