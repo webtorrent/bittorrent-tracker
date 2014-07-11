@@ -130,7 +130,6 @@ function Tracker (client, announceUrl, opts) {
   } else {
     self._requestImpl = self._requestHttp
   }
-
 }
 
 Tracker.prototype.start = function (opts) {
