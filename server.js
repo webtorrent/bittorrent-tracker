@@ -133,6 +133,8 @@ Server.prototype._onHttpRequest = function (req, res) {
 
     if (!infoHash) return error('invalid info_hash')
     if (infoHash.length !== 20) return error('invalid info_hash')
+    if (!peerId) return error('invalid peer_id')
+    if (peerId.length !== 20) return error('invalid peer_id')
     if (!port) return error('invalid port')
     if (!peerId) return error('invalid peer_id')
 
