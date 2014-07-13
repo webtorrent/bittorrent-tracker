@@ -151,28 +151,27 @@ Server.prototype._onHttpRequest = function (req, res) {
       case 'started':
         if (peer) {
           warning = 'unexpected `started` event from peer that is already in swarm'
-        } else {
-          var left = Number(params.left)
-
-          if (left === 0) {
-            swarm.complete += 1
-          } else {
-            swarm.incomplete += 1
-          }
-
-          peer = swarm.peers[addr] = {
-            ip: ip,
-            port: port,
-            peerId: peerId
-          }
-          self.emit('start', addr)
+          break
         }
 
+        if (Number(params.left) === 0) {
+          swarm.complete += 1
+        } else {
+          swarm.incomplete += 1
+        }
+
+        swarm.peers[addr] = {
+          ip: ip,
+          port: port,
+          peerId: peerId
+        }
+        self.emit('start', addr)
         break
 
       case 'stopped':
         if (!peer) {
-          return error('unexpected `stopped` event from peer that is not in swarm')
+          warning = 'unexpected `stopped` event from peer that is not in swarm'
+          break
         }
 
         if (peer.complete) {
@@ -182,29 +181,31 @@ Server.prototype._onHttpRequest = function (req, res) {
         }
 
         swarm.peers[addr] = null
-
         self.emit('stop', addr)
         break
 
       case 'completed':
         if (!peer) {
-          return error('unexpected `completed` event from peer that is not in swarm')
+          warning = 'unexpected `completed` event from peer that is not in swarm'
+          break
         }
         if (peer.complete) {
           warning = 'unexpected `completed` event from peer that is already marked as completed'
+          break
         }
-        peer.complete = true
 
         swarm.complete += 1
         swarm.incomplete -= 1
 
+        peer.complete = true
         self.emit('complete', addr)
         break
 
       case '': // update
       case undefined:
         if (!peer) {
-          return error('unexpected `update` event from peer that is not in swarm')
+          warning = 'unexpected `update` event from peer that is not in swarm'
+          break
         }
 
         self.emit('update', addr)
@@ -341,7 +342,8 @@ Server.prototype._onUdpRequest = function (msg, rinfo) {
     switch (event) {
       case common.EVENTS.started:
         if (peer) {
-          return error('unexpected `started` event from peer that is already in swarm')
+          warning = 'unexpected `started` event from peer that is already in swarm'
+          break
         }
 
         if (left === 0) {
@@ -350,18 +352,18 @@ Server.prototype._onUdpRequest = function (msg, rinfo) {
           swarm.incomplete += 1
         }
 
-        peer = swarm.peers[addr] = {
+        swarm.peers[addr] = {
           ip: ip,
           port: port,
           peerId: peerId
         }
         self.emit('start', addr)
-
         break
 
       case common.EVENTS.stopped:
         if (!peer) {
-          return error('unexpected `stopped` event from peer that is not in swarm')
+          warning = 'unexpected `stopped` event from peer that is not in swarm'
+          break
         }
 
         if (peer.complete) {
@@ -371,35 +373,37 @@ Server.prototype._onUdpRequest = function (msg, rinfo) {
         }
 
         swarm.peers[addr] = null
-
         self.emit('stop', addr)
         break
 
       case common.EVENTS.completed:
         if (!peer) {
-          return error('unexpected `completed` event from peer that is not in swarm')
+          warning = 'unexpected `completed` event from peer that is not in swarm'
+          break
         }
         if (peer.complete) {
           warning = 'unexpected `completed` event from peer that is already marked as completed'
+          break
         }
-        peer.complete = true
 
         swarm.complete += 1
         swarm.incomplete -= 1
 
+        peer.complete = true
         self.emit('complete', addr)
         break
 
       case common.EVENTS.update: // update
         if (!peer) {
-          return error('unexpected `update` event from peer that is not in swarm')
+          warning = 'unexpected `update` event from peer that is not in swarm'
+          break
         }
 
         self.emit('update', addr)
         break
 
       default:
-        return error('unexpected event: ' + event) // early return
+        return error('invalid event') // early return
     }
 
     // send peers
