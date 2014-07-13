@@ -122,14 +122,11 @@ Server.prototype._onHttpRequest = function (req, res) {
   var self = this
   var warning
   var s = req.url.split('?')
-  var params = querystring.parse(s[1])
-
+  var params = common.querystringParse(s[1])
   if (s[0] === '/announce') {
-    var infoHash = typeof params.info_hash === 'string' &&
-      common.bytewiseDecodeURIComponent(params.info_hash).toString('binary')
+    var infoHash = typeof params.info_hash === 'string' && params.info_hash
+    var peerId = typeof params.peer_id === 'string' && common.binaryToUtf8(params.peer_id)
     var port = Number(params.port)
-    var peerId = typeof params.peer_id === 'string' &&
-      common.bytewiseDecodeURIComponent(params.peer_id).toString('utf8')
 
     if (!infoHash) return error('invalid info_hash')
     if (infoHash.length !== 20) return error('invalid info_hash')
@@ -252,7 +249,6 @@ Server.prototype._onHttpRequest = function (req, res) {
     }
 
     params.info_hash.some(function (infoHash) {
-      infoHash = common.bytewiseDecodeURIComponent(infoHash).toString('binary')
       if (infoHash.length !== 20) {
         error('invalid info_hash')
         return true // early return

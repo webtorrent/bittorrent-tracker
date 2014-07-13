@@ -138,7 +138,7 @@ Tracker.prototype.start = function (opts) {
   opts.event = 'started'
 
   debug('sent `start` to ' + self._announceUrl)
-  self._request(opts)
+  self._announce(opts)
   self.setInterval(self._intervalMs) // start announcing on intervals
 }
 
@@ -148,7 +148,7 @@ Tracker.prototype.stop = function (opts) {
   opts.event = 'stopped'
 
   debug('sent `stop` to ' + self._announceUrl)
-  self._request(opts)
+  self._announce(opts)
   self.setInterval(0) // stop announcing on intervals
 }
 
@@ -159,7 +159,7 @@ Tracker.prototype.complete = function (opts) {
   opts.downloaded = opts.downloaded || self.torrentLength || 0
 
   debug('sent `complete` to ' + self._announceUrl)
-  self._request(opts)
+  self._announce(opts)
 }
 
 Tracker.prototype.update = function (opts) {
@@ -167,10 +167,34 @@ Tracker.prototype.update = function (opts) {
   opts = opts || {}
 
   debug('sent `update` to ' + self._announceUrl)
-  self._request(opts)
+  self._announce(opts)
 }
 
-Tracker.prototype.scrape = function (opts) {
+/**
+ * Send an announce request to the tracker.
+ * @param {Object} opts
+ * @param {number=} opts.uploaded
+ * @param {number=} opts.downloaded
+ * @param {number=} opts.left (if not set, calculated automatically)
+ */
+Tracker.prototype._announce = function (opts) {
+  var self = this
+  opts = extend({
+    uploaded: 0, // default, user should provide real value
+    downloaded: 0 // default, user should provide real value
+  }, opts)
+
+  if (self.client.torrentLength != null && opts.left == null) {
+    opts.left = self.client.torrentLength - (opts.downloaded || 0)
+  }
+
+  self._requestImpl(self._announceUrl, opts)
+}
+
+/**
+ * Send a scrape request to the tracker.
+ */
+Tracker.prototype.scrape = function () {
   var self = this
 
   if (!self._scrapeUrl) {
@@ -189,12 +213,7 @@ Tracker.prototype.scrape = function (opts) {
   }
 
   debug('sent `scrape` to ' + self._announceUrl)
-
-  opts = extend({
-    info_hash: common.bytewiseEncodeURIComponent(self.client._infoHash)
-  }, opts)
-
-  self._requestImpl(self._scrapeUrl, opts)
+  self._requestImpl(self._scrapeUrl)
 }
 
 Tracker.prototype.setInterval = function (intervalMs) {
@@ -207,35 +226,28 @@ Tracker.prototype.setInterval = function (intervalMs) {
   }
 }
 
-/**
- * Send an announce request to the tracker
- */
-Tracker.prototype._request = function (opts) {
-  var self = this
-  opts = extend({
-    info_hash: common.bytewiseEncodeURIComponent(self.client._infoHash),
-    peer_id: common.bytewiseEncodeURIComponent(self.client._peerId),
-    port: self.client._port,
-    compact: 1,
-    numwant: self.client._numWant,
-    uploaded: 0, // default, user should provide real value
-    downloaded: 0 // default, user should provide real value
-  }, opts)
-
-  if (self.client.torrentLength !== undefined) {
-    opts.left = self.client.torrentLength - (opts.downloaded || 0)
-  }
-
-  if (self._trackerId) {
-    opts.trackerid = self._trackerId
-  }
-
-  self._requestImpl(self._announceUrl, opts)
-}
-
 Tracker.prototype._requestHttp = function (requestUrl, opts) {
   var self = this
-  var fullUrl = requestUrl + '?' + querystring.stringify(opts)
+
+  if (isScrapeUrl(requestUrl)) {
+    opts = extend({
+      info_hash: self.client._infoHash.toString('binary')
+    }, opts)
+  } else {
+    opts = extend({
+      info_hash: self.client._infoHash.toString('binary'),
+      peer_id: self.client._peerId.toString('binary'),
+      port: self.client._port,
+      compact: 1,
+      numwant: self.client._numWant
+    }, opts)
+
+    if (self._trackerId) {
+      opts.trackerid = self._trackerId
+    }
+  }
+
+  var fullUrl = requestUrl + '?' + common.querystringStringify(opts)
 
   var req = http.get(fullUrl, function (res) {
     if (res.statusCode !== 200) {
@@ -255,6 +267,7 @@ Tracker.prototype._requestHttp = function (requestUrl, opts) {
 
 Tracker.prototype._requestUdp = function (requestUrl, opts) {
   var self = this
+  opts = opts || {}
   var parsedUrl = url.parse(requestUrl)
   var socket = dgram.createSocket('udp4')
   var transactionId = new Buffer(hat(32), 'hex')
@@ -294,9 +307,8 @@ Tracker.prototype._requestUdp = function (requestUrl, opts) {
           return error('invalid udp handshake')
         }
 
-        var scrapeStr = 'scrape'
-        if (requestUrl.substr(requestUrl.lastIndexOf('/') + 1, scrapeStr.length) === scrapeStr) {
-          scrape(msg.slice(8, 16), opts)
+        if (isScrapeUrl(requestUrl)) {
+          scrape(msg.slice(8, 16))
         } else {
           announce(msg.slice(8, 16), opts)
         }
@@ -395,7 +407,7 @@ Tracker.prototype._requestUdp = function (requestUrl, opts) {
     ]))
   }
 
-  function scrape (connectionId, opts) {
+  function scrape (connectionId) {
     genTransactionId()
 
     send(Buffer.concat([
@@ -477,10 +489,6 @@ Tracker.prototype._handleResponse = function (requestUrl, data) {
   }
 }
 
-//
-// HELPERS
-//
-
 function toUInt16 (n) {
   var buf = new Buffer(2)
   buf.writeUInt16BE(n, 0)
@@ -498,4 +506,8 @@ function toUInt64 (n) {
     return new Buffer(bytes)
   }
   return Buffer.concat([common.toUInt32(0), common.toUInt32(n)])
+}
+
+function isScrapeUrl (u) {
+  return u.substr(u.lastIndexOf('/') + 1, 'scrape'.length) === 'scrape'
 }

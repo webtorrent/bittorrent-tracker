@@ -10,23 +10,19 @@ var querystring = require('querystring')
 var Server = require('../').Server
 var test = require('tape')
 
+function hexToBinary (str) {
+  return new Buffer(str, 'hex').toString('binary')
+}
+
 var infoHash1 = 'aaa67059ed6bd08362da625b3ae77f6f4a075aaa'
-var encodedInfoHash1 = common.bytewiseEncodeURIComponent(
-  new Buffer(infoHash1, 'hex')
-)
-var binaryinfoHash1 = new Buffer(infoHash1, 'hex').toString('binary')
+var binaryInfoHash1 = hexToBinary(infoHash1)
 var infoHash2 = 'bbb67059ed6bd08362da625b3ae77f6f4a075bbb'
-var encodedInfoHash2 = common.bytewiseEncodeURIComponent(
-  new Buffer(infoHash2, 'hex')
-)
-var binaryinfoHash2 = new Buffer(infoHash2, 'hex').toString('binary')
+var binaryInfoHash2 = hexToBinary(infoHash2)
 
 var bitlove = fs.readFileSync(__dirname + '/torrents/bitlove-intro.torrent')
 var parsedBitlove = parseTorrent(bitlove)
-var encodedBitlove = common.bytewiseEncodeURIComponent(
-  new Buffer(parsedBitlove.infoHash, 'hex')
-)
-var binaryBitlove = new Buffer(parsedBitlove.infoHash, 'hex').toString('binary')
+var binaryBitlove = hexToBinary(parsedBitlove.infoHash)
+
 var peerId = new Buffer('01234567890123456789')
 
 test('server: single info_hash scrape', function (t) {
@@ -44,8 +40,8 @@ test('server: single info_hash scrape', function (t) {
     var scrapeUrl = 'http://127.0.0.1:' + port + '/scrape'
 
     server.once('listening', function () {
-      var url = scrapeUrl + '?' + querystring.stringify({
-        info_hash: encodedInfoHash1
+      var url = scrapeUrl + '?' + common.querystringStringify({
+        info_hash: binaryInfoHash1
       })
       http.get(url, function (res) {
         t.equal(res.statusCode, 200)
@@ -53,10 +49,10 @@ test('server: single info_hash scrape', function (t) {
           data = bencode.decode(data)
           t.ok(data.files)
           t.equal(Object.keys(data.files).length, 1)
-          t.ok(data.files[binaryinfoHash1])
-          t.equal(typeof data.files[binaryinfoHash1].complete, 'number')
-          t.equal(typeof data.files[binaryinfoHash1].incomplete, 'number')
-          t.equal(typeof data.files[binaryinfoHash1].downloaded, 'number')
+          t.ok(data.files[binaryInfoHash1])
+          t.equal(typeof data.files[binaryInfoHash1].complete, 'number')
+          t.equal(typeof data.files[binaryInfoHash1].incomplete, 'number')
+          t.equal(typeof data.files[binaryInfoHash1].downloaded, 'number')
 
           server.close(function () {
             t.end()
@@ -84,8 +80,8 @@ test('server: multiple info_hash scrape', function (t) {
     var scrapeUrl = 'http://127.0.0.1:' + port + '/scrape'
 
     server.once('listening', function () {
-      var url = scrapeUrl + '?' + querystring.stringify({
-        info_hash: [ encodedInfoHash1, encodedInfoHash2 ]
+      var url = scrapeUrl + '?' + common.querystringStringify({
+        info_hash: [ binaryInfoHash1, binaryInfoHash2 ]
       })
       http.get(url, function (res) {
         t.equal(res.statusCode, 200)
@@ -94,15 +90,15 @@ test('server: multiple info_hash scrape', function (t) {
           t.ok(data.files)
           t.equal(Object.keys(data.files).length, 2)
 
-          t.ok(data.files[binaryinfoHash1])
-          t.equal(typeof data.files[binaryinfoHash1].complete, 'number')
-          t.equal(typeof data.files[binaryinfoHash1].incomplete, 'number')
-          t.equal(typeof data.files[binaryinfoHash1].downloaded, 'number')
+          t.ok(data.files[binaryInfoHash1])
+          t.equal(typeof data.files[binaryInfoHash1].complete, 'number')
+          t.equal(typeof data.files[binaryInfoHash1].incomplete, 'number')
+          t.equal(typeof data.files[binaryInfoHash1].downloaded, 'number')
 
-          t.ok(data.files[binaryinfoHash2])
-          t.equal(typeof data.files[binaryinfoHash2].complete, 'number')
-          t.equal(typeof data.files[binaryinfoHash2].incomplete, 'number')
-          t.equal(typeof data.files[binaryinfoHash2].downloaded, 'number')
+          t.ok(data.files[binaryInfoHash2])
+          t.equal(typeof data.files[binaryInfoHash2].complete, 'number')
+          t.equal(typeof data.files[binaryInfoHash2].incomplete, 'number')
+          t.equal(typeof data.files[binaryInfoHash2].downloaded, 'number')
 
           server.close(function () {
             t.end()
