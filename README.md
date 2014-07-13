@@ -115,14 +115,13 @@ server.listen(port)
 
 // listen for individual tracker messages from peers:
 
-server.on('start', function (addr, params) {
+server.on('start', function (addr) {
   console.log('got start message from ' + addr)
-  console.log('params in the message: ' + JSON.stringify(params))
 })
 
-server.on('complete', function (addr, params) {})
-server.on('update', function (addr, params) {})
-server.on('stop', function (addr, params) {})
+server.on('complete', function (addr) {})
+server.on('update', function (addr) {})
+server.on('stop', function (addr) {})
 
 // get info hashes for all torrents in the tracker server
 Object.keys(server.torrents)
