@@ -50,16 +50,20 @@ function Server (opts) {
   if (opts.http !== false) {
     self._httpServer = http.createServer()
     self._httpServer.on('request', self._onHttpRequest.bind(self))
-    self._httpServer.on('error', function (err) {
-      self.emit('error', err)
-    })
+    self._httpServer.on('error', self._onError.bind(self))
   }
 
   // default to starting a udp server unless the user explicitly says no
   if (opts.udp !== false) {
     self._udpServer = dgram.createSocket('udp4')
     self._udpServer.on('message', self._onUdpRequest.bind(self))
+    self._udpServer.on('error', self._onError.bind(self))
   }
+}
+
+Server.prototype._onError = function (err) {
+  var self = this
+  self.emit('error', err)
 }
 
 Server.prototype.listen = function (port, onlistening) {
@@ -114,7 +118,6 @@ Server.prototype._getSwarm = function (binaryInfoHash) {
       peers: {}
     }
   }
-
   return swarm
 }
 
@@ -439,7 +442,9 @@ Server.prototype._onUdpRequest = function (msg, rinfo) {
 
   function send (buf) {
     socket.send(buf, 0, buf.length, rinfo.port, rinfo.address, function () {
-      try { socket.close() } catch (err) {}
+      try {
+        socket.close()
+      } catch (err) {}
     })
   }
 
