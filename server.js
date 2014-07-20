@@ -3,6 +3,7 @@ module.exports = Server
 var bencode = require('bencode')
 var bufferEqual = require('buffer-equal')
 var common = require('./lib/common')
+var debug = require('debug')('bittorrent-tracker:server')
 var dgram = require('dgram')
 var EventEmitter = require('events').EventEmitter
 var http = require('http')
@@ -234,6 +235,7 @@ Server.prototype._onHttpRequest = function (req, res) {
       response['warning message'] = warning
     }
     res.end(bencode.encode(response))
+    debug('sent response ' + response)
 
   } else if (s[0] === '/scrape') { // unofficial scrape message
     if (typeof params.info_hash === 'string') {
@@ -268,12 +270,14 @@ Server.prototype._onHttpRequest = function (req, res) {
     })
 
     res.end(bencode.encode(response))
+    debug('sent response ' + response)
 
   } else {
     error('only /announce and /scrape are valid endpoints')
   }
 
   function error (message) {
+    debug('sent error ' + message)
     res.end(bencode.encode({
       'failure reason': message
     }))
@@ -441,6 +445,7 @@ Server.prototype._onUdpRequest = function (msg, rinfo) {
   }
 
   function send (buf) {
+    debug('sent response ' + buf)
     socket.send(buf, 0, buf.length, rinfo.port, rinfo.address, function () {
       try {
         socket.close()
@@ -449,6 +454,7 @@ Server.prototype._onUdpRequest = function (msg, rinfo) {
   }
 
   function error (message) {
+    debug('sent error ' + message)
     send(Buffer.concat([
       common.toUInt32(common.ACTIONS.ERROR),
       common.toUInt32(transactionId || 0),
