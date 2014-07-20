@@ -28,7 +28,10 @@ function createServer (t, serverType, cb) {
   portfinder.getPort(function (err, port) {
     if (err) return t.error(err)
 
-    announceUrl = serverType + '://127.0.0.1:' + port + '/announce'
+    announceUrl = serverType === 'http'
+      ? 'http://127.0.0.1:' + port + '/announce'
+      : 'udp://127.0.0.1:' + port
+
     parsedTorrent.announce = [ announceUrl ]
 
     server.listen(port)

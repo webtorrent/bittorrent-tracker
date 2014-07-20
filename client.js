@@ -197,14 +197,7 @@ Tracker.prototype._announce = function (opts) {
 Tracker.prototype.scrape = function () {
   var self = this
 
-  if (!self._scrapeUrl) {
-    var announce = 'announce'
-    var i = self._announceUrl.lastIndexOf('/') + 1
-
-    if (i >= 1 && self._announceUrl.slice(i, i + announce.length) === announce) {
-      self._scrapeUrl = self._announceUrl.slice(0, i) + 'scrape' + self._announceUrl.slice(i + announce.length)
-    }
-  }
+  self._scrapeUrl = self._scrapeUrl || getScrapeUrl(self._announceUrl)
 
   if (!self._scrapeUrl) {
     debug('scrape not supported by ' + self._announceUrl)
@@ -213,7 +206,7 @@ Tracker.prototype.scrape = function () {
   }
 
   debug('sent `scrape` to ' + self._announceUrl)
-  self._requestImpl(self._scrapeUrl)
+  self._requestImpl(self._scrapeUrl, { _scrape: true })
 }
 
 Tracker.prototype.setInterval = function (intervalMs) {
@@ -229,7 +222,7 @@ Tracker.prototype.setInterval = function (intervalMs) {
 Tracker.prototype._requestHttp = function (requestUrl, opts) {
   var self = this
 
-  if (isScrapeUrl(requestUrl)) {
+  if (opts._scrape) {
     opts = extend({
       info_hash: self.client._infoHash.toString('binary')
     }, opts)
@@ -307,7 +300,7 @@ Tracker.prototype._requestUdp = function (requestUrl, opts) {
           return error('invalid udp handshake')
         }
 
-        if (isScrapeUrl(requestUrl)) {
+        if (opts._scrape) {
           scrape(msg.slice(8, 16))
         } else {
           announce(msg.slice(8, 16), opts)
@@ -510,4 +503,17 @@ function toUInt64 (n) {
 
 function isScrapeUrl (u) {
   return u.substr(u.lastIndexOf('/') + 1, 'scrape'.length) === 'scrape'
+}
+
+var UDP_TRACKER = /^udp:\/\//
+var HTTP_SCRAPE_SUPPORT = /\/(announce)[^\/]*$/
+
+function getScrapeUrl (announceUrl) {
+  if (announceUrl.match(UDP_TRACKER)) return announceUrl
+  var match
+  if (match = announceUrl.match(HTTP_SCRAPE_SUPPORT)) {
+    var i = match.index
+    return announceUrl.slice(0, i) + '/scrape' + announceUrl.slice(i + 9)
+  }
+  return null
 }

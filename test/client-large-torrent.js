@@ -27,7 +27,7 @@ test('large torrent: client.start()', function (t) {
     server.listen(port)
 
     // remove all tracker servers except a single UDP one, for now
-    parsedTorrent.announce = [ 'udp://127.0.0.1:' + port + '/announce' ]
+    parsedTorrent.announce = [ 'udp://127.0.0.1:' + port ]
 
     var client = new Client(peerId, 6881, parsedTorrent)
 
@@ -36,7 +36,7 @@ test('large torrent: client.start()', function (t) {
     })
 
     client.once('update', function (data) {
-      t.equal(data.announce, 'udp://127.0.0.1:' + port + '/announce')
+      t.equal(data.announce, 'udp://127.0.0.1:' + port)
       t.equal(typeof data.complete, 'number')
       t.equal(typeof data.incomplete, 'number')
     })
