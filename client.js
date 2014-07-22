@@ -1,7 +1,7 @@
 module.exports = Client
 
-var BN = require('bn.js')
 var bencode = require('bencode')
+var BN = require('bn.js')
 var common = require('./lib/common')
 var compact2string = require('compact2string')
 var concat = require('concat-stream')
@@ -12,6 +12,7 @@ var extend = require('extend.js')
 var hat = require('hat')
 var http = require('http')
 var inherits = require('inherits')
+var once = require('once')
 var querystring = require('querystring')
 var url = require('url')
 
@@ -57,6 +58,31 @@ function Client (peerId, port, torrent, opts) {
   self._trackers = torrent.announce.map(function (announceUrl) {
     return new Tracker(self, announceUrl, self._opts)
   })
+}
+
+/**
+ * Simple convenience function to scrape a tracker for an infoHash without
+ * needing to create a Client, pass it a parsed torrent, etc.
+ * @param  {string}   announceUrl
+ * @param  {string}   infoHash
+ * @param  {function} cb
+ */
+Client.scrape = function (announceUrl, infoHash, cb) {
+  cb = once(cb)
+  var dummy = {
+    peerId: new Buffer('01234567890123456789'),
+    port: 6881,
+    torrent: {
+      infoHash: infoHash,
+      announce: [ announceUrl ]
+    }
+  }
+  var client = new Client(dummy.peerId, dummy.port, dummy.torrent)
+  client.once('error', cb)
+  client.once('scrape', function (data) {
+    cb(null, data)
+  })
+  client.scrape()
 }
 
 Client.prototype.start = function (opts) {

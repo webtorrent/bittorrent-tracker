@@ -25,7 +25,7 @@ test('magnet + udp: client.start/update/stop()', function (t) {
   portfinder.getPort(function (err, port) {
     t.error(err, 'found free port')
     server.listen(port)
-    var announceUrl = 'udp://127.0.0.1:' + port // TODO: shouldn't rely on an external server!
+    var announceUrl = 'udp://127.0.0.1:' + port
 
     // remove all tracker servers except a single UDP one, for now
     parsedTorrent.announce = [ announceUrl ]

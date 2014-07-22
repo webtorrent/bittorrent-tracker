@@ -1,6 +1,7 @@
 var bencode = require('bencode')
 var Client = require('../')
-var common = require('../lib/common')
+var commonLib = require('../lib/common')
+var commonTest = require('./common')
 var concat = require('concat-stream')
 var fs = require('fs')
 var http = require('http')
@@ -25,45 +26,58 @@ var binaryBitlove = hexToBinary(parsedBitlove.infoHash)
 
 var peerId = new Buffer('01234567890123456789')
 
-test('server: single info_hash scrape', function (t) {
-  var server = new Server({ udp: false })
-  server.on('error', function (err) {
-    t.error(err)
-  })
-  server.on('warning', function (err) {
-    t.error(err)
-  })
-
-  portfinder.getPort(function (err, port) {
-    t.error(err)
-    server.listen(port)
-    var scrapeUrl = 'http://127.0.0.1:' + port + '/scrape'
-
+function testSingle (t, serverType) {
+  commonTest.createServer(t, serverType, function (server, announceUrl) {
+    var scrapeUrl = announceUrl.replace('announce', 'scrape')
     server.once('listening', function () {
-      var url = scrapeUrl + '?' + common.querystringStringify({
-        info_hash: binaryInfoHash1
-      })
-      http.get(url, function (res) {
-        t.equal(res.statusCode, 200)
-        res.pipe(concat(function (data) {
-          data = bencode.decode(data)
-          t.ok(data.files)
-          t.equal(Object.keys(data.files).length, 1)
-          t.ok(data.files[binaryInfoHash1])
-          t.equal(typeof data.files[binaryInfoHash1].complete, 'number')
-          t.equal(typeof data.files[binaryInfoHash1].incomplete, 'number')
-          t.equal(typeof data.files[binaryInfoHash1].downloaded, 'number')
-
-          server.close(function () {
-            t.end()
-          })
-        }))
-      }).on('error', function (e) {
+      Client.scrape(announceUrl, infoHash1, function (err, data) {
         t.error(err)
+        t.equal(data.announce, announceUrl)
+        t.equal(typeof data.complete, 'number')
+        t.equal(typeof data.incomplete, 'number')
+        t.equal(typeof data.downloaded, 'number')
+        server.close(function () {
+          t.end()
+        })
       })
     })
   })
+}
+
+test('http: single info_hash scrape', function (t) {
+  testSingle(t, 'http')
 })
+
+test('udp: single info_hash scrape', function (t) {
+  testSingle(t, 'udp')
+})
+
+function clientScrapeStatic (t, serverType) {
+  commonTest.createServer(t, serverType, function (server, announceUrl) {
+    server.once('listening', function () {
+      Client.scrape(announceUrl, infoHash1, function (err, data) {
+        t.error(err)
+        t.equal(data.announce, announceUrl)
+        t.equal(typeof data.complete, 'number')
+        t.equal(typeof data.incomplete, 'number')
+        t.equal(typeof data.downloaded, 'number')
+        server.close(function () {
+          t.end()
+        })
+      })
+    })
+  })
+}
+
+test('http: scrape using Client.scrape static method', function (t) {
+  clientScrapeStatic(t, 'http')
+})
+
+test('udp: scrape using Client.scrape static method', function (t) {
+  clientScrapeStatic(t, 'udp')
+})
+
+// TODO: test client for multiple scrape for UDP trackers
 
 test('server: multiple info_hash scrape', function (t) {
   var server = new Server({ udp: false })
@@ -80,7 +94,7 @@ test('server: multiple info_hash scrape', function (t) {
     var scrapeUrl = 'http://127.0.0.1:' + port + '/scrape'
 
     server.once('listening', function () {
-      var url = scrapeUrl + '?' + common.querystringStringify({
+      var url = scrapeUrl + '?' + commonLib.querystringStringify({
         info_hash: [ binaryInfoHash1, binaryInfoHash2 ]
       })
       http.get(url, function (res) {

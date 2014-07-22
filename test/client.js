@@ -1,8 +1,7 @@
 var Client = require('../')
+var common = require('./common')
 var fs = require('fs')
 var parseTorrent = require('parse-torrent')
-var portfinder = require('portfinder')
-var Server = require('../').Server
 var test = require('tape')
 
 var torrent = fs.readFileSync(__dirname + '/torrents/bitlove-intro.torrent')
@@ -13,35 +12,10 @@ var peerId3 = new Buffer('23456789012345678901')
 var announceUrl = ''
 var port = 6881
 
-function createServer (t, serverType, cb) {
-  var opts = serverType === 'http' ? { udp: false } : { http: false }
-  var server = new Server(opts)
-
-  server.on('error', function (err) {
-    t.error(err)
-  })
-
-  server.on('warning', function (err) {
-    t.error(err)
-  })
-
-  portfinder.getPort(function (err, port) {
-    if (err) return t.error(err)
-
-    announceUrl = serverType === 'http'
-      ? 'http://127.0.0.1:' + port + '/announce'
-      : 'udp://127.0.0.1:' + port
-
-    parsedTorrent.announce = [ announceUrl ]
-
-    server.listen(port)
-    cb(server)
-  })
-}
-
 function testClientStart (t, serverType) {
   t.plan(5)
-  createServer(t, serverType, function (server) {
+  common.createServer(t, serverType, function (server, announceUrl) {
+    parsedTorrent.announce = [ announceUrl ]
     var client = new Client(peerId1, port, parsedTorrent)
 
     client.on('error', function (err) {
@@ -83,7 +57,8 @@ test('udp: client.start()', function (t) {
 
 function testClientStop (t, serverType) {
   t.plan(4)
-  createServer(t, serverType, function (server) {
+  common.createServer(t, serverType, function (server, announceUrl) {
+    parsedTorrent.announce = [ announceUrl ]
     var client = new Client(peerId1, port, parsedTorrent)
 
     client.on('error', function (err) {
@@ -124,7 +99,8 @@ test('udp: client.stop()', function (t) {
 
 function testClientUpdate (t, serverType) {
   t.plan(4)
-  createServer(t, serverType, function (server) {
+  common.createServer(t, serverType, function (server, announceUrl) {
+    parsedTorrent.announce = [ announceUrl ]
     var client = new Client(peerId1, port, parsedTorrent, { interval: 5000 })
 
     client.on('error', function (err) {
@@ -166,7 +142,8 @@ test('udp: client.update()', function (t) {
 
 function testClientScrape (t, serverType) {
   t.plan(5)
-  createServer(t, serverType, function (server) {
+  common.createServer(t, serverType, function (server, announceUrl) {
+    parsedTorrent.announce = [ announceUrl ]
     var client = new Client(peerId1, port, parsedTorrent)
 
     client.on('error', function (err) {
@@ -202,7 +179,8 @@ test('udp: client.scrape()', function (t) {
 
 function testClientAnnounceWithNumWant (t, serverType) {
   t.plan(1)
-  createServer(t, serverType, function (server) {
+  common.createServer(t, serverType, function (server, announceUrl) {
+    parsedTorrent.announce = [ announceUrl ]
     var client1 = new Client(peerId1, port, parsedTorrent)
     client1.on('error', function (err) {
       t.error(err)
