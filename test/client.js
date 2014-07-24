@@ -9,7 +9,6 @@ var parsedTorrent = parseTorrent(torrent)
 var peerId1 = new Buffer('01234567890123456789')
 var peerId2 = new Buffer('12345678901234567890')
 var peerId3 = new Buffer('23456789012345678901')
-var announceUrl = ''
 var port = 6881
 
 function testClientStart (t, serverType) {
