@@ -52,11 +52,15 @@ function Client (peerId, port, torrent, opts) {
 
   if (typeof torrent.announce === 'string') {
     // magnet-uri returns a string if the magnet uri only contains one 'tr' parameter
-    torrent.announce = [torrent.announce]
+    torrent.announce = [ torrent.announce ]
   }
-  self._trackers = torrent.announce.map(function (announceUrl) {
-    return new Tracker(self, announceUrl, self._opts)
-  })
+  self._trackers = torrent.announce
+    .filter(function (announceUrl) {
+      return announceUrl.indexOf('udp://') === 0 || announceUrl.indexOf('http://') === 0
+    })
+    .map(function (announceUrl) {
+      return new Tracker(self, announceUrl, self._opts)
+    })
 }
 
 /**
@@ -150,9 +154,9 @@ function Tracker (client, announceUrl, opts) {
   self._intervalMs = self.client._intervalMs // use client interval initially
   self._interval = null
 
-  if (self._announceUrl.indexOf('udp:') === 0) {
+  if (self._announceUrl.indexOf('udp://') === 0) {
     self._requestImpl = self._requestUdp
-  } else {
+  } else if (self._announceUrl.indexOf('http://') === 0) {
     self._requestImpl = self._requestHttp
   }
 }
