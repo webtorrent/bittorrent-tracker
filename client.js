@@ -48,7 +48,7 @@ function Client (peerId, port, torrent, opts) {
   self._numWant = self._opts.numWant || 50
   self._intervalMs = self._opts.interval || (30 * 60 * 1000) // default: 30 minutes
 
-  debug('new tracker client for ' + self._infoHash.toString('hex'))
+  debug('new client %s', self._infoHash.toString('hex'))
 
   if (typeof torrent.announce === 'string') {
     // magnet-uri returns a string if the magnet uri only contains one 'tr' parameter
@@ -148,7 +148,7 @@ function Tracker (client, announceUrl, opts) {
 
   self.client = client
 
-  debug('new tracker for ' + announceUrl)
+  debug('new tracker %s', announceUrl)
 
   self._announceUrl = announceUrl
   self._intervalMs = self.client._intervalMs // use client interval initially
@@ -166,7 +166,7 @@ Tracker.prototype.start = function (opts) {
   opts = opts || {}
   opts.event = 'started'
 
-  debug('sent `start` to ' + self._announceUrl)
+  debug('sent `start` %s', self._announceUrl)
   self._announce(opts)
   self.setInterval(self._intervalMs) // start announcing on intervals
 }
@@ -176,7 +176,7 @@ Tracker.prototype.stop = function (opts) {
   opts = opts || {}
   opts.event = 'stopped'
 
-  debug('sent `stop` to ' + self._announceUrl)
+  debug('sent `stop` %s', self._announceUrl)
   self._announce(opts)
   self.setInterval(0) // stop announcing on intervals
 }
@@ -187,7 +187,7 @@ Tracker.prototype.complete = function (opts) {
   opts.event = 'completed'
   opts.downloaded = opts.downloaded || self.torrentLength || 0
 
-  debug('sent `complete` to ' + self._announceUrl)
+  debug('sent `complete` %s', self._announceUrl)
   self._announce(opts)
 }
 
@@ -195,7 +195,7 @@ Tracker.prototype.update = function (opts) {
   var self = this
   opts = opts || {}
 
-  debug('sent `update` to ' + self._announceUrl)
+  debug('sent `update` %s', self._announceUrl)
   self._announce(opts)
 }
 
@@ -229,12 +229,12 @@ Tracker.prototype.scrape = function () {
   self._scrapeUrl = self._scrapeUrl || getScrapeUrl(self._announceUrl)
 
   if (!self._scrapeUrl) {
-    debug('scrape not supported by ' + self._announceUrl)
+    debug('scrape not supported %s', self._announceUrl)
     self.client.emit('error', new Error('scrape not supported for announceUrl ' + self._announceUrl))
     return
   }
 
-  debug('sent `scrape` to ' + self._announceUrl)
+  debug('sent `scrape` %s', self._announceUrl)
   self._requestImpl(self._scrapeUrl, { _scrape: true })
 }
 
