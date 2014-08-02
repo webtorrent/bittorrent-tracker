@@ -5,7 +5,7 @@ var BN = require('bn.js')
 var common = require('./lib/common')
 var compact2string = require('compact2string')
 var concat = require('concat-stream')
-var debug = require('debug')('bittorrent-tracker:client')
+var debug = require('debug')('bittorrent-tracker')
 var dgram = require('dgram')
 var EventEmitter = require('events').EventEmitter
 var extend = require('extend.js')
@@ -13,7 +13,6 @@ var hat = require('hat')
 var http = require('http')
 var inherits = require('inherits')
 var once = require('once')
-var querystring = require('querystring')
 var url = require('url')
 
 inherits(Client, EventEmitter)
@@ -314,7 +313,7 @@ Tracker.prototype._requestUdp = function (requestUrl, opts) {
 
   socket.on('error', error)
 
-  socket.on('message', function (msg, rinfo) {
+  socket.on('message', function (msg) {
     if (msg.length < 8 || msg.readUInt32BE(4) !== transactionId.readUInt32BE(0)) {
       return error('tracker sent back invalid transaction id')
     }
@@ -527,17 +526,13 @@ function toUInt64 (n) {
   return Buffer.concat([common.toUInt32(0), common.toUInt32(n)])
 }
 
-function isScrapeUrl (u) {
-  return u.substr(u.lastIndexOf('/') + 1, 'scrape'.length) === 'scrape'
-}
-
 var UDP_TRACKER = /^udp:\/\//
 var HTTP_SCRAPE_SUPPORT = /\/(announce)[^\/]*$/
 
 function getScrapeUrl (announceUrl) {
   if (announceUrl.match(UDP_TRACKER)) return announceUrl
-  var match
-  if (match = announceUrl.match(HTTP_SCRAPE_SUPPORT)) {
+  var match = announceUrl.match(HTTP_SCRAPE_SUPPORT)
+  if (match) {
     var i = match.index
     return announceUrl.slice(0, i) + '/scrape' + announceUrl.slice(i + 9)
   }

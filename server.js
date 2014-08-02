@@ -3,14 +3,13 @@ module.exports = Server
 var bencode = require('bencode')
 var bufferEqual = require('buffer-equal')
 var common = require('./lib/common')
-var debug = require('debug')('bittorrent-tracker:server')
+var debug = require('debug')('bittorrent-tracker')
 var dgram = require('dgram')
 var EventEmitter = require('events').EventEmitter
 var http = require('http')
 var inherits = require('inherits')
 var ipLib = require('ip')
 var parallel = require('run-parallel')
-var querystring = require('querystring')
 var string2compact = require('string2compact')
 
 var NUM_ANNOUNCE_PEERS = 50
@@ -127,6 +126,7 @@ Server.prototype._onHttpRequest = function (req, res) {
   var warning
   var s = req.url.split('?')
   var params = common.querystringParse(s[1])
+  var response
   if (s[0] === '/announce') {
     var infoHash = typeof params.info_hash === 'string' && params.info_hash
     var peerId = typeof params.peer_id === 'string' && common.binaryToUtf8(params.peer_id)
@@ -224,7 +224,7 @@ Server.prototype._onHttpRequest = function (req, res) {
       ? self._getPeersCompact(swarm, numWant)
       : self._getPeers(swarm, numWant)
 
-    var response = {
+    response = {
       complete: swarm.complete,
       incomplete: swarm.incomplete,
       peers: peers,
@@ -247,7 +247,7 @@ Server.prototype._onHttpRequest = function (req, res) {
 
     if (!Array.isArray(params.info_hash)) return error('invalid info_hash')
 
-    var response = {
+    response = {
       files: {},
       flags: {
         min_request_interval: self._intervalMs
@@ -309,6 +309,7 @@ Server.prototype._onUdpRequest = function (msg, rinfo) {
 
   var socket = dgram.createSocket('udp4')
 
+  var infoHash, swarm
   if (action === common.ACTIONS.CONNECT) {
     send(Buffer.concat([
       common.toUInt32(common.ACTIONS.CONNECT),
@@ -316,14 +317,14 @@ Server.prototype._onUdpRequest = function (msg, rinfo) {
       connectionId
     ]))
   } else if (action === common.ACTIONS.ANNOUNCE) {
-    var infoHash = msg.slice(16, 36).toString('binary') // 20 bytes
+    infoHash = msg.slice(16, 36).toString('binary') // 20 bytes
     var peerId = msg.slice(36, 56).toString('utf8') // 20 bytes
-    var downloaded = fromUInt64(msg.slice(56, 64))
+    var downloaded = fromUInt64(msg.slice(56, 64)) // TODO: track this?
     var left = fromUInt64(msg.slice(64, 72))
-    var uploaded = fromUInt64(msg.slice(72, 80))
+    var uploaded = fromUInt64(msg.slice(72, 80)) // TODO: track this?
     var event = msg.readUInt32BE(80)
     var ip = msg.readUInt32BE(84) // optional
-    var key = msg.readUInt32BE(88)
+    var key = msg.readUInt32BE(88) // TODO: what is this for?
     var numWant = msg.readUInt32BE(92) // optional
     var port = msg.readUInt16BE(96) // optional
 
@@ -339,13 +340,14 @@ Server.prototype._onUdpRequest = function (msg, rinfo) {
 
     var addr = ip + ':' + port
 
-    var swarm = self._getSwarm(infoHash)
+    swarm = self._getSwarm(infoHash)
     var peer = swarm.peers[addr]
 
     // never send more than MAX_ANNOUNCE_PEERS or else the UDP packet will get bigger than
     // 512 bytes which is not safe
     numWant = Math.min(numWant || NUM_ANNOUNCE_PEERS, MAX_ANNOUNCE_PEERS)
 
+    var warning
     switch (event) {
       case common.EVENTS.started:
         if (peer) {
@@ -426,14 +428,14 @@ Server.prototype._onUdpRequest = function (msg, rinfo) {
     ]))
 
   } else if (action === common.ACTIONS.SCRAPE) { // scrape message
-    var infoHash = msg.slice(16, 36).toString('binary') // 20 bytes
+    infoHash = msg.slice(16, 36).toString('binary') // 20 bytes
 
     // TODO: support multiple info_hash scrape
     if (msg.length > 36) {
       error('multiple info_hash scrape not supported')
     }
 
-    var swarm = self._getSwarm(infoHash)
+    swarm = self._getSwarm(infoHash)
 
     send(Buffer.concat([
       common.toUInt32(common.ACTIONS.SCRAPE),
@@ -465,7 +467,6 @@ Server.prototype._onUdpRequest = function (msg, rinfo) {
 }
 
 Server.prototype._getPeers = function (swarm, numWant) {
-  var self = this
   var peers = []
   for (var peerId in swarm.peers) {
     var peer = swarm.peers[peerId]
@@ -481,7 +482,6 @@ Server.prototype._getPeers = function (swarm, numWant) {
 }
 
 Server.prototype._getPeersCompact = function (swarm, numWant) {
-  var self = this
   var peers = []
 
   for (var peerId in swarm.peers) {
