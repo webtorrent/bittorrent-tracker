@@ -137,7 +137,6 @@ Server.prototype._onHttpRequest = function (req, res) {
     if (!peerId) return error('invalid peer_id')
     if (peerId.length !== 20) return error('invalid peer_id')
     if (!port) return error('invalid port')
-    if (!peerId) return error('invalid peer_id')
 
     var ip = self._trustProxy
       ? req.headers['x-forwarded-for'] || req.connection.remoteAddress
