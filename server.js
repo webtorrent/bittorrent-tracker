@@ -468,6 +468,7 @@ Server.prototype._onUdpRequest = function (msg, rinfo) {
 Server.prototype._getPeers = function (swarm, numWant) {
   var peers = []
   for (var peerId in swarm.peers) {
+    if (peers.length >= numWant) break
     var peer = swarm.peers[peerId]
     if (!peer) continue // ignore null values
     peers.push({
@@ -475,7 +476,6 @@ Server.prototype._getPeers = function (swarm, numWant) {
       ip: peer.ip,
       port: peer.port
     })
-    if (peers.length === numWant) break
   }
   return peers
 }
@@ -484,10 +484,10 @@ Server.prototype._getPeersCompact = function (swarm, numWant) {
   var peers = []
 
   for (var peerId in swarm.peers) {
+    if (peers.length >= numWant) break
     var peer = swarm.peers[peerId]
     if (!peer) continue // ignore null values
     peers.push(peer.ip + ':' + peer.port)
-    if (peers.length === numWant) break
   }
 
   return string2compact(peers)
