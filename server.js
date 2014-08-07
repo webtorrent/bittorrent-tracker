@@ -9,7 +9,6 @@ var EventEmitter = require('events').EventEmitter
 var http = require('http')
 var inherits = require('inherits')
 var ipLib = require('ip')
-var parallel = require('run-parallel')
 var string2compact = require('string2compact')
 
 var NUM_ANNOUNCE_PEERS = 50
@@ -44,6 +43,7 @@ function Server (opts) {
 
   self._trustProxy = !!opts.trustProxy
 
+  self.port = null
   self.torrents = {}
 
   // default to starting an http server unless the user explictly says no
@@ -51,6 +51,7 @@ function Server (opts) {
     self._httpServer = http.createServer()
     self._httpServer.on('request', self._onHttpRequest.bind(self))
     self._httpServer.on('error', self._onError.bind(self))
+    self._httpServer.on('listening', onListening)
   }
 
   // default to starting a udp server unless the user explicitly says no
@@ -58,6 +59,13 @@ function Server (opts) {
     self._udpServer = dgram.createSocket('udp4')
     self._udpServer.on('message', self._onUdpRequest.bind(self))
     self._udpServer.on('error', self._onError.bind(self))
+    self._udpServer.on('listening', onListening)
+  }
+
+  var num = !!self._httpServer + !!self._udpServer
+  function onListening () {
+    num -= 1
+    if (num === 0) self.emit('listening', self.port)
   }
 }
 
@@ -68,23 +76,10 @@ Server.prototype._onError = function (err) {
 
 Server.prototype.listen = function (port, onlistening) {
   var self = this
-  var tasks = []
-
-  if (onlistening) {
-    self.once('listening', onlistening)
-  }
-
-  self._httpServer && tasks.push(function (cb) {
-    self._httpServer.listen(port.http || port, cb)
-  })
-  self._udpServer && tasks.push(function (cb) {
-    self._udpServer.bind(port.udp || port, cb)
-  })
-
-  parallel(tasks, function (err) {
-    if (err) return self.emit('error', err)
-    self.emit('listening', port)
-  })
+  self.port = port
+  if (onlistening) self.once('listening', onlistening)
+  self._httpServer && self._httpServer.listen(port.http || port)
+  self._udpServer && self._udpServer.bind(port.udp || port)
 }
 
 Server.prototype.close = function (cb) {
