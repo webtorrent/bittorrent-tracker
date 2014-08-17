@@ -1,5 +1,4 @@
 var Client = require('../')
-var portfinder = require('portfinder')
 var Server = require('../').Server
 var test = require('tape')
 
@@ -9,7 +8,7 @@ var peerId2 = '12345678901234567890'
 var torrentLength = 50000
 
 function serverTest (t, serverType) {
-  t.plan(27)
+  t.plan(26)
 
   var opts = serverType === 'http' ? { udp: false } : { http: false }
   var server = new Server(opts)
@@ -26,10 +25,7 @@ function serverTest (t, serverType) {
     t.pass('server listening')
   })
 
-  portfinder.getPort(function (err, port) {
-    t.error(err, 'found free port')
-    server.listen(port)
-
+  server.listen(function (port) {
     var announceUrl = 'http://127.0.0.1:' + port + '/announce'
 
     var client = new Client(peerId, 6881, {

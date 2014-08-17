@@ -9,7 +9,11 @@ var EventEmitter = require('events').EventEmitter
 var http = require('http')
 var inherits = require('inherits')
 var ipLib = require('ip')
+var portfinder = require('portfinder')
 var string2compact = require('string2compact')
+
+// Use random port above 1024
+portfinder.basePort = Math.floor(Math.random() * 60000) + 1025
 
 var NUM_ANNOUNCE_PEERS = 50
 var MAX_ANNOUNCE_PEERS = 82
@@ -43,6 +47,7 @@ function Server (opts) {
 
   self._trustProxy = !!opts.trustProxy
 
+  self.listening = false
   self.port = null
   self.torrents = {}
 
@@ -65,7 +70,10 @@ function Server (opts) {
   var num = !!self._httpServer + !!self._udpServer
   function onListening () {
     num -= 1
-    if (num === 0) self.emit('listening', self.port)
+    if (num === 0) {
+      self.listening = true
+      self.emit('listening', self.port)
+    }
   }
 }
 
@@ -76,10 +84,22 @@ Server.prototype._onError = function (err) {
 
 Server.prototype.listen = function (port, onlistening) {
   var self = this
-  self.port = port
+  if (typeof port === 'function') {
+    onlistening = port
+    port = undefined
+  }
+  if (self.listening) throw new Error('server already listening')
   if (onlistening) self.once('listening', onlistening)
-  self._httpServer && self._httpServer.listen(port.http || port)
-  self._udpServer && self._udpServer.bind(port.udp || port)
+
+  function onPort (err, port) {
+    if (err) return self.emit('error', err)
+    self.port = port
+    self._httpServer && self._httpServer.listen(port.http || port)
+    self._udpServer && self._udpServer.bind(port.udp || port)
+  }
+
+  if (port) onPort(null, port)
+  else portfinder.getPort(onPort)
 }
 
 Server.prototype.close = function (cb) {
