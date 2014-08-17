@@ -28,7 +28,6 @@ inherits(Client, EventEmitter)
  * @param {Number} opts.interval   interval in ms to send announce requests to the tracker
  */
 function Client (peerId, port, torrent, opts) {
-
   var self = this
   if (!(self instanceof Client)) return new Client(peerId, port, torrent, opts)
   EventEmitter.call(self)
