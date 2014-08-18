@@ -49,11 +49,8 @@ function Client (peerId, port, torrent, opts) {
 
   debug('new client %s', self._infoHash.toString('hex'))
 
-  if (typeof torrent.announce === 'string') {
-    // magnet-uri returns a string if the magnet uri only contains one 'tr' parameter
-    torrent.announce = [ torrent.announce ]
-  }
-  self._trackers = torrent.announce
+  if (typeof torrent.announce === 'string') torrent.announce = [ torrent.announce ]
+  self._trackers = (torrent.announce || [])
     .filter(function (announceUrl) {
       return announceUrl.indexOf('udp://') === 0 || announceUrl.indexOf('http://') === 0
     })
