@@ -45,10 +45,14 @@ var port = 6881
 
 var client = new Client(peerId, port, parsedTorrent)
 
-// you must add an 'error' event handler!
 client.on('error', function (err) {
+  // fatal client error!
   console.log(err.message)
+})
+
+client.on('warning', function (err) {
   // a tracker was unavailable or sent bad data to the client. you can probably ignore it
+  console.log(err.message)
 })
 
 // start getting peers from the tracker

@@ -388,7 +388,8 @@ Tracker.prototype._requestUdp = function (requestUrl, opts) {
   }
 
   function error (message) {
-    self.client.emit('error', new Error(message + ' (connecting to tracker ' + requestUrl + ')'))
+    // errors will often happen if a tracker is offline, so don't treat it as fatal
+    self.client.emit('warning', new Error(message + ' (' + requestUrl + ')'))
     cleanup()
   }
 
@@ -443,7 +444,7 @@ Tracker.prototype._handleResponse = function (requestUrl, data) {
   try {
     data = bencode.decode(data)
   } catch (err) {
-    return self.client.emit('error', new Error('Error decoding tracker response: ' + err.message))
+    return self.client.emit('warning', new Error('Error decoding tracker response: ' + err.message))
   }
   var failure = data['failure reason']
   if (failure) {
