@@ -19,7 +19,7 @@
     "buffer-equal": "0.0.1",
     "compact2string": "^1.2.0",
     "concat-stream": "^1.4.5",
-    "debug": "^1.0.0",
+    "debug": "^1.0.4",
     "extend.js": "0.0.1",
     "hat": "0.0.3",
     "inherits": "^2.0.1",
