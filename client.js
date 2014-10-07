@@ -352,13 +352,15 @@ Tracker.prototype._requestUdp = function (requestUrl, opts) {
           incomplete: msg.readUInt32BE(12)
         })
 
+        var addrs
         try {
-          compact2string.multi(msg.slice(20)).forEach(function (addr) {
-            self.client.emit('peer', addr)
-          })
+          addrs = compact2string.multi(msg.slice(20))
         } catch (err) {
-          return self.client.emit('error', err)
+          return self.client.emit('warning', err)
         }
+        addrs.forEach(function (addr) {
+          self.client.emit('peer', addr)
+        })
         break
 
       case 2: // scrape
@@ -482,13 +484,15 @@ Tracker.prototype._handleResponse = function (requestUrl, data) {
 
     if (Buffer.isBuffer(data.peers)) {
       // tracker returned compact response
+      var addrs
       try {
-        compact2string.multi(data.peers).forEach(function (addr) {
-          self.client.emit('peer', addr)
-        })
+        addrs = compact2string.multi(data.peers)
       } catch (err) {
-        return self.client.emit('error', err)
+        return self.client.emit('warning', err)
       }
+      addrs.forEach(function (addr) {
+        self.client.emit('peer', addr)
+      })
     } else if (Array.isArray(data.peers)) {
       // tracker returned normal response
       data.peers.forEach(function (peer) {
