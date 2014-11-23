@@ -497,8 +497,10 @@ Tracker.prototype._handleResponse = function (requestUrl, data) {
       // tracker returned normal response
       data.peers.forEach(function (peer) {
         var ip = peer.ip
-        var addr = ip[0] + '.' + ip[1] + '.' + ip[2] + '.' + ip[3] + ':' + peer.port
-        self.client.emit('peer', addr)
+        var host = ip.length == 4 ?
+          (ip[0] + '.' + ip[1] + '.' + ip[2] + '.' + ip[3]) :
+          ip.toString()
+        self.client.emit('peer', host + ':' + peer.port)
       })
     }
   } else if (requestUrl === self._scrapeUrl) {
