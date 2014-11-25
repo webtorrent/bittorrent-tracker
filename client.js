@@ -501,6 +501,27 @@ Tracker.prototype._handleResponse = function (requestUrl, data) {
         self.client.emit('peer', addr)
       })
     }
+
+    if (Buffer.isBuffer(data.peers6)) {
+      // tracker returned compact response
+      var addrs
+      try {
+        addrs = compact2string.multi6(data.peers6)
+      } catch (err) {
+        return self.client.emit('warning', err)
+      }
+      addrs.forEach(function (addr) {
+        self.client.emit('peer', addr)
+      })
+    } else if (Array.isArray(data.peers6)) {
+      // tracker returned normal response
+      data.peers.forEach(function (peer) {
+        var ip = /:/.test(peer.ip) ?
+          '[' + peer.ip + ']' :
+          peer.ip
+        self.client.emit('peer', ip + ':' + peer.port)
+      })
+    }
   } else if (requestUrl === self._scrapeUrl) {
     // NOTE: the unofficial spec says to use the 'files' key but i've seen 'host' in practice
     data = data.files || data.host || {}
