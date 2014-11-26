@@ -174,7 +174,7 @@ Server.prototype._onHttpRequest = function (req, res) {
       }
       if (left === 0) swarm.complete += 1
       else swarm.incomplete += 1
-      swarm.peers[addr] = {
+      peer = swarm.peers[addr] = {
         ip: ip,
         port: port,
         peerId: peerId
@@ -233,7 +233,7 @@ Server.prototype._onHttpRequest = function (req, res) {
         return error('invalid event') // early return
     }
 
-    if (left === 0) peer.complete = true
+    if (left === 0 && peer) peer.complete = true
 
     // send peers
     var peers = compact === 1
@@ -367,7 +367,7 @@ Server.prototype._onUdpRequest = function (msg, rinfo) {
       }
       if (left === 0) swarm.complete += 1
       else swarm.incomplete += 1
-      swarm.peers[addr] = {
+      peer = swarm.peers[addr] = {
         ip: ip,
         port: port,
         peerId: peerId
@@ -426,7 +426,7 @@ Server.prototype._onUdpRequest = function (msg, rinfo) {
         return error('invalid event') // early return
     }
 
-    if (left === 0) peer.complete = true
+    if (left === 0 && peer) peer.complete = true
 
     // send peers
     var peers = self._getPeersCompact(swarm, numWant)
