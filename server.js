@@ -138,7 +138,6 @@ Server.prototype._getSwarm = function (binaryInfoHash) {
 
 Server.prototype._onHttpRequest = function (req, res) {
   var self = this
-  var warning
   var s = req.url.split('?')
   var params = common.querystringParse(s[1])
   var response
@@ -153,6 +152,9 @@ Server.prototype._onHttpRequest = function (req, res) {
     if (peerId.length !== 20) return error('invalid peer_id')
     if (!port) return error('invalid port')
 
+    var left = Number(params.left)
+    var compact = Number(params.compact)
+
     var ip = self._trustProxy
       ? req.headers['x-forwarded-for'] || req.connection.remoteAddress
       : req.connection.remoteAddress.replace(REMOVE_IPV6_RE, '') // force ipv4
@@ -165,76 +167,76 @@ Server.prototype._onHttpRequest = function (req, res) {
       MAX_ANNOUNCE_PEERS
     )
 
+    var start = function () {
+      if (peer) {
+        debug('unexpected `started` event from peer that is already in swarm')
+        return update() // treat as an update
+      }
+      if (left === 0) swarm.complete += 1
+      else swarm.incomplete += 1
+      swarm.peers[addr] = {
+        ip: ip,
+        port: port,
+        peerId: peerId
+      }
+      self.emit('start', addr)
+    }
+
+    var stop = function () {
+      if (!peer) {
+        debug('unexpected `stopped` event from peer that is not in swarm')
+        return // do nothing
+      }
+      if (peer.complete) swarm.complete -= 1
+      else swarm.incomplete -= 1
+      swarm.peers[addr] = null
+      self.emit('stop', addr)
+    }
+
+    var complete = function () {
+      if (!peer) {
+        debug('unexpected `completed` event from peer that is not in swarm')
+        return start() // treat as a start
+      }
+      if (peer.complete) {
+        debug('unexpected `completed` event from peer that is already marked as completed')
+        return // do nothing
+      }
+      swarm.complete += 1
+      swarm.incomplete -= 1
+      peer.complete = true
+      self.emit('complete', addr)
+    }
+
+    var update = function () {
+      if (!peer) {
+        debug('unexpected `update` event from peer that is not in swarm')
+        return start() // treat as a start
+      }
+      self.emit('update', addr)
+    }
+
     switch (params.event) {
       case 'started':
-        if (peer) {
-          warning = 'unexpected `started` event from peer that is already in swarm'
-          break
-        }
-
-        if (Number(params.left) === 0) {
-          swarm.complete += 1
-        } else {
-          swarm.incomplete += 1
-        }
-
-        swarm.peers[addr] = {
-          ip: ip,
-          port: port,
-          peerId: peerId
-        }
-        self.emit('start', addr)
+        start()
         break
-
       case 'stopped':
-        if (!peer) {
-          warning = 'unexpected `stopped` event from peer that is not in swarm'
-          break
-        }
-
-        if (peer.complete) {
-          swarm.complete -= 1
-        } else {
-          swarm.incomplete -= 1
-        }
-
-        swarm.peers[addr] = null
-        self.emit('stop', addr)
+        stop()
         break
-
       case 'completed':
-        if (!peer) {
-          warning = 'unexpected `completed` event from peer that is not in swarm'
-          break
-        }
-        if (peer.complete) {
-          warning = 'unexpected `completed` event from peer that is already marked as completed'
-          break
-        }
-
-        swarm.complete += 1
-        swarm.incomplete -= 1
-
-        peer.complete = true
-        self.emit('complete', addr)
+        complete()
         break
-
-      case '': // update
-      case undefined:
-        if (!peer) {
-          warning = 'unexpected `update` event from peer that is not in swarm'
-          break
-        }
-
-        self.emit('update', addr)
+      case '': case undefined: // update
+        update()
         break
-
       default:
         return error('invalid event') // early return
     }
 
+    if (left === 0) peer.complete = true
+
     // send peers
-    var peers = Number(params.compact) === 1
+    var peers = compact === 1
       ? self._getPeersCompact(swarm, numWant)
       : self._getPeers(swarm, numWant)
 
@@ -245,9 +247,6 @@ Server.prototype._onHttpRequest = function (req, res) {
       interval: self._intervalMs
     }
 
-    if (warning) {
-      response['warning message'] = warning
-    }
     res.end(bencode.encode(response))
     debug('sent response %s', response)
 
@@ -361,73 +360,73 @@ Server.prototype._onUdpRequest = function (msg, rinfo) {
     // 512 bytes which is not safe
     numWant = Math.min(numWant || NUM_ANNOUNCE_PEERS, MAX_ANNOUNCE_PEERS)
 
-    var warning
+    var start = function () {
+      if (peer) {
+        debug('unexpected `started` event from peer that is already in swarm')
+        return update() // treat as an update
+      }
+      if (left === 0) swarm.complete += 1
+      else swarm.incomplete += 1
+      swarm.peers[addr] = {
+        ip: ip,
+        port: port,
+        peerId: peerId
+      }
+      self.emit('start', addr)
+    }
+
+    var stop = function () {
+      if (!peer) {
+        debug('unexpected `stopped` event from peer that is not in swarm')
+        return // do nothing
+      }
+      if (peer.complete) swarm.complete -= 1
+      else swarm.incomplete -= 1
+      swarm.peers[addr] = null
+      self.emit('stop', addr)
+    }
+
+    var complete = function () {
+      if (!peer) {
+        debug('unexpected `completed` event from peer that is not in swarm')
+        return start() // treat as a start
+      }
+      if (peer.complete) {
+        debug('unexpected `completed` event from peer that is already marked as completed')
+        return // do nothing
+      }
+      swarm.complete += 1
+      swarm.incomplete -= 1
+      peer.complete = true
+      self.emit('complete', addr)
+    }
+
+    var update = function () {
+      if (!peer) {
+        debug('unexpected `update` event from peer that is not in swarm')
+        return start() // treat as a start
+      }
+      self.emit('update', addr)
+    }
+
     switch (event) {
       case common.EVENTS.started:
-        if (peer) {
-          warning = 'unexpected `started` event from peer that is already in swarm'
-          break
-        }
-
-        if (left === 0) {
-          swarm.complete += 1
-        } else {
-          swarm.incomplete += 1
-        }
-
-        swarm.peers[addr] = {
-          ip: ip,
-          port: port,
-          peerId: peerId
-        }
-        self.emit('start', addr)
+        start()
         break
-
       case common.EVENTS.stopped:
-        if (!peer) {
-          warning = 'unexpected `stopped` event from peer that is not in swarm'
-          break
-        }
-
-        if (peer.complete) {
-          swarm.complete -= 1
-        } else {
-          swarm.incomplete -= 1
-        }
-
-        swarm.peers[addr] = null
-        self.emit('stop', addr)
+        stop()
         break
-
       case common.EVENTS.completed:
-        if (!peer) {
-          warning = 'unexpected `completed` event from peer that is not in swarm'
-          break
-        }
-        if (peer.complete) {
-          warning = 'unexpected `completed` event from peer that is already marked as completed'
-          break
-        }
-
-        swarm.complete += 1
-        swarm.incomplete -= 1
-
-        peer.complete = true
-        self.emit('complete', addr)
+        complete()
         break
-
       case common.EVENTS.update: // update
-        if (!peer) {
-          warning = 'unexpected `update` event from peer that is not in swarm'
-          break
-        }
-
-        self.emit('update', addr)
+        update()
         break
-
       default:
         return error('invalid event') // early return
     }
+
+    if (left === 0) peer.complete = true
 
     // send peers
     var peers = self._getPeersCompact(swarm, numWant)
