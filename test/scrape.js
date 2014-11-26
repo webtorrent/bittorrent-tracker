@@ -7,7 +7,6 @@ var fs = require('fs')
 var http = require('http')
 var parseTorrent = require('parse-torrent')
 var portfinder = require('portfinder')
-var querystring = require('querystring')
 var Server = require('../').Server
 var test = require('tape')
 
@@ -28,7 +27,6 @@ var peerId = new Buffer('01234567890123456789')
 
 function testSingle (t, serverType) {
   commonTest.createServer(t, serverType, function (server, announceUrl) {
-    var scrapeUrl = announceUrl.replace('announce', 'scrape')
     server.once('listening', function () {
       Client.scrape(announceUrl, infoHash1, function (err, data) {
         t.error(err)
@@ -118,7 +116,7 @@ test('server: multiple info_hash scrape', function (t) {
             t.end()
           })
         }))
-      }).on('error', function (e) {
+      }).on('error', function (err) {
         t.error(err)
       })
     })
@@ -151,7 +149,7 @@ test('server: all info_hash scrape', function (t) {
       })
       client.start()
 
-      server.once('start', function (data) {
+      server.once('start', function () {
 
         // now do a scrape of everything by omitting the info_hash param
         http.get(scrapeUrl, function (res) {
@@ -172,7 +170,7 @@ test('server: all info_hash scrape', function (t) {
               t.end()
             })
           }))
-        }).on('error', function (e) {
+        }).on('error', function (err) {
           t.error(err)
         })
       })

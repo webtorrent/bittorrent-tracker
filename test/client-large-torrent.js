@@ -43,8 +43,8 @@ test('large torrent: client.start()', function (t) {
 
     client.start()
 
-    client.once('peer', function (addr) {
-      t.pass('there is at least one peer') // TODO: this shouldn't rely on an external server!
+    client.once('peer', function () {
+      t.pass('there is at least one peer')
 
       client.stop()
 

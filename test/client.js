@@ -31,7 +31,7 @@ function testClientStart (t, serverType) {
       t.equal(typeof data.incomplete, 'number')
     })
 
-    client.once('peer', function (addr) {
+    client.once('peer', function () {
       t.pass('there is at least one peer')
       client.stop()
 
@@ -186,7 +186,7 @@ function testClientAnnounceWithNumWant (t, serverType) {
     })
 
     client1.start()
-    client1.once('update', function (data) {
+    client1.once('update', function () {
       var client2 = new Client(peerId2, port + 1, parsedTorrent)
       client2.on('error', function (err) {
         t.error(err)
