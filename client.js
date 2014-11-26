@@ -482,9 +482,9 @@ Tracker.prototype._handleResponse = function (requestUrl, data) {
       incomplete: data.incomplete
     })
 
+    var addrs
     if (Buffer.isBuffer(data.peers)) {
       // tracker returned compact response
-      var addrs
       try {
         addrs = compact2string.multi(data.peers)
       } catch (err) {
@@ -502,7 +502,6 @@ Tracker.prototype._handleResponse = function (requestUrl, data) {
 
     if (Buffer.isBuffer(data.peers6)) {
       // tracker returned compact response
-      var addrs
       try {
         addrs = compact2string.multi6(data.peers6)
       } catch (err) {
