@@ -496,11 +496,7 @@ Tracker.prototype._handleResponse = function (requestUrl, data) {
     } else if (Array.isArray(data.peers)) {
       // tracker returned normal response
       data.peers.forEach(function (peer) {
-        var ip = peer.ip
-        var host = ip.length == 4 ?
-          (ip[0] + '.' + ip[1] + '.' + ip[2] + '.' + ip[3]) :
-          ip.toString()
-        self.client.emit('peer', host + ':' + peer.port)
+        self.client.emit('peer', peer.ip + ':' + peer.port)
       })
     }
   } else if (requestUrl === self._scrapeUrl) {
