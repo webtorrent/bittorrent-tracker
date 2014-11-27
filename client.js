@@ -512,10 +512,10 @@ Tracker.prototype._handleResponse = function (requestUrl, data) {
       })
     } else if (Array.isArray(data.peers6)) {
       // tracker returned normal response
-        var ip = /^\[/.test(peer.ip)
-          ? peer.ip
-          : '[' + peer.ip + ']'
       data.peers6.forEach(function (peer) {
+        var ip = /^\[/.test(peer.ip) || !/:/.test(peer.ip)
+          ? peer.ip /* ipv6 w/ brackets or domain name */
+          : '[' + peer.ip + ']' /* ipv6 without brackets */
         self.client.emit('peer', ip + ':' + peer.port)
       })
     }
