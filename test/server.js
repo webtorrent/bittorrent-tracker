@@ -114,5 +114,5 @@ test('http server', function (t) {
 })
 
 test('udp server', function (t) {
-  serverTest(t, 'http')
+  serverTest(t, 'udp')
 })
