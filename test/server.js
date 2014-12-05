@@ -26,7 +26,7 @@ function serverTest (t, serverType) {
   })
 
   server.listen(function (port) {
-    var announceUrl = 'http://127.0.0.1:' + port + '/announce'
+    var announceUrl = serverType + '://127.0.0.1:' + port + '/announce'
 
     var client = new Client(peerId, 6881, {
       infoHash: infoHash,
