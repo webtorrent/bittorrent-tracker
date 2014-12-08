@@ -159,7 +159,7 @@ Server.prototype._onHttpRequest = function (req, res) {
   }
   
   var response
-  if (params && params.request === 'announce') {
+  if (params && params.action === common.ACTIONS.ANNOUNCE) {
     var swarm = self._getSwarm(params.info_hash)
     var peer = swarm.peers[params.addr]
 
@@ -246,7 +246,7 @@ Server.prototype._onHttpRequest = function (req, res) {
     res.end(bencode.encode(response))
     debug('sent response %s', response)
 
-  } else if (params.request === 'scrape') { // unofficial scrape message
+  } else if (params.action === common.ACTIONS.SCRAPE) { // unofficial scrape message
     if (typeof params.info_hash === 'string') {
       params.info_hash = [ params.info_hash ]
     } else if (params.info_hash == null) {
@@ -307,13 +307,13 @@ Server.prototype._onUdpRequest = function (msg, rinfo) {
   var socket = dgram.createSocket('udp4')
 
   var swarm
-  if (params && params.request === 'connect') {
+  if (params && params.action === common.ACTIONS.CONNECT) {
     send(Buffer.concat([
       common.toUInt32(common.ACTIONS.CONNECT),
       common.toUInt32(params.transactionId),
       params.connectionId
     ]))
-  } else if (params && params.request === 'announce') {
+  } else if (params && params.action === common.ACTIONS.ANNOUNCE) {
     swarm = self._getSwarm(params.info_hash)
     var peer = swarm.peers[params.addr]
 
@@ -397,7 +397,7 @@ Server.prototype._onUdpRequest = function (msg, rinfo) {
       peers
     ]))
 
-  } else if (params && params.request === 'scrape') { // scrape message
+  } else if (params && params.action === common.ACTIONS.SCRAPE) { // scrape message
     swarm = self._getSwarm(params.info_hash)
 
     send(Buffer.concat([
@@ -463,7 +463,7 @@ function parseHttpRequest (req, options) {
   var params = common.querystringParse(s[1])
 
   if (s[0] === '/announce') {
-    params.request = 'announce'
+    params.action = common.ACTIONS.ANNOUNCE
     
     params.peer_id = typeof params.peer_id === 'string' && common.binaryToUtf8(params.peer_id)
     params.port = Number(params.port)
@@ -489,7 +489,7 @@ function parseHttpRequest (req, options) {
 
     return params
   } else if (s[0] === '/scrape') { // unofficial scrape message
-    params.request = 'scrape'
+    params.action = common.ACTIONS.SCRAPE
 
     if (typeof params.info_hash === 'string') {
       params.info_hash = [ params.info_hash ]
@@ -532,9 +532,8 @@ function parseUdpRequest (msg, rinfo) {
   }
 
   if (params.action === common.ACTIONS.CONNECT) {
-    params.request = 'connect'
+    // No further params
   } else if (params.action === common.ACTIONS.ANNOUNCE) {
-    params.request = 'announce'
     params.info_hash = msg.slice(16, 36).toString('binary') // 20 bytes
     params.peer_id = msg.slice(36, 56).toString('utf8') // 20 bytes
     params.downloaded = fromUInt64(msg.slice(56, 64)) // TODO: track this?
@@ -556,7 +555,6 @@ function parseUdpRequest (msg, rinfo) {
     params.addr = params.ip + ':' + params.port // TODO: ipv6 brackets
 
   } else if (params.action === common.ACTIONS.SCRAPE) { // scrape message
-    params.request = 'scrape'
     params.info_hash = msg.slice(16, 36).toString('binary') // 20 bytes
 
     // TODO: support multiple info_hash scrape
