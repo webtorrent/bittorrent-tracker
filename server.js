@@ -1,4 +1,5 @@
 module.exports = Server
+module.exports.parseHttpRequest = parseHttpRequest
 
 var bencode = require('bencode')
 var bufferEqual = require('buffer-equal')
@@ -138,48 +139,43 @@ Server.prototype._getSwarm = function (binaryInfoHash) {
 
 Server.prototype._onHttpRequest = function (req, res) {
   var self = this
-  var s = req.url.split('?')
-  var params = common.querystringParse(s[1])
+
+  var params
+  try {
+    params = parseHttpRequest(req, {
+      trustProxy: self._trustProxy
+    })
+  } catch (err) {
+    debug('sent error %s', err.message)
+    res.end(bencode.encode({
+      'failure reason': err.message
+    }))
+
+    // even though it's an error for the client, it's just a warning for the server.
+    // don't crash the server because a client sent bad data :)
+    self.emit('warning', err)
+    
+    return
+  }
+  
   var response
-  if (s[0] === '/announce') {
-    var infoHash = typeof params.info_hash === 'string' && params.info_hash
-    var peerId = typeof params.peer_id === 'string' && common.binaryToUtf8(params.peer_id)
-    var port = Number(params.port)
-
-    if (!infoHash) return error('invalid info_hash')
-    if (infoHash.length !== 20) return error('invalid info_hash')
-    if (!peerId) return error('invalid peer_id')
-    if (peerId.length !== 20) return error('invalid peer_id')
-    if (!port) return error('invalid port')
-
-    var left = Number(params.left)
-    var compact = Number(params.compact)
-
-    var ip = self._trustProxy
-      ? req.headers['x-forwarded-for'] || req.connection.remoteAddress
-      : req.connection.remoteAddress.replace(REMOVE_IPV6_RE, '') // force ipv4
-    var addr = ip + ':' + port
-    var swarm = self._getSwarm(infoHash)
-    var peer = swarm.peers[addr]
-
-    var numWant = Math.min(
-      Number(params.numwant) || NUM_ANNOUNCE_PEERS,
-      MAX_ANNOUNCE_PEERS
-    )
+  if (params && params.request === 'announce') {
+    var swarm = self._getSwarm(params.info_hash)
+    var peer = swarm.peers[params.addr]
 
     var start = function () {
       if (peer) {
         debug('unexpected `started` event from peer that is already in swarm')
         return update() // treat as an update
       }
-      if (left === 0) swarm.complete += 1
+      if (params.left === 0) swarm.complete += 1
       else swarm.incomplete += 1
-      peer = swarm.peers[addr] = {
-        ip: ip,
-        port: port,
-        peerId: peerId
+      peer = swarm.peers[params.addr] = {
+        ip: params.ip,
+        port: params.port,
+        peerId: params.peer_id
       }
-      self.emit('start', addr)
+      self.emit('start', params.addr)
     }
 
     var stop = function () {
@@ -189,8 +185,8 @@ Server.prototype._onHttpRequest = function (req, res) {
       }
       if (peer.complete) swarm.complete -= 1
       else swarm.incomplete -= 1
-      swarm.peers[addr] = null
-      self.emit('stop', addr)
+      swarm.peers[params.addr] = null
+      self.emit('stop', params.addr)
     }
 
     var complete = function () {
@@ -205,7 +201,7 @@ Server.prototype._onHttpRequest = function (req, res) {
       swarm.complete += 1
       swarm.incomplete -= 1
       peer.complete = true
-      self.emit('complete', addr)
+      self.emit('complete', params.addr)
     }
 
     var update = function () {
@@ -213,7 +209,7 @@ Server.prototype._onHttpRequest = function (req, res) {
         debug('unexpected `update` event from peer that is not in swarm')
         return start() // treat as a start
       }
-      self.emit('update', addr)
+      self.emit('update', params.addr)
     }
 
     switch (params.event) {
@@ -233,12 +229,12 @@ Server.prototype._onHttpRequest = function (req, res) {
         return error('invalid event') // early return
     }
 
-    if (left === 0 && peer) peer.complete = true
+    if (params.left === 0 && peer) peer.complete = true
 
     // send peers
-    var peers = compact === 1
-      ? self._getPeersCompact(swarm, numWant)
-      : self._getPeers(swarm, numWant)
+    var peers = params.compact === 1
+      ? self._getPeersCompact(swarm, params.numwant)
+      : self._getPeers(swarm, params.numwant)
 
     response = {
       complete: swarm.complete,
@@ -250,11 +246,12 @@ Server.prototype._onHttpRequest = function (req, res) {
     res.end(bencode.encode(response))
     debug('sent response %s', response)
 
-  } else if (s[0] === '/scrape') { // unofficial scrape message
+  } else if (params.request === 'scrape') { // unofficial scrape message
     if (typeof params.info_hash === 'string') {
       params.info_hash = [ params.info_hash ]
     } else if (params.info_hash == null) {
       // if info_hash param is omitted, stats for all torrents are returned
+      // TODO: make this configurable!
       params.info_hash = Object.keys(self.torrents)
     }
 
@@ -268,11 +265,6 @@ Server.prototype._onHttpRequest = function (req, res) {
     }
 
     params.info_hash.some(function (infoHash) {
-      if (infoHash.length !== 20) {
-        error('invalid info_hash')
-        return true // early return
-      }
-
       var swarm = self._getSwarm(infoHash)
 
       response.files[infoHash] = {
@@ -338,7 +330,7 @@ Server.prototype._onUdpRequest = function (msg, rinfo) {
     var event = msg.readUInt32BE(80)
     var ip = msg.readUInt32BE(84) // optional
     var key = msg.readUInt32BE(88) // TODO: what is this for?
-    var numWant = msg.readUInt32BE(92) // optional
+    var numwant = msg.readUInt32BE(92) // optional
     var port = msg.readUInt16BE(96) // optional
 
     if (ip) {
@@ -358,7 +350,7 @@ Server.prototype._onUdpRequest = function (msg, rinfo) {
 
     // never send more than MAX_ANNOUNCE_PEERS or else the UDP packet will get bigger than
     // 512 bytes which is not safe
-    numWant = Math.min(numWant || NUM_ANNOUNCE_PEERS, MAX_ANNOUNCE_PEERS)
+    numwant = Math.min(numwant || NUM_ANNOUNCE_PEERS, MAX_ANNOUNCE_PEERS)
 
     var start = function () {
       if (peer) {
@@ -429,7 +421,7 @@ Server.prototype._onUdpRequest = function (msg, rinfo) {
     if (left === 0 && peer) peer.complete = true
 
     // send peers
-    var peers = self._getPeersCompact(swarm, numWant)
+    var peers = self._getPeersCompact(swarm, numwant)
 
     send(Buffer.concat([
       common.toUInt32(common.ACTIONS.ANNOUNCE),
@@ -479,10 +471,10 @@ Server.prototype._onUdpRequest = function (msg, rinfo) {
   }
 }
 
-Server.prototype._getPeers = function (swarm, numWant) {
+Server.prototype._getPeers = function (swarm, numwant) {
   var peers = []
   for (var peerId in swarm.peers) {
-    if (peers.length >= numWant) break
+    if (peers.length >= numwant) break
     var peer = swarm.peers[peerId]
     if (!peer) continue // ignore null values
     peers.push({
@@ -494,11 +486,11 @@ Server.prototype._getPeers = function (swarm, numWant) {
   return peers
 }
 
-Server.prototype._getPeersCompact = function (swarm, numWant) {
+Server.prototype._getPeersCompact = function (swarm, numwant) {
   var peers = []
 
   for (var peerId in swarm.peers) {
-    if (peers.length >= numWant) break
+    if (peers.length >= numwant) break
     var peer = swarm.peers[peerId]
     if (!peer) continue // ignore null values
     peers.push(peer.ip + ':' + peer.port)
@@ -506,6 +498,61 @@ Server.prototype._getPeersCompact = function (swarm, numWant) {
 
   return string2compact(peers)
 }
+
+
+function parseHttpRequest (req, options) {
+  var s = req.url.split('?')
+  var params = common.querystringParse(s[1])
+
+  if (s[0] === '/announce') {
+    params.request = 'announce'
+    
+    params.peer_id = typeof params.peer_id === 'string' && common.binaryToUtf8(params.peer_id)
+    params.port = Number(params.port)
+
+    if (typeof params.info_hash !== 'string') throw new Error('invalid info_hash')
+    if (params.info_hash.length !== 20) throw new Error('invalid info_hash length')
+    if (typeof params.peer_id !== 'string') throw new Error('invalid peer_id')
+    if (params.peer_id.length !== 20) throw new Error('invalid peer_id length')
+    if (!params.port) throw new Error('invalid port')
+
+    params.left = Number(params.left)
+    params.compact = Number(params.compact)
+
+    params.ip = options.trustProxy
+      ? req.headers['x-forwarded-for'] || req.connection.remoteAddress
+      : req.connection.remoteAddress.replace(REMOVE_IPV6_RE, '') // force ipv4
+    params.addr = params.ip + ':' + params.port // TODO: ipv6 brackets?
+
+    params.numwant = Math.min(
+      Number(params.numwant) || NUM_ANNOUNCE_PEERS,
+      MAX_ANNOUNCE_PEERS
+    )
+
+    return params
+  } else if (s[0] === '/scrape') { // unofficial scrape message
+    params.request = 'scrape'
+
+    if (typeof params.info_hash === 'string') {
+      params.info_hash = [ params.info_hash ]
+    }
+
+    if (params.info_hash) {
+        if (!Array.isArray(params.info_hash)) throw new Error('invalid info_hash')
+
+      params.info_hash.some(function (infoHash) {
+        if (infoHash.length !== 20) {
+          throw new Error('invalid info_hash')
+        }
+      })
+    }
+
+    return params
+  } else {
+    return null
+  }
+}
+
 
 // HELPER FUNCTIONS
 
