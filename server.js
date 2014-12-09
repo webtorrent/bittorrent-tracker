@@ -116,16 +116,9 @@ Server.prototype.close = function (cb) {
   }
 }
 
-Server.prototype.getSwarm = function (infoHash) {
+Server.prototype.getSwarm = function (binaryInfoHash) {
   var self = this
-  var binaryInfoHash = Buffer.isBuffer(infoHash)
-    ? infoHash.toString('binary')
-    : new Buffer(infoHash, 'hex').toString('binary')
-  return self._getSwarm(binaryInfoHash)
-}
-
-Server.prototype._getSwarm = function (binaryInfoHash) {
-  var self = this
+  if (Buffer.isBuffer(binaryInfoHash)) binaryInfoHash = binaryInfoHash.toString('binary')
   var swarm = self.torrents[binaryInfoHash]
   if (!swarm) {
     swarm = self.torrents[binaryInfoHash] = {
@@ -224,7 +217,7 @@ Server.prototype._onRequest = function (params, cb) {
 Server.prototype._onAnnounce = function (params, cb) {
   var self = this
 
-  var swarm = self._getSwarm(params.info_hash)
+  var swarm = self.getSwarm(params.info_hash)
   var peer = swarm.peers[params.addr]
 
   var start = function () {
@@ -335,7 +328,7 @@ Server.prototype._onScrape = function (params, cb) {
   }
   
   params.info_hash.some(function (infoHash) {
-    var swarm = self._getSwarm(infoHash)
+    var swarm = self.getSwarm(infoHash)
     
     response.files[infoHash] = {
       complete: swarm.complete,
@@ -414,12 +407,14 @@ function parseHttpRequest (req, options) {
     }
 
     if (params.info_hash) {
-        if (!Array.isArray(params.info_hash)) throw new Error('invalid info_hash')
+      if (!Array.isArray(params.info_hash)) throw new Error('invalid info_hash array')
 
-      params.info_hash.some(function (infoHash) {
+      params.info_hash = params.info_hash.map(function (infoHash) {
         if (infoHash.length !== 20) {
           throw new Error('invalid info_hash')
         }
+
+        return infoHash
       })
     }
 

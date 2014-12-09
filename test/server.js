@@ -2,7 +2,7 @@ var Client = require('../')
 var Server = require('../').Server
 var test = require('tape')
 
-var infoHash = '4cb67059ed6bd08362da625b3ae77f6f4a075705'
+var infoHash = new Buffer('4cb67059ed6bd08362da625b3ae77f6f4a075705', 'hex')
 var peerId = '01234567890123456789'
 var peerId2 = '12345678901234567890'
 var torrentLength = 50000
