@@ -9,6 +9,7 @@ var inherits = require('inherits')
 var ipLib = require('ip')
 var portfinder = require('portfinder')
 var series = require('run-series')
+var string2compact = require('string2compact')
 
 var common = require('./lib/common')
 var Swarm = require('./lib/swarm')
@@ -216,6 +217,11 @@ Server.prototype._onAnnounce = function (params, cb) {
     if (response) {
       if (!response.action) response.action = common.ACTIONS.ANNOUNCE
       if (!response.intervalMs) response.intervalMs = self._intervalMs
+      if (params.compact === 1) {
+        response.peers = string2compact(response.peers.map(function (peer) {
+          return peer.ip + ':' + peer.port // TODO: ipv6 brackets
+        }))
+      }
     }
     cb(err, response)
   })
