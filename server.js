@@ -176,9 +176,6 @@ Server.prototype._onUdpRequest = function (msg, rinfo) {
     return
   }
 
-  // Do nothing with invalid request
-  if (!params) return
-
   // Handle
   this._onRequest(params, function (err, response) {
     if (err) {
