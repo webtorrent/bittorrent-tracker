@@ -26,6 +26,7 @@
     "ip": "^0.3.0",
     "once": "^1.3.0",
     "portfinder": "^0.2.1",
+    "run-series": "^1.0.2",
     "string2compact": "^1.1.1"
   },
   "devDependencies": {
