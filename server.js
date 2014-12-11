@@ -153,7 +153,7 @@ Server.prototype._onHttpRequest = function (req, res) {
 
   this._onRequest(params, function (err, response) {
     if (err) {
-      self.emit('warning', new Error(err.message))
+      self.emit('warning', err)
       response = {
         'failure reason': err.message
       }
@@ -182,7 +182,7 @@ Server.prototype._onUdpRequest = function (msg, rinfo) {
   // Handle
   this._onRequest(params, function (err, response) {
     if (err) {
-      self.emit('warning', new Error(err.message))
+      self.emit('warning', err)
       response = {
         action: common.ACTIONS.ERRROR,
         'failure reason': err.message
