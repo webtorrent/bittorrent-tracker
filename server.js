@@ -6,7 +6,6 @@ var dgram = require('dgram')
 var EventEmitter = require('events').EventEmitter
 var http = require('http')
 var inherits = require('inherits')
-var ipLib = require('ip')
 var portfinder = require('portfinder')
 var series = require('run-series')
 var string2compact = require('string2compact')
