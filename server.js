@@ -127,27 +127,22 @@ Server.prototype.getSwarm = function (binaryInfoHash) {
 
 Server.prototype._onHttpRequest = function (req, res) {
   var self = this
-  var error
+
   var params
   try {
     params = parseHttpRequest(req, {
       trustProxy: self._trustProxy
     })
   } catch (err) {
-    error = err
-  }
-
-  if (!error && !params) error = new Error('Empty HTTP parameters')
-  if (error) {
-    debug('sent error %s', error.message)
+    debug('sent error %s', err.message)
     res.end(bencode.encode({
-      'failure reason': error.message
+      'failure reason': err.message
     }))
 
     // even though it's an error for the client, it's just a warning for the server.
     // don't crash the server because a client sent bad data :)
-    self.emit('warning', error)
-
+    self.emit('warning', err)
+    
     return
   }
 
