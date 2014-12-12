@@ -147,7 +147,7 @@ Server.prototype._onHttpRequest = function (req, res) {
     // even though it's an error for the client, it's just a warning for the server.
     // don't crash the server because a client sent bad data :)
     self.emit('warning', error)
-    
+
     return
   }
 
@@ -185,7 +185,7 @@ Server.prototype._onUdpRequest = function (msg, rinfo) {
         'failure reason': err.message
       }
     }
-    
+
     var socket = dgram.createSocket('udp4')
     response.transactionId = params.transactionId
     response.connectionId = params.connectionId
@@ -199,7 +199,6 @@ Server.prototype._onUdpRequest = function (msg, rinfo) {
 }
 
 Server.prototype._onRequest = function (params, cb) {
-  var response
   if (params && params.action === common.ACTIONS.CONNECT) {
     cb(null, { action: common.ACTIONS.CONNECT })
   } else if (params && params.action === common.ACTIONS.ANNOUNCE) {
@@ -230,7 +229,7 @@ Server.prototype._onAnnounce = function (params, cb) {
 
 Server.prototype._onScrape = function (params, cb) {
   var self = this
-  
+
   if (typeof params.info_hash === 'string') {
     params.info_hash = [ params.info_hash ]
   } else if (params.info_hash == null) {
@@ -238,13 +237,13 @@ Server.prototype._onScrape = function (params, cb) {
     // TODO: make this configurable!
     params.info_hash = Object.keys(self.torrents)
   }
-  
+
   if (!Array.isArray(params.info_hash)) {
     var err = new Error('invalid info_hash')
     self.emit('warning', err)
     return cb(err)
   }
-  
+
   var response = {
     action: common.ACTIONS.SCRAPE,
     files: {},
@@ -256,7 +255,7 @@ Server.prototype._onScrape = function (params, cb) {
   series(params.info_hash.map(function (infoHash) {
     var swarm = self.getSwarm(infoHash)
     return function (cb) {
-      swarm.scrape(infoHash, params, function (err, scrapeInfo) {
+      swarm.scrape(params, function (err, scrapeInfo) {
         cb(err, scrapeInfo && {
           infoHash: infoHash,
           complete: scrapeInfo.complete || 0,
