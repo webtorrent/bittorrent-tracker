@@ -54,7 +54,7 @@ function Server (opts) {
   // default to starting an http server unless the user explictly says no
   if (opts.http !== false) {
     self._httpServer = http.createServer()
-    self._httpServer.on('request', self._onHttpRequest.bind(self))
+    self._httpServer.on('request', self.onHttpRequest.bind(self))
     self._httpServer.on('error', self._onError.bind(self))
     self._httpServer.on('listening', onListening)
   }
@@ -123,7 +123,7 @@ Server.prototype.getSwarm = function (infoHash) {
   return swarm
 }
 
-Server.prototype._onHttpRequest = function (req, res) {
+Server.prototype.onHttpRequest = function (req, res) {
   var self = this
 
   var params

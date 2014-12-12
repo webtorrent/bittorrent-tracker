@@ -9,7 +9,7 @@ var server = new Server({
   udp: false   // not interested
 })
 
-var onHttpRequest = server._onHttpRequest.bind(server)
+var onHttpRequest = server.onHttpRequest.bind(server)
 app.get('/announce', onHttpRequest)
 app.get('/scrape', onHttpRequest)
 
