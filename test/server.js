@@ -2,9 +2,9 @@ var Client = require('../')
 var Server = require('../').Server
 var test = require('tape')
 
-var infoHash = new Buffer('4cb67059ed6bd08362da625b3ae77f6f4a075705', 'hex')
-var peerId = '01234567890123456789'
-var peerId2 = '12345678901234567890'
+var infoHash = '4cb67059ed6bd08362da625b3ae77f6f4a075705'
+var peerId = new Buffer('01234567890123456789')
+var peerId2 = new Buffer('12345678901234567890')
 var torrentLength = 50000
 
 function serverTest (t, serverType) {
@@ -52,7 +52,7 @@ function serverTest (t, serverType) {
       t.deepEqual(server.getSwarm(infoHash).peers['127.0.0.1:6881'], {
         ip: '127.0.0.1',
         port: 6881,
-        peerId: peerId
+        peerId: peerId.toString('hex')
       })
 
       client.complete()

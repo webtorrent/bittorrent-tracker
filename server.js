@@ -115,13 +115,11 @@ Server.prototype.close = function (cb) {
   }
 }
 
-Server.prototype.getSwarm = function (binaryInfoHash) {
+Server.prototype.getSwarm = function (infoHash) {
   var self = this
-  if (Buffer.isBuffer(binaryInfoHash)) binaryInfoHash = binaryInfoHash.toString('binary')
-  var swarm = self.torrents[binaryInfoHash]
-  if (!swarm) {
-    swarm = self.torrents[binaryInfoHash] = new Swarm(binaryInfoHash, this)
-  }
+  if (Buffer.isBuffer(infoHash)) infoHash = infoHash.toString('hex')
+  var swarm = self.torrents[infoHash]
+  if (!swarm) swarm = self.torrents[infoHash] = new Swarm(infoHash, this)
   return swarm
 }
 
@@ -130,9 +128,7 @@ Server.prototype._onHttpRequest = function (req, res) {
 
   var params
   try {
-    params = parseHttpRequest(req, {
-      trustProxy: self._trustProxy
-    })
+    params = parseHttpRequest(req, { trustProxy: self._trustProxy })
   } catch (err) {
     debug('sent error %s', err.message)
     res.end(bencode.encode({
@@ -142,7 +138,7 @@ Server.prototype._onHttpRequest = function (req, res) {
     // even though it's an error for the client, it's just a warning for the server.
     // don't crash the server because a client sent bad data :)
     self.emit('warning', err)
-    
+
     return
   }
 
@@ -225,26 +221,10 @@ Server.prototype._onAnnounce = function (params, cb) {
 Server.prototype._onScrape = function (params, cb) {
   var self = this
 
-  if (typeof params.info_hash === 'string') {
-    params.info_hash = [ params.info_hash ]
-  } else if (params.info_hash == null) {
+  if (params.info_hash == null) {
     // if info_hash param is omitted, stats for all torrents are returned
     // TODO: make this configurable!
     params.info_hash = Object.keys(self.torrents)
-  }
-
-  if (!Array.isArray(params.info_hash)) {
-    var err = new Error('invalid info_hash')
-    self.emit('warning', err)
-    return cb(err)
-  }
-
-  var response = {
-    action: common.ACTIONS.SCRAPE,
-    files: {},
-    flags: {
-      min_request_interval: self._intervalMs
-    }
   }
 
   series(params.info_hash.map(function (infoHash) {
@@ -261,8 +241,14 @@ Server.prototype._onScrape = function (params, cb) {
   }), function (err, results) {
     if (err) return cb(err)
 
+    var response = {
+      action: common.ACTIONS.SCRAPE,
+      files: {},
+      flags: { min_request_interval: self._intervalMs }
+    }
+
     results.forEach(function (result) {
-      response.files[result.infoHash] = {
+      response.files[common.hexToBinary(result.infoHash)] = {
         complete: result.complete,
         incomplete: result.incomplete,
         downloaded: result.complete // TODO: this only provides a lower-bound
@@ -272,7 +258,6 @@ Server.prototype._onScrape = function (params, cb) {
     cb(null, response)
   })
 }
-
 
 function makeUdpPacket (params) {
   switch (params.action) {
