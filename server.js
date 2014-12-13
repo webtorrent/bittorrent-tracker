@@ -94,7 +94,10 @@ Server.prototype.listen = function (port, onlistening) {
   function onPort (err, port) {
     if (err) return self.emit('error', err)
     self.port = port
-    self._httpServer && self._httpServer.listen(port.http || port)
+    // ATTENTION:
+    // binding to :: only receives IPv4 connections if the bindv6only
+    // sysctl is set 0, which is the default on many operating systems.
+    self._httpServer && self._httpServer.listen(port.http || port, '::')
     self._udpSocket && self._udpSocket.bind(port.udp || port)
   }
 
@@ -207,11 +210,23 @@ Server.prototype._onAnnounce = function (params, cb) {
     if (response) {
       if (!response.action) response.action = common.ACTIONS.ANNOUNCE
       if (!response.intervalMs) response.intervalMs = self._intervalMs
+
       if (params.compact === 1) {
-        response.peers = string2compact(response.peers.map(function (peer) {
-          return peer.ip + ':' + peer.port // TODO: ipv6 brackets
+        var peers = response.peers
+        // Find IPv4 peers
+        response.peers = string2compact(peers.filter(function (peer) {
+          return common.IPV4_RE.test(peer.ip)
+        }).map(function (peer) {
+          return peer.ip + ':' + peer.port
+        }))
+        // Find IPv6 peers
+        response.peers6 = string2compact(peers.filter(function (peer) {
+          return common.IPV6_RE.test(peer.ip)
+        }).map(function (peer) {
+          return '[' + peer.ip + ']:' + peer.port
         }))
       }
+      // IPv6 peers are not separate for non-compact responses
     }
     cb(err, response)
   })

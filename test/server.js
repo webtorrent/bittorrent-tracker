@@ -7,11 +7,14 @@ var peerId = new Buffer('01234567890123456789')
 var peerId2 = new Buffer('12345678901234567890')
 var torrentLength = 50000
 
-function serverTest (t, serverType) {
+function serverTest (t, serverType, serverFamily) {
   t.plan(26)
 
   var opts = serverType === 'http' ? { udp: false } : { http: false }
   var server = new Server(opts)
+  var serverAddr = serverFamily === 'inet6' ? '[::1]' : '127.0.0.1'
+  var clientAddr = serverFamily === 'inet6' ? '[::1]' : '127.0.0.1'
+  var clientIp = serverFamily === 'inet6' ? '::1' : '127.0.0.1'
 
   server.on('error', function (err) {
     t.fail(err.message)
@@ -26,7 +29,7 @@ function serverTest (t, serverType) {
   })
 
   server.listen(function (port) {
-    var announceUrl = serverType + '://127.0.0.1:' + port + '/announce'
+    var announceUrl = serverType + '://' + serverAddr + ':' + port + '/announce'
 
     var client = new Client(peerId, 6881, {
       infoHash: infoHash,
@@ -49,8 +52,8 @@ function serverTest (t, serverType) {
       t.equal(server.getSwarm(infoHash).complete, 0)
       t.equal(server.getSwarm(infoHash).incomplete, 1)
       t.equal(Object.keys(server.getSwarm(infoHash).peers).length, 1)
-      t.deepEqual(server.getSwarm(infoHash).peers['127.0.0.1:6881'], {
-        ip: '127.0.0.1',
+      t.deepEqual(server.getSwarm(infoHash).peers[clientAddr + ':6881'], {
+        ip: clientIp,
         port: 6881,
         peerId: peerId.toString('hex')
       })
@@ -83,7 +86,7 @@ function serverTest (t, serverType) {
           })
 
           client2.once('peer', function (addr) {
-            t.equal(addr, '127.0.0.1:6881')
+            t.equal(addr, clientAddr + ':6881')
 
             client2.stop()
             client2.once('update', function (data) {
@@ -109,10 +112,14 @@ function serverTest (t, serverType) {
   })
 }
 
-test('http server', function (t) {
-  serverTest(t, 'http')
+test('http ipv4 server', function (t) {
+  serverTest(t, 'http', 'inet')
+})
+
+test('http ipv6 server', function (t) {
+  serverTest(t, 'http', 'inet6')
 })
 
 test('udp server', function (t) {
-  serverTest(t, 'udp')
+  serverTest(t, 'udp', 'inet')
 })
