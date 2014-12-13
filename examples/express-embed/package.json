@@ -1,0 +1,13 @@
+{
+  "name": "bittorrent-tracker-example-express-embed",
+  "version": "0.0.0",
+  "description": "Example for embedding bittorrent-tracker server in express.js",
+  "scripts": {
+    "server": "./server.js"
+  },
+  "author": "Astro <astro@spaceboyz.net>",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.10.5"
+  }
+}

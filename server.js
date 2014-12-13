@@ -54,20 +54,20 @@ function Server (opts) {
   // default to starting an http server unless the user explictly says no
   if (opts.http !== false) {
     self._httpServer = http.createServer()
-    self._httpServer.on('request', self._onHttpRequest.bind(self))
+    self._httpServer.on('request', self.onHttpRequest.bind(self))
     self._httpServer.on('error', self._onError.bind(self))
     self._httpServer.on('listening', onListening)
   }
 
   // default to starting a udp server unless the user explicitly says no
   if (opts.udp !== false) {
-    self._udpServer = dgram.createSocket('udp4')
-    self._udpServer.on('message', self._onUdpRequest.bind(self))
-    self._udpServer.on('error', self._onError.bind(self))
-    self._udpServer.on('listening', onListening)
+    self._udpSocket = dgram.createSocket('udp4')
+    self._udpSocket.on('message', self._onUdpRequest.bind(self))
+    self._udpSocket.on('error', self._onError.bind(self))
+    self._udpSocket.on('listening', onListening)
   }
 
-  var num = !!self._httpServer + !!self._udpServer
+  var num = !!self._httpServer + !!self._udpSocket
   function onListening () {
     num -= 1
     if (num === 0) {
@@ -98,7 +98,7 @@ Server.prototype.listen = function (port, onlistening) {
     // binding to :: only receives IPv4 connections if the bindv6only
     // sysctl is set 0, which is the default on many operating systems.
     self._httpServer && self._httpServer.listen(port.http || port, '::')
-    self._udpServer && self._udpServer.bind(port.udp || port)
+    self._udpSocket && self._udpSocket.bind(port.udp || port)
   }
 
   if (port) onPort(null, port)
@@ -108,8 +108,8 @@ Server.prototype.listen = function (port, onlistening) {
 Server.prototype.close = function (cb) {
   var self = this
   cb = cb || function () {}
-  if (self._udpServer) {
-    self._udpServer.close()
+  if (self._udpSocket) {
+    self._udpSocket.close()
   }
   if (self._httpServer) {
     self._httpServer.close(cb)
@@ -126,7 +126,7 @@ Server.prototype.getSwarm = function (infoHash) {
   return swarm
 }
 
-Server.prototype._onHttpRequest = function (req, res) {
+Server.prototype.onHttpRequest = function (req, res) {
   var self = this
 
   var params
@@ -180,11 +180,10 @@ Server.prototype._onUdpRequest = function (msg, rinfo) {
       }
     }
 
-    var socket = dgram.createSocket('udp4')
     response.transactionId = params.transactionId
     response.connectionId = params.connectionId
     var buf = makeUdpPacket(response)
-    socket.send(buf, 0, buf.length, rinfo.port, rinfo.address, function () {
+    self._udpSocket.send(buf, 0, buf.length, rinfo.port, rinfo.address, function () {
       try {
         socket.close()
       } catch (err) {}
@@ -211,7 +210,7 @@ Server.prototype._onAnnounce = function (params, cb) {
     if (response) {
       if (!response.action) response.action = common.ACTIONS.ANNOUNCE
       if (!response.intervalMs) response.intervalMs = self._intervalMs
-      
+
       if (params.compact === 1) {
         var peers = response.peers
         // Find IPv4 peers
