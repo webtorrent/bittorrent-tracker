@@ -61,13 +61,13 @@ function Server (opts) {
 
   // default to starting a udp server unless the user explicitly says no
   if (opts.udp !== false) {
-    self._udpServer = dgram.createSocket('udp4')
-    self._udpServer.on('message', self._onUdpRequest.bind(self))
-    self._udpServer.on('error', self._onError.bind(self))
-    self._udpServer.on('listening', onListening)
+    self._udpSocket = dgram.createSocket('udp4')
+    self._udpSocket.on('message', self._onUdpRequest.bind(self))
+    self._udpSocket.on('error', self._onError.bind(self))
+    self._udpSocket.on('listening', onListening)
   }
 
-  var num = !!self._httpServer + !!self._udpServer
+  var num = !!self._httpServer + !!self._udpSocket
   function onListening () {
     num -= 1
     if (num === 0) {
@@ -95,7 +95,7 @@ Server.prototype.listen = function (port, onlistening) {
     if (err) return self.emit('error', err)
     self.port = port
     self._httpServer && self._httpServer.listen(port.http || port)
-    self._udpServer && self._udpServer.bind(port.udp || port)
+    self._udpSocket && self._udpSocket.bind(port.udp || port)
   }
 
   if (port) onPort(null, port)
@@ -105,8 +105,8 @@ Server.prototype.listen = function (port, onlistening) {
 Server.prototype.close = function (cb) {
   var self = this
   cb = cb || function () {}
-  if (self._udpServer) {
-    self._udpServer.close()
+  if (self._udpSocket) {
+    self._udpSocket.close()
   }
   if (self._httpServer) {
     self._httpServer.close(cb)
@@ -177,11 +177,10 @@ Server.prototype._onUdpRequest = function (msg, rinfo) {
       }
     }
 
-    var socket = dgram.createSocket('udp4')
     response.transactionId = params.transactionId
     response.connectionId = params.connectionId
     var buf = makeUdpPacket(response)
-    socket.send(buf, 0, buf.length, rinfo.port, rinfo.address, function () {
+    self._udpSocket.send(buf, 0, buf.length, rinfo.port, rinfo.address, function () {
       try {
         socket.close()
       } catch (err) {}
