@@ -62,7 +62,7 @@ function Server (opts) {
   // default to starting a udp server unless the user explicitly says no
   if (opts.udp !== false) {
     self._udpSocket = dgram.createSocket('udp4')
-    self._udpSocket.on('message', self._onUdpRequest.bind(self))
+    self._udpSocket.on('message', self.onUdpRequest.bind(self))
     self._udpSocket.on('error', self._onError.bind(self))
     self._udpSocket.on('listening', onListening)
   }
@@ -158,7 +158,7 @@ Server.prototype.onHttpRequest = function (req, res) {
   })
 }
 
-Server.prototype._onUdpRequest = function (msg, rinfo) {
+Server.prototype.onUdpRequest = function (msg, rinfo) {
   var self = this
 
   var params
