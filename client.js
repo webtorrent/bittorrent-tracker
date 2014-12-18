@@ -454,13 +454,17 @@ Tracker.prototype._handleResponse = function (requestUrl, data) {
   }
   var failure = data['failure reason']
   if (failure) {
+    debug('failure from ' + requestUrl + ' (' + failure + ')')
     return self.client.emit('warning', new Error(failure))
   }
 
   var warning = data['warning message']
   if (warning) {
+    debug('warning from ' + requestUrl + ' (' + warning + ')')
     self.client.emit('warning', new Error(warning))
   }
+
+  debug('response from ' + requestUrl)
 
   if (requestUrl === self._announceUrl) {
     var interval = data.interval || data['min interval']
