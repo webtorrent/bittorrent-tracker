@@ -15,7 +15,7 @@
   },
   "dependencies": {
     "bencode": "^0.6.0",
-    "bn.js": "^0.15.2",
+    "bn.js": "^0.16.0",
     "buffer-equal": "0.0.1",
     "compact2string": "^1.2.0",
     "concat-stream": "^1.4.5",
