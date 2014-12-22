@@ -30,7 +30,7 @@
     "string2compact": "^1.1.1"
   },
   "devDependencies": {
-    "magnet-uri": "^3.0.0",
+    "magnet-uri": "^4.0.0",
     "parse-torrent": "^2.1.2",
     "tape": "^3.0.3"
   },
