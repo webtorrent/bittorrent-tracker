@@ -42,8 +42,8 @@ function Server (opts) {
   opts = opts || {}
 
   self._intervalMs = opts.interval
-    ? opts.interval / 1000
-    : 10 * 60 // 10 min (in secs)
+    ? opts.interval
+    : 10 * 60 * 1000 // 10 min
 
   self._trustProxy = !!opts.trustProxy
 
@@ -209,7 +209,7 @@ Server.prototype._onAnnounce = function (params, cb) {
   swarm.announce(params, function (err, response) {
     if (response) {
       if (!response.action) response.action = common.ACTIONS.ANNOUNCE
-      if (!response.intervalMs) response.intervalMs = self._intervalMs
+      if (!response.interval) response.interval = Math.ceil(self._intervalMs / 1000)
 
       if (params.compact === 1) {
         var peers = response.peers
@@ -258,7 +258,7 @@ Server.prototype._onScrape = function (params, cb) {
     var response = {
       action: common.ACTIONS.SCRAPE,
       files: {},
-      flags: { min_request_interval: self._intervalMs }
+      flags: { min_request_interval: Math.ceil(self._intervalMs / 1000) }
     }
 
     results.forEach(function (result) {
@@ -285,7 +285,7 @@ function makeUdpPacket (params) {
       return Buffer.concat([
         common.toUInt32(common.ACTIONS.ANNOUNCE),
         common.toUInt32(params.transactionId),
-        common.toUInt32(params.intervalMs),
+        common.toUInt32(params.interval),
         common.toUInt32(params.incomplete),
         common.toUInt32(params.complete),
         params.peers
