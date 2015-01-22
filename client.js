@@ -4,11 +4,11 @@ var bencode = require('bencode')
 var BN = require('bn.js')
 var common = require('./lib/common')
 var compact2string = require('compact2string')
-var concat = require('concat-stream')
 var debug = require('debug')('bittorrent-tracker')
 var dgram = require('dgram')
 var EventEmitter = require('events').EventEmitter
 var extend = require('extend.js')
+var get = require('simple-get')
 var hat = require('hat')
 var http = require('http')
 var https = require('https')
@@ -268,22 +268,10 @@ Tracker.prototype._requestHttp = function (requestUrl, opts) {
     }
   }
 
-  var protocol = url.parse(self._announceUrl).protocol
-  var fullUrl = requestUrl + '?' + common.querystringStringify(opts)
-
-  var req = (protocol === 'https:' ? https : http).get(fullUrl, function (res) {
-    if (res.statusCode !== 200) {
-      res.resume() // consume the whole stream
-      self.client.emit('warning', new Error('Invalid response code ' + res.statusCode + ' from tracker ' + requestUrl))
-      return
-    }
-    res.pipe(concat(function (data) {
-      if (data && data.length) self._handleResponse(requestUrl, data)
-    }))
-  })
-
-  req.on('error', function (err) {
-    self.client.emit('warning', err)
+  get.concat(requestUrl + '?' + common.querystringStringify(opts), function (err, data, res) {
+    if (err) return self.client.emit('warning', err)
+    if (res.statusCode !== 200) return self.client.emit('warning', new Error('Non-200 response code ' + res.statusCode + ' from ' + requestUrl))
+    if (data && data.length) self._handleResponse(requestUrl, data)
   })
 }
 

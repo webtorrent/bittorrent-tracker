@@ -2,9 +2,8 @@ var bencode = require('bencode')
 var Client = require('../')
 var commonLib = require('../lib/common')
 var commonTest = require('./common')
-var concat = require('concat-stream')
 var fs = require('fs')
-var http = require('http')
+var get = require('simple-get')
 var parseTorrent = require('parse-torrent')
 var portfinder = require('portfinder')
 var Server = require('../').Server
@@ -95,29 +94,27 @@ test('server: multiple info_hash scrape', function (t) {
       var url = scrapeUrl + '?' + commonLib.querystringStringify({
         info_hash: [ binaryInfoHash1, binaryInfoHash2 ]
       })
-      http.get(url, function (res) {
+      get.concat(url, function (err, data, res) {
+        if (err) throw err
         t.equal(res.statusCode, 200)
-        res.pipe(concat(function (data) {
-          data = bencode.decode(data)
-          t.ok(data.files)
-          t.equal(Object.keys(data.files).length, 2)
 
-          t.ok(data.files[binaryInfoHash1])
-          t.equal(typeof data.files[binaryInfoHash1].complete, 'number')
-          t.equal(typeof data.files[binaryInfoHash1].incomplete, 'number')
-          t.equal(typeof data.files[binaryInfoHash1].downloaded, 'number')
+        data = bencode.decode(data)
+        t.ok(data.files)
+        t.equal(Object.keys(data.files).length, 2)
 
-          t.ok(data.files[binaryInfoHash2])
-          t.equal(typeof data.files[binaryInfoHash2].complete, 'number')
-          t.equal(typeof data.files[binaryInfoHash2].incomplete, 'number')
-          t.equal(typeof data.files[binaryInfoHash2].downloaded, 'number')
+        t.ok(data.files[binaryInfoHash1])
+        t.equal(typeof data.files[binaryInfoHash1].complete, 'number')
+        t.equal(typeof data.files[binaryInfoHash1].incomplete, 'number')
+        t.equal(typeof data.files[binaryInfoHash1].downloaded, 'number')
 
-          server.close(function () {
-            t.end()
-          })
-        }))
-      }).on('error', function (err) {
-        t.error(err)
+        t.ok(data.files[binaryInfoHash2])
+        t.equal(typeof data.files[binaryInfoHash2].complete, 'number')
+        t.equal(typeof data.files[binaryInfoHash2].incomplete, 'number')
+        t.equal(typeof data.files[binaryInfoHash2].downloaded, 'number')
+
+        server.close(function () {
+          t.end()
+        })
       })
     })
   })
@@ -152,26 +149,23 @@ test('server: all info_hash scrape', function (t) {
       server.once('start', function () {
 
         // now do a scrape of everything by omitting the info_hash param
-        http.get(scrapeUrl, function (res) {
+        get.concat(scrapeUrl, function (err, data, res) {
+          if (err) throw err
 
           t.equal(res.statusCode, 200)
-          res.pipe(concat(function (data) {
-            data = bencode.decode(data)
-            t.ok(data.files)
-            t.equal(Object.keys(data.files).length, 1)
+          data = bencode.decode(data)
+          t.ok(data.files)
+          t.equal(Object.keys(data.files).length, 1)
 
-            t.ok(data.files[binaryBitlove])
-            t.equal(typeof data.files[binaryBitlove].complete, 'number')
-            t.equal(typeof data.files[binaryBitlove].incomplete, 'number')
-            t.equal(typeof data.files[binaryBitlove].downloaded, 'number')
+          t.ok(data.files[binaryBitlove])
+          t.equal(typeof data.files[binaryBitlove].complete, 'number')
+          t.equal(typeof data.files[binaryBitlove].incomplete, 'number')
+          t.equal(typeof data.files[binaryBitlove].downloaded, 'number')
 
-            client.stop()
-            server.close(function () {
-              t.end()
-            })
-          }))
-        }).on('error', function (err) {
-          t.error(err)
+          client.stop()
+          server.close(function () {
+            t.end()
+          })
         })
       })
     })
