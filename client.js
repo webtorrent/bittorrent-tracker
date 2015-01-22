@@ -11,6 +11,7 @@ var EventEmitter = require('events').EventEmitter
 var extend = require('extend.js')
 var hat = require('hat')
 var http = require('http')
+var https = require('https')
 var inherits = require('inherits')
 var once = require('once')
 var url = require('url')
@@ -52,7 +53,8 @@ function Client (peerId, port, torrent, opts) {
   if (typeof torrent.announce === 'string') torrent.announce = [ torrent.announce ]
   self._trackers = (torrent.announce || [])
     .filter(function (announceUrl) {
-      return announceUrl.indexOf('udp://') === 0 || announceUrl.indexOf('http://') === 0
+      return announceUrl.indexOf('udp://') === 0 || announceUrl.indexOf('http://') === 0 ||
+        announceUrl.indexOf('https://') === 0
     })
     .map(function (announceUrl) {
       return new Tracker(self, announceUrl, self._opts)
@@ -152,7 +154,8 @@ function Tracker (client, announceUrl, opts) {
 
   if (self._announceUrl.indexOf('udp://') === 0) {
     self._requestImpl = self._requestUdp
-  } else if (self._announceUrl.indexOf('http://') === 0) {
+  } else if (self._announceUrl.indexOf('http://') === 0 ||
+             self._announceUrl.indexOf('https://') === 0) {
     self._requestImpl = self._requestHttp
   }
 }
@@ -265,9 +268,10 @@ Tracker.prototype._requestHttp = function (requestUrl, opts) {
     }
   }
 
+  var protocol = url.parse(self._announceUrl).protocol
   var fullUrl = requestUrl + '?' + common.querystringStringify(opts)
 
-  var req = http.get(fullUrl, function (res) {
+  var req = (protocol === 'http:' ? http : https).get(fullUrl, function (res) {
     if (res.statusCode !== 200) {
       res.resume() // consume the whole stream
       self.client.emit('warning', new Error('Invalid response code ' + res.statusCode + ' from tracker ' + requestUrl))
