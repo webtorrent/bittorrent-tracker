@@ -1,4 +1,11 @@
-# bittorrent-tracker [![build](https://img.shields.io/travis/feross/bittorrent-tracker.svg)](https://travis-ci.org/feross/bittorrent-tracker) [![npm](https://img.shields.io/npm/v/bittorrent-tracker.svg)](https://npmjs.org/package/bittorrent-tracker) [![npm downloads](https://img.shields.io/npm/dm/bittorrent-tracker.svg)](https://npmjs.org/package/bittorrent-tracker) [![gittip](https://img.shields.io/gittip/feross.svg)](https://www.gittip.com/feross/)
+# bittorrent-tracker [![travis][travis-image]][travis-url] [![npm][npm-image]][npm-url] [![downloads][downloads-image]][downloads-url]
+
+[travis-image]: https://img.shields.io/travis/feross/bittorrent-tracker.svg?style=flat
+[travis-url]: https://travis-ci.org/feross/bittorrent-tracker
+[npm-image]: https://img.shields.io/npm/v/bittorrent-tracker.svg?style=flat
+[npm-url]: https://npmjs.org/package/bittorrent-tracker
+[downloads-image]: https://img.shields.io/npm/dm/bittorrent-tracker.svg?style=flat
+[downloads-url]: https://npmjs.org/package/bittorrent-tracker
 
 #### Simple, robust, BitTorrent tracker (client & server) implementation
 
