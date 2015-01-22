@@ -53,8 +53,8 @@ function Client (peerId, port, torrent, opts) {
   if (typeof torrent.announce === 'string') torrent.announce = [ torrent.announce ]
   self._trackers = (torrent.announce || [])
     .filter(function (announceUrl) {
-      return announceUrl.indexOf('udp://') === 0 || announceUrl.indexOf('http://') === 0 ||
-        announceUrl.indexOf('https://') === 0
+      var protocol = url.parse(announceUrl).protocol
+      return protocol === 'udp:' || protocol === 'http:' || protocol === 'https:'
     })
     .map(function (announceUrl) {
       return new Tracker(self, announceUrl, self._opts)
@@ -152,10 +152,10 @@ function Tracker (client, announceUrl, opts) {
   self._intervalMs = self.client._intervalMs // use client interval initially
   self._interval = null
 
-  if (self._announceUrl.indexOf('udp://') === 0) {
+  var protocol = url.parse(self._announceUrl).protocol
+  if (protocol === 'udp:') {
     self._requestImpl = self._requestUdp
-  } else if (self._announceUrl.indexOf('http://') === 0 ||
-             self._announceUrl.indexOf('https://') === 0) {
+  } else if (protocol === 'http:' || protocol === 'https:') {
     self._requestImpl = self._requestHttp
   }
 }
@@ -271,7 +271,7 @@ Tracker.prototype._requestHttp = function (requestUrl, opts) {
   var protocol = url.parse(self._announceUrl).protocol
   var fullUrl = requestUrl + '?' + common.querystringStringify(opts)
 
-  var req = (protocol === 'http:' ? http : https).get(fullUrl, function (res) {
+  var req = (protocol === 'https:' ? https : http).get(fullUrl, function (res) {
     if (res.statusCode !== 200) {
       res.resume() // consume the whole stream
       self.client.emit('warning', new Error('Invalid response code ' + res.statusCode + ' from tracker ' + requestUrl))
