@@ -311,6 +311,7 @@ Tracker.prototype._requestUdp = function (requestUrl, opts) {
     }
 
     var action = msg.readUInt32BE(0)
+    debug(requestUrl, 'UDP response, action', action)
     switch (action) {
       case 0: // handshake
         if (msg.length < 16) {
