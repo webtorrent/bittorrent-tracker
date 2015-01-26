@@ -18,8 +18,7 @@ clients. The requests include metrics from clients that help the tracker keep ov
 statistics about the torrent. The response includes a peer list that helps the client
 participate in the torrent.
 
-Also see [bittorrent-dht](https://github.com/feross/bittorrent-dht). This module is used
-by [WebTorrent](http://webtorrent.io).
+This module is used by [WebTorrent](http://webtorrent.io).
 
 ## features
 
@@ -28,6 +27,8 @@ by [WebTorrent](http://webtorrent.io).
 - supports tracker "scrape" extension
 - robust and well-tested (comprehensive test suite, and used by [WebTorrent](http://webtorrent.io) and [peerflix](https://github.com/mafintosh/peerflix))
 - supports ipv4 & ipv6
+
+Also see [bittorrent-dht](https://github.com/feross/bittorrent-dht).
 
 ## install
 
