@@ -23,9 +23,11 @@ by [WebTorrent](http://webtorrent.io).
 
 ## features
 
-- Includes client & server implementations
-- Supports HTTP & UDP trackers ([BEP 15](http://www.bittorrent.org/beps/bep_0015.html))
-- Supports tracker scrape
+- includes client & server implementations
+- supports HTTP & UDP trackers ([BEP 15](http://www.bittorrent.org/beps/bep_0015.html))
+- supports tracker "scrape" extension
+- robust and well-tested (comprehensive test suite, and used by [WebTorrent](http://webtorrent.io) and [peerflix](https://github.com/mafintosh/peerflix))
+- supports ipv4 & ipv6
 
 ## install
 
