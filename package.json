@@ -32,6 +32,7 @@
   "devDependencies": {
     "magnet-uri": "^4.0.0",
     "parse-torrent": "^3.0.1",
+    "standard": "^1.0.0",
     "tape": "^3.0.3"
   },
   "homepage": "http://webtorrent.io",
@@ -52,6 +53,6 @@
     "url": "git://github.com/feross/bittorrent-tracker.git"
   },
   "scripts": {
-    "test": "tape test/*.js"
+    "test": "standard && tape test/*.js"
   }
 }

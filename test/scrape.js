@@ -138,7 +138,6 @@ test('server: all info_hash scrape', function (t) {
     parsedBitlove.announce = [ announceUrl ]
 
     server.once('listening', function () {
-
       // announce a torrent to the tracker
       var client = new Client(peerId, port, parsedBitlove)
       client.on('error', function (err) {
@@ -147,7 +146,6 @@ test('server: all info_hash scrape', function (t) {
       client.start()
 
       server.once('start', function () {
-
         // now do a scrape of everything by omitting the info_hash param
         get.concat(scrapeUrl, function (err, data, res) {
           if (err) throw err

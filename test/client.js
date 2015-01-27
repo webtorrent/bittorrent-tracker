@@ -83,7 +83,6 @@ function testClientStop (t, serverType) {
           t.pass('server close')
         })
       })
-
     }, 1000)
   })
 }
@@ -113,7 +112,6 @@ function testClientUpdate (t, serverType) {
     client.start()
 
     client.once('update', function () {
-
       client.once('update', function (data) {
         // received an update!
         t.equal(data.announce, announceUrl)

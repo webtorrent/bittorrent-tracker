@@ -18,7 +18,6 @@ var parseUdpRequest = require('./lib/parse_udp')
 // Use random port above 1024
 portfinder.basePort = Math.floor(Math.random() * 60000) + 1025
 
-
 inherits(Server, EventEmitter)
 
 /**
@@ -183,11 +182,7 @@ Server.prototype.onUdpRequest = function (msg, rinfo) {
     response.transactionId = params.transactionId
     response.connectionId = params.connectionId
     var buf = makeUdpPacket(response)
-    self._udpSocket.send(buf, 0, buf.length, rinfo.port, rinfo.address, function () {
-      try {
-        socket.close()
-      } catch (err) {}
-    })
+    self._udpSocket.send(buf, 0, buf.length, rinfo.port, rinfo.address)
   })
 }
 
@@ -274,15 +269,17 @@ Server.prototype._onScrape = function (params, cb) {
 }
 
 function makeUdpPacket (params) {
+  var packet
   switch (params.action) {
     case common.ACTIONS.CONNECT:
-      return Buffer.concat([
+      packet = Buffer.concat([
         common.toUInt32(common.ACTIONS.CONNECT),
         common.toUInt32(params.transactionId),
         params.connectionId
       ])
+      break
     case common.ACTIONS.ANNOUNCE:
-      return Buffer.concat([
+      packet = Buffer.concat([
         common.toUInt32(common.ACTIONS.ANNOUNCE),
         common.toUInt32(params.transactionId),
         common.toUInt32(params.interval),
@@ -290,6 +287,7 @@ function makeUdpPacket (params) {
         common.toUInt32(params.complete),
         params.peers
       ])
+      break
     case common.ACTIONS.SCRAPE:
       var firstInfoHash = Object.keys(params.files)[0]
       var scrapeInfo = firstInfoHash ? {
@@ -297,20 +295,24 @@ function makeUdpPacket (params) {
         incomplete: params.files[firstInfoHash].incomplete,
         completed: params.files[firstInfoHash].complete // TODO: this only provides a lower-bound
       } : {}
-      return Buffer.concat([
+      packet = Buffer.concat([
         common.toUInt32(common.ACTIONS.SCRAPE),
         common.toUInt32(params.transactionId),
         common.toUInt32(scrapeInfo.complete),
         common.toUInt32(scrapeInfo.completed),
         common.toUInt32(scrapeInfo.incomplete)
       ])
+      break
     case common.ACTIONS.ERROR:
-      return Buffer.concat([
+      packet = Buffer.concat([
         common.toUInt32(common.ACTIONS.ERROR),
         common.toUInt32(params.transactionId || 0),
         new Buffer(params.message, 'utf8')
       ])
-  default:
-    throw new Error('Action not implemented: ' + params.action)
+      break
+    default:
+      throw new Error('Action not implemented: ' + params.action)
+      break
   }
+  return packet
 }

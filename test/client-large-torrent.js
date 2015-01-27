@@ -53,7 +53,6 @@ test('large torrent: client.start()', function (t) {
           t.pass('server close')
         })
       })
-
     })
   })
 })
