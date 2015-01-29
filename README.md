@@ -107,7 +107,12 @@ var Server = require('bittorrent-tracker').Server
 
 var server = new Server({
   udp: true, // enable udp server? [default=true]
-  http: true // enable http server? [default=true]
+  http: true, // enable http server? [default=true]
+  filter: function (hash) {
+    // specify white/blacklist for disallowing/allowing torrents
+    return hash !== 'aaa67059ed6bd08362da625b3ae77f6f4a075aaa'
+  })
+
 })
 
 server.on('error', function (err) {

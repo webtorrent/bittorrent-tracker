@@ -169,3 +169,63 @@ test('server: all info_hash scrape', function (t) {
     })
   })
 })
+
+test('http nonwhitelisted torrent does not appear in scrape', function (t) {
+  var server = new Server({
+    filter: function (hash) {
+      return hash !== parsedBitlove
+    },
+    udp: false
+  })
+
+  server.on('error', function (err) {
+    t.error(err)
+  })
+
+  portfinder.getPort(function (err, port) {
+    t.error(err)
+    server.listen(port)
+    var announceUrl = 'http://127.0.0.1:' + port + '/announce'
+    var scrapeUrl = 'http://127.0.0.1:' + port + '/scrape'
+
+    parsedBitlove.announce = [ announceUrl ]
+
+    server.once('listening', function () {
+      var client = new Client(peerId, port, parsedBitlove)
+
+      client.start()
+
+      client.on('error', function (err) {
+        t.error(err)
+      })
+
+      server.once('warning', function (err) {
+        if (err) {
+          get.concat(scrapeUrl, function (err, data, res) {
+            if (err) throw err
+
+            t.equal(res.statusCode, 200)
+            data = bencode.decode(data)
+            t.ok(data.files)
+
+            t.notOk(data.files[binaryBitlove])
+
+            client.stop()
+            server.close(function () {
+              t.end()
+            })
+          })
+        }
+      })
+
+      server.once('start', function (err) {
+        if (err) throw err
+        client.stop()
+        server.close(function () {
+          t.fail('server should have thrown an error; filter condition was probably successful')
+          t.end()
+        })
+      })
+    })
+  })
+})

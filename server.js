@@ -66,6 +66,8 @@ function Server (opts) {
     self._udpSocket.on('listening', onListening)
   }
 
+  if (typeof opts.filter === 'function') self._filter = opts.filter
+
   var num = !!self._httpServer + !!self._udpSocket
   function onListening () {
     num -= 1
@@ -120,6 +122,7 @@ Server.prototype.close = function (cb) {
 Server.prototype.getSwarm = function (infoHash) {
   var self = this
   if (Buffer.isBuffer(infoHash)) infoHash = infoHash.toString('hex')
+  if (self._filter && self._filter(infoHash)) return null
   var swarm = self.torrents[infoHash]
   if (!swarm) swarm = self.torrents[infoHash] = new Swarm(infoHash, this)
   return swarm
@@ -201,6 +204,7 @@ Server.prototype._onRequest = function (params, cb) {
 Server.prototype._onAnnounce = function (params, cb) {
   var self = this
   var swarm = self.getSwarm(params.info_hash)
+  if (swarm === null) return cb(new Error('invalid hash'))
   swarm.announce(params, function (err, response) {
     if (response) {
       if (!response.action) response.action = common.ACTIONS.ANNOUNCE
