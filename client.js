@@ -305,7 +305,7 @@ Tracker.prototype._requestUdp = function (requestUrl, opts) {
 
   socket.on('message', function (msg) {
     if (msg.length < 8 || msg.readUInt32BE(4) !== transactionId.readUInt32BE(0)) {
-      return error('tracker sent back invalid transaction id')
+      return error('tracker sent invalid transaction id')
     }
 
     var action = msg.readUInt32BE(0)
@@ -373,6 +373,10 @@ Tracker.prototype._requestUdp = function (requestUrl, opts) {
           return error('invalid error message')
         }
         self.client.emit('error', new Error(msg.slice(8).toString()))
+        break
+
+      default:
+        error('tracker sent invalid action')
         break
     }
   })

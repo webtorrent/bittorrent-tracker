@@ -312,7 +312,6 @@ function makeUdpPacket (params) {
       break
     default:
       throw new Error('Action not implemented: ' + params.action)
-      break
-  }
+    }
   return packet
 }
