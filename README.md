@@ -87,6 +87,9 @@ client.update()
 // stop getting peers from the tracker, gracefully leave the swarm
 client.stop()
 
+// ungracefully leave the swarm (without sending final 'stop' message)
+client.destroy()
+
 // scrape
 client.scrape()
 
@@ -108,12 +111,16 @@ var Server = require('bittorrent-tracker').Server
 var server = new Server({
   udp: true, // enable udp server? [default=true]
   http: true, // enable http server? [default=true]
-  filter: function (hash) {
-    // specify white/blacklist for disallowing/allowing torrents
-    return hash !== 'aaa67059ed6bd08362da625b3ae77f6f4a075aaa'
+  filter: function (infoHash) {
+    // black/whitelist for disallowing/allowing torrents [default=allow all]
+    // this example only allows this one torrent
+    return infoHash === 'aaa67059ed6bd08362da625b3ae77f6f4a075aaa'
   })
-
 })
+
+// Internal http and udp servers exposed as public properties.
+server.http
+server.udp
 
 server.on('error', function (err) {
   // fatal server error!
@@ -125,11 +132,13 @@ server.on('warning', function (err) {
   console.log(err.message)
 })
 
-server.on('listening', function (port) {
-  console.log('tracker server is now listening on ' + port)
+server.on('listening', function () {
+  // fired when all requested servers are listening
+  console.log('listening on http port:' + server.http.address().port)
+  console.log('listening on udp port:' + server.udp.address().port)
 })
 
-// start tracker server listening!
+// start tracker server listening! Use 0 to listen on a random free port.
 server.listen(port)
 
 // listen for individual tracker messages from peers:

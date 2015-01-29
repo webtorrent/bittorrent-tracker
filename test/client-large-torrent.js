@@ -1,7 +1,6 @@
 var Client = require('../')
 var fs = require('fs')
 var parseTorrent = require('parse-torrent')
-var portfinder = require('portfinder')
 var Server = require('../').Server
 var test = require('tape')
 
@@ -10,7 +9,7 @@ var parsedTorrent = parseTorrent(torrent)
 var peerId = new Buffer('01234567890123456789')
 
 test('large torrent: client.start()', function (t) {
-  t.plan(6)
+  t.plan(5)
 
   var server = new Server({ http: false })
 
@@ -22,9 +21,8 @@ test('large torrent: client.start()', function (t) {
     t.fail(err.message)
   })
 
-  portfinder.getPort(function (err, port) {
-    t.error(err, 'found free port')
-    server.listen(port)
+  server.listen(0, function () {
+    var port = server.udp.address().port
 
     // remove all tracker servers except a single UDP one, for now
     parsedTorrent.announce = [ 'udp://127.0.0.1:' + port ]

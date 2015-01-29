@@ -28,7 +28,8 @@ function serverTest (t, serverType, serverFamily) {
     t.pass('server listening')
   })
 
-  server.listen(function (port) {
+  server.listen(0, function () {
+    var port = server[serverType].address().port
     var announceUrl = serverType + '://' + serverAddr + ':' + port + '/announce'
 
     var client = new Client(peerId, 6881, {

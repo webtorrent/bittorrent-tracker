@@ -128,6 +128,13 @@ Client.prototype.setInterval = function (intervalMs) {
   })
 }
 
+Client.prototype.destroy = function () {
+  var self = this
+  self._trackers.forEach(function (tracker) {
+    tracker.destroy()
+  })
+}
+
 inherits(Tracker, EventEmitter)
 
 /**
@@ -175,7 +182,7 @@ Tracker.prototype.stop = function (opts) {
 
   debug('sent `stop` %s', self._announceUrl)
   self._announce(opts)
-  self.setInterval(0) // stop announcing on intervals
+  self.destroy()
 }
 
 Tracker.prototype.complete = function (opts) {
@@ -194,6 +201,12 @@ Tracker.prototype.update = function (opts) {
 
   debug('sent `update` %s', self._announceUrl)
   self._announce(opts)
+}
+
+Tracker.prototype.destroy = function () {
+  var self = this
+  debug('destroy', self._announceUrl)
+  self.setInterval(0) // stop announcing on intervals
 }
 
 /**
@@ -372,7 +385,7 @@ Tracker.prototype._requestUdp = function (requestUrl, opts) {
         if (msg.length < 8) {
           return error('invalid error message')
         }
-        self.client.emit('error', new Error(msg.slice(8).toString()))
+        self.client.emit('warning', new Error(msg.slice(8).toString()))
         break
 
       default:

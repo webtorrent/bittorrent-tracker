@@ -6,7 +6,6 @@ var dgram = require('dgram')
 var EventEmitter = require('events').EventEmitter
 var http = require('http')
 var inherits = require('inherits')
-var portfinder = require('portfinder')
 var series = require('run-series')
 var string2compact = require('string2compact')
 
@@ -14,9 +13,6 @@ var common = require('./lib/common')
 var Swarm = require('./lib/swarm')
 var parseHttpRequest = require('./lib/parse_http')
 var parseUdpRequest = require('./lib/parse_udp')
-
-// Use random port above 1024
-portfinder.basePort = Math.floor(Math.random() * 60000) + 1025
 
 inherits(Server, EventEmitter)
 
@@ -40,40 +36,41 @@ function Server (opts) {
   EventEmitter.call(self)
   opts = opts || {}
 
+  if (opts.http === false && opts.udp === false)
+    throw new Error('must start at least one type of server (http or udp)')
+
   self._intervalMs = opts.interval
     ? opts.interval
     : 10 * 60 * 1000 // 10 min
 
   self._trustProxy = !!opts.trustProxy
+  if (typeof opts.filter === 'function') self._filter = opts.filter
 
   self.listening = false
-  self.port = null
   self.torrents = {}
 
   // default to starting an http server unless the user explictly says no
   if (opts.http !== false) {
-    self._httpServer = http.createServer()
-    self._httpServer.on('request', self.onHttpRequest.bind(self))
-    self._httpServer.on('error', self._onError.bind(self))
-    self._httpServer.on('listening', onListening)
+    self.http = http.createServer()
+    self.http.on('request', self.onHttpRequest.bind(self))
+    self.http.on('error', self._onError.bind(self))
+    self.http.on('listening', onListening)
   }
 
   // default to starting a udp server unless the user explicitly says no
   if (opts.udp !== false) {
-    self._udpSocket = dgram.createSocket('udp4')
-    self._udpSocket.on('message', self.onUdpRequest.bind(self))
-    self._udpSocket.on('error', self._onError.bind(self))
-    self._udpSocket.on('listening', onListening)
+    self.udp = dgram.createSocket('udp4')
+    self.udp.on('message', self.onUdpRequest.bind(self))
+    self.udp.on('error', self._onError.bind(self))
+    self.udp.on('listening', onListening)
   }
 
-  if (typeof opts.filter === 'function') self._filter = opts.filter
-
-  var num = !!self._httpServer + !!self._udpSocket
+  var num = !!self.http + !!self.udp
   function onListening () {
     num -= 1
     if (num === 0) {
       self.listening = true
-      self.emit('listening', self.port)
+      self.emit('listening')
     }
   }
 }
@@ -92,28 +89,24 @@ Server.prototype.listen = function (port, onlistening) {
   if (self.listening) throw new Error('server already listening')
   if (onlistening) self.once('listening', onlistening)
 
-  function onPort (err, port) {
-    if (err) return self.emit('error', err)
-    self.port = port
-    // ATTENTION:
-    // binding to :: only receives IPv4 connections if the bindv6only
-    // sysctl is set 0, which is the default on many operating systems.
-    self._httpServer && self._httpServer.listen(port.http || port, '::')
-    self._udpSocket && self._udpSocket.bind(port.udp || port)
-  }
+  if (!port) port = 0
 
-  if (port) onPort(null, port)
-  else portfinder.getPort(onPort)
+  // ATTENTION:
+  // binding to :: only receives IPv4 connections if the bindv6only
+  // sysctl is set 0, which is the default on many operating systems.
+  self.http && self.http.listen(port.http || port, '::')
+  self.udp && self.udp.bind(port.udp || port)
 }
 
 Server.prototype.close = function (cb) {
   var self = this
+  self.listening = false
   cb = cb || function () {}
-  if (self._udpSocket) {
-    self._udpSocket.close()
+  if (self.udp) {
+    self.udp.close()
   }
-  if (self._httpServer) {
-    self._httpServer.close(cb)
+  if (self.http) {
+    self.http.close(cb)
   } else {
     cb(null)
   }
@@ -122,7 +115,7 @@ Server.prototype.close = function (cb) {
 Server.prototype.getSwarm = function (infoHash) {
   var self = this
   if (Buffer.isBuffer(infoHash)) infoHash = infoHash.toString('hex')
-  if (self._filter && self._filter(infoHash)) return null
+  if (self._filter && !self._filter(infoHash)) return null
   var swarm = self.torrents[infoHash]
   if (!swarm) swarm = self.torrents[infoHash] = new Swarm(infoHash, this)
   return swarm
@@ -157,6 +150,10 @@ Server.prototype.onHttpRequest = function (req, res) {
 
     delete response.action  // only needed for UDP encoding
     res.end(bencode.encode(response))
+
+    if (params.action === common.ACTIONS.ANNOUNCE) {
+      self.emit(common.EVENT_NAMES[params.event], params.addr)
+    }
   })
 }
 
@@ -177,15 +174,21 @@ Server.prototype.onUdpRequest = function (msg, rinfo) {
     if (err) {
       self.emit('warning', err)
       response = {
-        action: common.ACTIONS.ERRROR,
+        action: common.ACTIONS.ERROR,
         'failure reason': err.message
       }
     }
+    if (!self.listening) return
 
     response.transactionId = params.transactionId
     response.connectionId = params.connectionId
+
     var buf = makeUdpPacket(response)
-    self._udpSocket.send(buf, 0, buf.length, rinfo.port, rinfo.address)
+    self.udp.send(buf, 0, buf.length, rinfo.port, rinfo.address)
+
+    if (params.action === common.ACTIONS.ANNOUNCE) {
+      self.emit(common.EVENT_NAMES[params.event], params.addr)
+    }
   })
 }
 
@@ -204,7 +207,8 @@ Server.prototype._onRequest = function (params, cb) {
 Server.prototype._onAnnounce = function (params, cb) {
   var self = this
   var swarm = self.getSwarm(params.info_hash)
-  if (swarm === null) return cb(new Error('invalid hash'))
+  if (swarm === null) return cb(new Error('disallowed info_hash'))
+  if (!params.event || params.event === 'empty') params.event = 'update'
   swarm.announce(params, function (err, response) {
     if (response) {
       if (!response.action) response.action = common.ACTIONS.ANNOUNCE
@@ -311,7 +315,7 @@ function makeUdpPacket (params) {
       packet = Buffer.concat([
         common.toUInt32(common.ACTIONS.ERROR),
         common.toUInt32(params.transactionId || 0),
-        new Buffer(params.message, 'utf8')
+        new Buffer(params['failure reason'], 'utf8')
       ])
       break
     default:

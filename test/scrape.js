@@ -5,7 +5,6 @@ var commonTest = require('./common')
 var fs = require('fs')
 var get = require('simple-get')
 var parseTorrent = require('parse-torrent')
-var portfinder = require('portfinder')
 var Server = require('../').Server
 var test = require('tape')
 
@@ -26,16 +25,14 @@ var peerId = new Buffer('01234567890123456789')
 
 function testSingle (t, serverType) {
   commonTest.createServer(t, serverType, function (server, announceUrl) {
-    server.once('listening', function () {
-      Client.scrape(announceUrl, infoHash1, function (err, data) {
-        t.error(err)
-        t.equal(data.announce, announceUrl)
-        t.equal(typeof data.complete, 'number')
-        t.equal(typeof data.incomplete, 'number')
-        t.equal(typeof data.downloaded, 'number')
-        server.close(function () {
-          t.end()
-        })
+    Client.scrape(announceUrl, infoHash1, function (err, data) {
+      t.error(err)
+      t.equal(data.announce, announceUrl)
+      t.equal(typeof data.complete, 'number')
+      t.equal(typeof data.incomplete, 'number')
+      t.equal(typeof data.downloaded, 'number')
+      server.close(function () {
+        t.end()
       })
     })
   })
@@ -51,16 +48,14 @@ test('udp: single info_hash scrape', function (t) {
 
 function clientScrapeStatic (t, serverType) {
   commonTest.createServer(t, serverType, function (server, announceUrl) {
-    server.once('listening', function () {
-      Client.scrape(announceUrl, infoHash1, function (err, data) {
-        t.error(err)
-        t.equal(data.announce, announceUrl)
-        t.equal(typeof data.complete, 'number')
-        t.equal(typeof data.incomplete, 'number')
-        t.equal(typeof data.downloaded, 'number')
-        server.close(function () {
-          t.end()
-        })
+    Client.scrape(announceUrl, infoHash1, function (err, data) {
+      t.error(err)
+      t.equal(data.announce, announceUrl)
+      t.equal(typeof data.complete, 'number')
+      t.equal(typeof data.incomplete, 'number')
+      t.equal(typeof data.downloaded, 'number')
+      server.close(function () {
+        t.end()
       })
     })
   })
@@ -85,36 +80,32 @@ test('server: multiple info_hash scrape', function (t) {
     t.error(err)
   })
 
-  portfinder.getPort(function (err, port) {
-    t.error(err)
-    server.listen(port)
+  server.listen(0, function () {
+    var port = server.http.address().port
     var scrapeUrl = 'http://127.0.0.1:' + port + '/scrape'
+    var url = scrapeUrl + '?' + commonLib.querystringStringify({
+      info_hash: [ binaryInfoHash1, binaryInfoHash2 ]
+    })
+    get.concat(url, function (err, data, res) {
+      if (err) throw err
+      t.equal(res.statusCode, 200)
 
-    server.once('listening', function () {
-      var url = scrapeUrl + '?' + commonLib.querystringStringify({
-        info_hash: [ binaryInfoHash1, binaryInfoHash2 ]
-      })
-      get.concat(url, function (err, data, res) {
-        if (err) throw err
-        t.equal(res.statusCode, 200)
+      data = bencode.decode(data)
+      t.ok(data.files)
+      t.equal(Object.keys(data.files).length, 2)
 
-        data = bencode.decode(data)
-        t.ok(data.files)
-        t.equal(Object.keys(data.files).length, 2)
+      t.ok(data.files[binaryInfoHash1])
+      t.equal(typeof data.files[binaryInfoHash1].complete, 'number')
+      t.equal(typeof data.files[binaryInfoHash1].incomplete, 'number')
+      t.equal(typeof data.files[binaryInfoHash1].downloaded, 'number')
 
-        t.ok(data.files[binaryInfoHash1])
-        t.equal(typeof data.files[binaryInfoHash1].complete, 'number')
-        t.equal(typeof data.files[binaryInfoHash1].incomplete, 'number')
-        t.equal(typeof data.files[binaryInfoHash1].downloaded, 'number')
+      t.ok(data.files[binaryInfoHash2])
+      t.equal(typeof data.files[binaryInfoHash2].complete, 'number')
+      t.equal(typeof data.files[binaryInfoHash2].incomplete, 'number')
+      t.equal(typeof data.files[binaryInfoHash2].downloaded, 'number')
 
-        t.ok(data.files[binaryInfoHash2])
-        t.equal(typeof data.files[binaryInfoHash2].complete, 'number')
-        t.equal(typeof data.files[binaryInfoHash2].incomplete, 'number')
-        t.equal(typeof data.files[binaryInfoHash2].downloaded, 'number')
-
-        server.close(function () {
-          t.end()
-        })
+      server.close(function () {
+        t.end()
       })
     })
   })
@@ -129,100 +120,37 @@ test('server: all info_hash scrape', function (t) {
     t.error(err)
   })
 
-  portfinder.getPort(function (err, port) {
-    t.error(err)
-    server.listen(port)
+  server.listen(0, function () {
+    var port = server.http.address().port
     var announceUrl = 'http://127.0.0.1:' + port + '/announce'
     var scrapeUrl = 'http://127.0.0.1:' + port + '/scrape'
 
     parsedBitlove.announce = [ announceUrl ]
 
-    server.once('listening', function () {
-      // announce a torrent to the tracker
-      var client = new Client(peerId, port, parsedBitlove)
-      client.on('error', function (err) {
-        t.error(err)
-      })
-      client.start()
-
-      server.once('start', function () {
-        // now do a scrape of everything by omitting the info_hash param
-        get.concat(scrapeUrl, function (err, data, res) {
-          if (err) throw err
-
-          t.equal(res.statusCode, 200)
-          data = bencode.decode(data)
-          t.ok(data.files)
-          t.equal(Object.keys(data.files).length, 1)
-
-          t.ok(data.files[binaryBitlove])
-          t.equal(typeof data.files[binaryBitlove].complete, 'number')
-          t.equal(typeof data.files[binaryBitlove].incomplete, 'number')
-          t.equal(typeof data.files[binaryBitlove].downloaded, 'number')
-
-          client.stop()
-          server.close(function () {
-            t.end()
-          })
-        })
-      })
+    // announce a torrent to the tracker
+    var client = new Client(peerId, port, parsedBitlove)
+    client.on('error', function (err) {
+      t.error(err)
     })
-  })
-})
+    client.start()
 
-test('http nonwhitelisted torrent does not appear in scrape', function (t) {
-  var server = new Server({
-    filter: function (hash) {
-      return hash !== parsedBitlove
-    },
-    udp: false
-  })
-
-  server.on('error', function (err) {
-    t.error(err)
-  })
-
-  portfinder.getPort(function (err, port) {
-    t.error(err)
-    server.listen(port)
-    var announceUrl = 'http://127.0.0.1:' + port + '/announce'
-    var scrapeUrl = 'http://127.0.0.1:' + port + '/scrape'
-
-    parsedBitlove.announce = [ announceUrl ]
-
-    server.once('listening', function () {
-      var client = new Client(peerId, port, parsedBitlove)
-
-      client.start()
-
-      client.on('error', function (err) {
-        t.error(err)
-      })
-
-      server.once('warning', function (err) {
-        if (err) {
-          get.concat(scrapeUrl, function (err, data, res) {
-            if (err) throw err
-
-            t.equal(res.statusCode, 200)
-            data = bencode.decode(data)
-            t.ok(data.files)
-
-            t.notOk(data.files[binaryBitlove])
-
-            client.stop()
-            server.close(function () {
-              t.end()
-            })
-          })
-        }
-      })
-
-      server.once('start', function (err) {
+    server.once('start', function () {
+      // now do a scrape of everything by omitting the info_hash param
+      get.concat(scrapeUrl, function (err, data, res) {
         if (err) throw err
+
+        t.equal(res.statusCode, 200)
+        data = bencode.decode(data)
+        t.ok(data.files)
+        t.equal(Object.keys(data.files).length, 1)
+
+        t.ok(data.files[binaryBitlove])
+        t.equal(typeof data.files[binaryBitlove].complete, 'number')
+        t.equal(typeof data.files[binaryBitlove].incomplete, 'number')
+        t.equal(typeof data.files[binaryBitlove].downloaded, 'number')
+
         client.stop()
         server.close(function () {
-          t.fail('server should have thrown an error; filter condition was probably successful')
           t.end()
         })
       })

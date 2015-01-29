@@ -1,4 +1,3 @@
-var portfinder = require('portfinder')
 var Server = require('../').Server
 
 exports.createServer = function (t, serverType, cb) {
@@ -13,14 +12,12 @@ exports.createServer = function (t, serverType, cb) {
     t.error(err)
   })
 
-  portfinder.getPort(function (err, port) {
-    if (err) return t.error(err)
-
+  server.listen(0, function () {
+    var port = server[serverType].address().port
     var announceUrl = serverType === 'http'
       ? 'http://127.0.0.1:' + port + '/announce'
       : 'udp://127.0.0.1:' + port
 
-    server.listen(port)
     cb(server, announceUrl)
   })
 }
