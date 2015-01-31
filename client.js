@@ -219,8 +219,8 @@ Tracker.prototype._announce = function (opts) {
   var self = this
 
   // defaults, user should provide real values
-  if (!opts.uploaded) opts.uploaded = 0
-  if (!opts.downloaded) opts.downloaded = 0
+  if (opts.uploaded == null) opts.uploaded = 0
+  if (opts.downloaded == null) opts.downloaded = 0
 
   if (self.client.torrentLength != null && opts.left == null) {
     opts.left = self.client.torrentLength - (opts.downloaded || 0)
@@ -261,13 +261,13 @@ Tracker.prototype._requestHttp = function (requestUrl, opts) {
   var self = this
 
   if (opts._scrape) {
-    if (!opts.info_hash) opts.info_hash = self.client._infoHash.toString('binary')
+    if (opts.info_hash == null) opts.info_hash = self.client._infoHash.toString('binary')
   } else {
-    if (!opts.info_hash) opts.info_hash = self.client._infoHash.toString('binary')
-    if (!opts.peer_id) opts.peer_id = self.client._peerId.toString('binary')
-    if (!opts.port) opts.port = self.client._port
-    if (!opts.compact) opts.compact = 1
-    if (!opts.numwant) opts.numwant = self.client._numWant
+    if (opts.info_hash == null) opts.info_hash = self.client._infoHash.toString('binary')
+    if (opts.peer_id == null) opts.peer_id = self.client._peerId.toString('binary')
+    if (opts.port == null) opts.port = self.client._port
+    if (opts.compact == null) opts.compact = 1
+    if (opts.numwant == null) opts.numwant = self.client._numWant
 
     if (self._trackerId) {
       opts.trackerid = self._trackerId
