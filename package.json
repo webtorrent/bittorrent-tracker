@@ -19,7 +19,6 @@
     "buffer-equal": "0.0.1",
     "compact2string": "^1.2.0",
     "debug": "^2.0.0",
-    "extend.js": "0.0.2",
     "hat": "0.0.3",
     "inherits": "^2.0.1",
     "ip": "^0.3.0",

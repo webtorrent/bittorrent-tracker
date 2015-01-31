@@ -7,7 +7,6 @@ var compact2string = require('compact2string')
 var debug = require('debug')('bittorrent-tracker')
 var dgram = require('dgram')
 var EventEmitter = require('events').EventEmitter
-var extend = require('extend.js')
 var get = require('simple-get')
 var hat = require('hat')
 var inherits = require('inherits')
@@ -218,10 +217,10 @@ Tracker.prototype.destroy = function () {
  */
 Tracker.prototype._announce = function (opts) {
   var self = this
-  opts = extend({
-    uploaded: 0, // default, user should provide real value
-    downloaded: 0 // default, user should provide real value
-  }, opts)
+
+  // defaults, user should provide real values
+  if (!opts.uploaded) opts.uploaded = 0
+  if (!opts.downloaded) opts.downloaded = 0
 
   if (self.client.torrentLength != null && opts.left == null) {
     opts.left = self.client.torrentLength - (opts.downloaded || 0)
@@ -262,17 +261,13 @@ Tracker.prototype._requestHttp = function (requestUrl, opts) {
   var self = this
 
   if (opts._scrape) {
-    opts = extend({
-      info_hash: self.client._infoHash.toString('binary')
-    }, opts)
+    if (!opts.info_hash) opts.info_hash = self.client._infoHash.toString('binary')
   } else {
-    opts = extend({
-      info_hash: self.client._infoHash.toString('binary'),
-      peer_id: self.client._peerId.toString('binary'),
-      port: self.client._port,
-      compact: 1,
-      numwant: self.client._numWant
-    }, opts)
+    if (!opts.info_hash) opts.info_hash = self.client._infoHash.toString('binary')
+    if (!opts.peer_id) opts.peer_id = self.client._peerId.toString('binary')
+    if (!opts.port) opts.port = self.client._port
+    if (!opts.compact) opts.compact = 1
+    if (!opts.numwant) opts.numwant = self.client._numWant
 
     if (self._trackerId) {
       opts.trackerid = self._trackerId
