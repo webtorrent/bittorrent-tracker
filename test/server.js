@@ -56,7 +56,8 @@ function serverTest (t, serverType, serverFamily) {
       t.deepEqual(server.getSwarm(infoHash).peers[clientAddr + ':6881'], {
         ip: clientIp,
         port: 6881,
-        peerId: peerId.toString('hex')
+        peerId: peerId.toString('hex'),
+        complete: false
       })
 
       client.complete()
