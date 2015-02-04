@@ -121,12 +121,14 @@ Server.prototype.getSwarm = function (infoHash) {
   return swarm
 }
 
-Server.prototype.onHttpRequest = function (req, res) {
+Server.prototype.onHttpRequest = function (req, res, options) {
   var self = this
+  options = options || {}
+  options.trustProxy = options.trustProxy || self._trustProxy
 
   var params
   try {
-    params = parseHttpRequest(req, { trustProxy: self._trustProxy })
+    params = parseHttpRequest(req, options)
     params.httpReq = req
     params.httpRes = res
   } catch (err) {
