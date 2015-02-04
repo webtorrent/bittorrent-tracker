@@ -127,6 +127,8 @@ Server.prototype.onHttpRequest = function (req, res) {
   var params
   try {
     params = parseHttpRequest(req, { trustProxy: self._trustProxy })
+    params.httpReq = req
+    params.httpRes = res
   } catch (err) {
     debug('sent error %s', err.message)
     res.end(bencode.encode({
