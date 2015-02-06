@@ -36,9 +36,6 @@ function Server (opts) {
   EventEmitter.call(self)
   opts = opts || {}
 
-  if (opts.http === false && opts.udp === false)
-    throw new Error('must start at least one type of server (http or udp)')
-
   self._intervalMs = opts.interval
     ? opts.interval
     : 10 * 60 * 1000 // 10 min
