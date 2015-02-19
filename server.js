@@ -109,10 +109,10 @@ Server.prototype.close = function (cb) {
   }
 }
 
-Server.prototype.getSwarm = function (infoHash) {
+Server.prototype.getSwarm = function (infoHash, params) {
   var self = this
   if (Buffer.isBuffer(infoHash)) infoHash = infoHash.toString('hex')
-  if (self._filter && !self._filter(infoHash)) return null
+  if (self._filter && !self._filter(params)) return null
   var swarm = self.torrents[infoHash]
   if (!swarm) swarm = self.torrents[infoHash] = new Swarm(infoHash, this)
   return swarm
@@ -207,7 +207,7 @@ Server.prototype._onRequest = function (params, cb) {
 
 Server.prototype._onAnnounce = function (params, cb) {
   var self = this
-  var swarm = self.getSwarm(params.info_hash)
+  var swarm = self.getSwarm(params.info_hash, params)
   if (swarm === null) return cb(new Error('disallowed info_hash'))
   if (!params.event || params.event === 'empty') params.event = 'update'
   swarm.announce(params, function (err, response) {
