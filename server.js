@@ -111,8 +111,9 @@ Server.prototype.close = function (cb) {
 
 Server.prototype.getSwarm = function (infoHash, params) {
   var self = this
-  if (Buffer.isBuffer(infoHash)) infoHash = params.info_hash = infoHash.toString('hex')
-  if (self._filter && !self._filter(params)) return null
+  if (!params) params = {}
+  if (Buffer.isBuffer(infoHash)) infoHash = infoHash.toString('hex')
+  if (self._filter && !self._filter(infoHash, params)) return null
   var swarm = self.torrents[infoHash]
   if (!swarm) swarm = self.torrents[infoHash] = new Swarm(infoHash, this)
   return swarm
