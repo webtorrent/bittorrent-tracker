@@ -29,7 +29,7 @@
   },
   "devDependencies": {
     "magnet-uri": "^4.0.0",
-    "parse-torrent": "^3.0.1",
+    "parse-torrent": "^4.0.0",
     "standard": "^2.0.0",
     "tape": "^3.0.3"
   },
