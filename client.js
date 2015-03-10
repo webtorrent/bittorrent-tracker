@@ -274,7 +274,10 @@ Tracker.prototype._requestHttp = function (requestUrl, opts) {
     }
   }
 
-  get.concat(requestUrl + ((requestUrl.indexOf('?') !== -1) ? '&' : '?') + common.querystringStringify(opts), function (err, data, res) {
+  var u = requestUrl + (requestUrl.indexOf('?') === -1 ? '?' : '&') +
+    common.querystringStringify(opts)
+
+  get.concat(u, function (err, data, res) {
     if (err) return self.client.emit('warning', err)
     if (res.statusCode !== 200) return self.client.emit('warning', new Error('Non-200 response code ' + res.statusCode + ' from ' + requestUrl))
     if (data && data.length) self._handleResponse(requestUrl, data)
