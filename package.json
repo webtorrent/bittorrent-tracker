@@ -10,6 +10,9 @@
   "browser": {
     "./server.js": false
   },
+  "bin": {
+    "bittorrent-tracker": "./bin/cmd.js"
+  },
   "bugs": {
     "url": "https://github.com/feross/bittorrent-tracker/issues"
   },
