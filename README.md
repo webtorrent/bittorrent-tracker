@@ -172,7 +172,7 @@ The http server will handle requests for the following paths: `/announce`, `/scr
 
 ## command line
 
-Start a quick torrent tracker server for debugging bittorrent stuff!
+Easily start a tracker server:
 
 ```sh
 $ bittorrent-tracker
@@ -183,7 +183,7 @@ udp server listening on 8000
 Lots of options:
 
 ```sh
-$ bittorrent-tracker -h
+$ bittorrent-tracker --help
   bittorrent-tracker - Start a bittorrent tracker server
 
   Usage:
