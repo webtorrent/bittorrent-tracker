@@ -24,11 +24,12 @@ inherits(Server, EventEmitter)
  * keep overall statistics about the torrent. The response includes a peer list that
  * helps the client participate in the torrent.
  *
- * @param {Object}  opts            options
- * @param {Number}  opts.interval   interval in ms that clients should announce on
- * @param {Number}  opts.trustProxy Trust 'x-forwarded-for' header from reverse proxy
- * @param {boolean} opts.http       Start an http server? (default: true)
- * @param {boolean} opts.udp        Start a udp server? (default: true)
+ * @param {Object}  opts            options object
+ * @param {Number}  opts.interval   tell clients to announce on this interval (ms)
+ * @param {Number}  opts.trustProxy trust 'x-forwarded-for' header from reverse proxy
+ * @param {boolean} opts.http       start an http server? (default: true)
+ * @param {boolean} opts.udp        start a udp server? (default: true)
+ * @param {function} opts.filter    black/whitelist fn for disallowing/allowing torrents
  */
 function Server (opts) {
   var self = this
