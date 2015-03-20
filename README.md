@@ -170,6 +170,38 @@ server.torrents[infoHash].peers
 
 The http server will handle requests for the following paths: `/announce`, `/scrape`. Requests for other paths will not be handled.
 
+## command line
+
+Start a quick torrent tracker server for debugging bittorrent stuff!
+
+```sh
+$ bittorrent-tracker
+http server listening on 8000
+udp server listening on 8000
+```
+
+Lots of options:
+
+```sh
+$ bittorrent-tracker -h
+  bittorrent-tracker - Start a bittorrent tracker server
+
+  Usage:
+      bittorrent-tracker
+
+  Options:
+      -p, --port [number]     change the port [default: 8000]
+          --trust-proxy       trust 'x-forwarded-for' header from reverse proxy
+          --interval          tell clients to announce on this interval (ms)
+          --http              enable http server [default: true]
+          --udp               enable udp server [default: true]
+      -q, --quiet             only show error output
+      -s, --silent            show no output
+      -v, --version           print the current version
+
+  Please report bugs!  https://github.com/feross/bittorrent-tracker/issues
+```
+
 ## license
 
 MIT. Copyright (c) [Feross Aboukhadijeh](http://feross.org).
