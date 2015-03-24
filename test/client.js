@@ -99,7 +99,7 @@ function testClientUpdate (t, serverType) {
   t.plan(4)
   common.createServer(t, serverType, function (server, announceUrl) {
     parsedTorrent.announce = [ announceUrl ]
-    var client = new Client(peerId1, port, parsedTorrent, { interval: 5000 })
+    var client = new Client(peerId1, port, parsedTorrent, { interval: 2000 })
 
     client.on('error', function (err) {
       t.error(err)
@@ -112,6 +112,7 @@ function testClientUpdate (t, serverType) {
     client.start()
 
     client.once('update', function () {
+      // after interval (2s), we should get another update
       client.once('update', function (data) {
         // received an update!
         t.equal(data.announce, announceUrl)
