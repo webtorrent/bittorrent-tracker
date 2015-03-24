@@ -7,8 +7,8 @@ var once = require('once')
 var url = require('url')
 
 var common = require('./lib/common')
-var HTTPTracker = require('./lib/http-tracker')
-var UDPTracker = require('./lib/udp-tracker')
+var HTTPTracker = require('./lib/http-tracker') // empty object in browser
+var UDPTracker = require('./lib/udp-tracker') // empty object in browser
 var WebSocketTracker = require('./lib/websocket-tracker')
 
 inherits(Client, EventEmitter)
@@ -47,24 +47,24 @@ function Client (peerId, port, torrent, opts) {
   debug('new client %s', self._infoHash.toString('hex'))
 
   if (typeof torrent.announce === 'string') torrent.announce = [ torrent.announce ]
+  if (torrent.announce == null) torrent.announce = []
 
-  self._trackers = (torrent.announce || [])
-    .filter(function (announceUrl) {
-      var protocol = url.parse(announceUrl).protocol
-      return [ 'udp:', 'http:', 'https:', 'ws:', 'wss:' ].indexOf(protocol) !== -1
-    })
+  self._trackers = torrent.announce
     .map(function (announceUrl) {
       var trackerOpts = { interval: self._intervalMs }
       var protocol = url.parse(announceUrl).protocol
 
-      if (protocol === 'http:' || protocol === 'https:') {
+      if ((protocol === 'http:' || protocol === 'https:') &&
+          typeof HTTPTracker === 'function') {
         return new HTTPTracker(self, announceUrl, trackerOpts)
-      } else if (protocol === 'udp:') {
+      } else if (protocol === 'udp:' && typeof UDPTracker === 'function') {
         return new UDPTracker(self, announceUrl, trackerOpts)
       } else if (protocol === 'ws:' || protocol === 'wss:') {
         return new WebSocketTracker(self, announceUrl, trackerOpts)
       }
+      return null
     })
+    .filter(Boolean)
 }
 
 /**
