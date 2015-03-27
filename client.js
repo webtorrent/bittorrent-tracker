@@ -14,7 +14,9 @@ var WebSocketTracker = require('./lib/websocket-tracker')
 inherits(Client, EventEmitter)
 
 /**
- * A Client manages tracker connections for a torrent.
+ * BitTorrent tracker client.
+ *
+ * Find torrent peers, to help a torrent client participate in a torrent swarm.
  *
  * @param {string} peerId          peer id
  * @param {Number} port            torrent client listening port

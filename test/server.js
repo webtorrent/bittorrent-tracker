@@ -57,7 +57,8 @@ function serverTest (t, serverType, serverFamily) {
         ip: clientIp,
         port: 6881,
         peerId: peerId.toString('hex'),
-        complete: false
+        complete: false,
+        socket: undefined
       })
 
       client.complete()

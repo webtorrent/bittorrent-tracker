@@ -35,6 +35,7 @@
     "simple-peer": "4.0.4",
     "simple-websocket": "1.0.4",
     "string2compact": "^1.1.1",
+    "ws": "^0.7.1",
     "xtend": "4.0.0"
   },
   "devDependencies": {
