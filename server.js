@@ -228,7 +228,7 @@ Server.prototype.onUdpRequest = function (msg, rinfo) {
 
 Server.prototype.onWebSocketConnection = function (socket) {
   var self = this
-  socket.peerId = null
+  socket.peerId = null // as hex
   socket.infoHashes = []
   socket.onSend = self._onWebSocketSend.bind(self, socket)
   socket.on('message', self._onWebSocketRequest.bind(self, socket))
@@ -253,7 +253,7 @@ Server.prototype._onWebSocketRequest = function (socket, params) {
     return
   }
 
-  if (!socket.peerId) socket.peerId = params.peer_id
+  if (!socket.peerId) socket.peerId = params.peer_id // as hex
 
   self._onRequest(params, function (err, response) {
     if (err) {
@@ -270,11 +270,10 @@ Server.prototype._onWebSocketRequest = function (socket, params) {
 
     var peers = response.peers
     delete response.peers
-
     response.interval = self._intervalMs
-    response.info_hash = params.info_hash
-    socket.send(JSON.stringify(response), socket.onSend)
+    response.info_hash = params.info_hash // as hex
 
+    socket.send(JSON.stringify(response), socket.onSend)
     debug('sent response %s to %s', JSON.stringify(response), params.peer_id)
 
     if (params.numwant) {
@@ -284,8 +283,8 @@ Server.prototype._onWebSocketRequest = function (socket, params) {
         peer.socket.send(JSON.stringify({
           offer: params.offers[i].offer,
           offer_id: params.offers[i].offer_id,
-          peer_id: params.peer_id,
-          info_hash: params.info_hash
+          peer_id: common.hexToBinary(params.peer_id),
+          info_hash: common.hexToBinary(params.info_hash)
         }))
         debug('sent offer to %s from %s', peer.peerId, params.peer_id)
       })
@@ -303,8 +302,8 @@ Server.prototype._onWebSocketRequest = function (socket, params) {
       toPeer.socket.send(JSON.stringify({
         answer: params.answer,
         offer_id: params.offer_id,
-        peer_id: params.peer_id,
-        info_hash: params.info_hash
+        peer_id: common.hexToBinary(params.peer_id),
+        info_hash: common.hexToBinary(params.info_hash)
       }))
       debug('sent answer to %s from %s', toPeer.peerId, params.peer_id)
     }
