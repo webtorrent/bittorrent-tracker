@@ -295,7 +295,7 @@ Server.prototype._onWebSocketRequest = function (socket, params) {
       debug('got answer %s from %s', JSON.stringify(params.answer), params.peer_id)
 
       var swarm = self.getSwarm(params.info_hash, params)
-      var toPeer = swarm.peers[params.to_peer_id]
+      var toPeer = swarm.peers[common.binaryToHex(params.to_peer_id)]
       if (!toPeer) {
         return self.emit('warning', new Error('no peer with that `to_peer_id`'))
       }
