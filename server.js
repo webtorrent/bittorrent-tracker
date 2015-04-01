@@ -99,23 +99,24 @@ Server.prototype._onError = function (err) {
   self.emit('error', err)
 }
 
-Server.prototype.listen = function (port, onlistening) {
+Server.prototype.listen = function (/* port, hostname, onlistening */) {
   var self = this
-  if (typeof port === 'function') {
-    onlistening = port
-    port = undefined
-  }
-  if (!port) port = 0
-  if (self.listening) throw new Error('server already listening')
-  debug('listen %o', port)
 
-  if (onlistening) self.once('listening', onlistening)
+  var lastArg = arguments[arguments.length - 1]
+  if (typeof lastArg === 'function') self.once('listening', lastArg)
+
+  var port = toNumber(arguments[0]) || arguments[0] || 0
+  var hostname = typeof arguments[1] !== 'function' ? arguments[1] : undefined
+
+  if (self.listening) throw new Error('server already listening')
+
+  debug('listen %o %s', port, hostname)
 
   // ATTENTION:
   // binding to :: only receives IPv4 connections if the bindv6only
   // sysctl is set 0, which is the default on many operating systems.
-  self.http && self.http.listen(port.http || port, '::')
-  self.udp && self.udp.bind(port.udp || port)
+  self.http && self.http.listen(port.http || port, hostname || '::')
+  self.udp && self.udp.bind(port.udp || port, hostname)
 }
 
 Server.prototype.close = function (cb) {
@@ -485,3 +486,5 @@ Server.prototype._onWebSocketError = function (socket, err) {
   self.emit('warning', err)
   self._onWebSocketClose(socket)
 }
+
+function toNumber (x) { return (x = Number(x)) >= 0 ? x : false }
