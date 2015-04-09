@@ -42,7 +42,7 @@
     "magnet-uri": "^4.0.0",
     "parse-torrent": "^4.0.0",
     "standard": "^3.2.0",
-    "tape": "^3.0.3"
+    "tape": "^4.0.0"
   },
   "homepage": "http://webtorrent.io",
   "keywords": [
