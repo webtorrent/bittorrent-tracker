@@ -18,12 +18,14 @@ var argv = minimist(process.argv.slice(2), {
     'silent',
     'trust-proxy',
     'udp',
-    'version'
+    'version',
+    'ws'
   ],
   default: {
     http: true,
     port: 8000,
-    udp: true
+    udp: true,
+    ws: false
   }
 })
 
@@ -46,6 +48,7 @@ if (argv.help) {
           --interval          tell clients to announce on this interval (ms)
           --http              enable http server [default: true]
           --udp               enable udp server [default: true]
+          --ws                enable websocket server [default: false]
       -q, --quiet             only show error output
       -s, --silent            show no output
       -v, --version           print the current version
@@ -63,7 +66,8 @@ var server = new Server({
   http: argv.http,
   interval: argv.interval,
   trustProxy: argv['trust-proxy'],
-  udp: argv.udp
+  udp: argv.udp,
+  ws: argv.ws
 })
 
 server.on('error', function (err) {
@@ -91,5 +95,8 @@ server.listen(argv.port, function () {
   }
   if (server.udp && !argv.quiet) {
     console.log('udp server listening on ' + server.udp.address().port)
+  }
+  if (server.ws && !argv.quiet) {
+    console.log('ws server listening on ' + server.http.address().port)
   }
 })
