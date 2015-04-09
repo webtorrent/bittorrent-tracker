@@ -111,6 +111,7 @@ var Server = require('bittorrent-tracker').Server
 var server = new Server({
   udp: true, // enable udp server? [default=true]
   http: true, // enable http server? [default=true]
+  ws: true, // enable websocket server? [default=false]
   filter: function (infoHash, params) {
     // black/whitelist for disallowing/allowing torrents [default=allow all]
     // this example only allows this one torrent
@@ -122,9 +123,10 @@ var server = new Server({
   })
 })
 
-// Internal http and udp servers exposed as public properties.
+// Internal http, udp, and websocket servers exposed as public properties.
 server.http
 server.udp
+server.ws
 
 server.on('error', function (err) {
   // fatal server error!
@@ -178,6 +180,7 @@ Easily start a tracker server:
 $ bittorrent-tracker
 http server listening on 8000
 udp server listening on 8000
+ws server listening on 8000
 ```
 
 Lots of options:
@@ -195,6 +198,7 @@ $ bittorrent-tracker --help
           --interval          tell clients to announce on this interval (ms)
           --http              enable http server [default: true]
           --udp               enable udp server [default: true]
+          --ws                enable ws server [default: false]
       -q, --quiet             only show error output
       -s, --silent            show no output
       -v, --version           print the current version
