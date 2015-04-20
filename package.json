@@ -14,7 +14,8 @@
     "./lib/common-node": false,
     "./lib/http-tracker": false,
     "./lib/udp-tracker": false,
-    "./server": false
+    "./server": false,
+    "wrtc": false
   },
   "bugs": {
     "url": "https://github.com/feross/bittorrent-tracker/issues"
@@ -32,7 +33,7 @@
     "once": "^1.3.0",
     "run-series": "^1.0.2",
     "simple-get": "^1.3.0",
-    "simple-peer": "^4.0.4",
+    "simple-peer": "^5.0.0",
     "simple-websocket": "^2.0.0",
     "string2compact": "^1.1.1",
     "ws": "^0.7.1",
@@ -63,5 +64,8 @@
   },
   "scripts": {
     "test": "standard && tape test/*.js"
+  },
+  "optionalDependencies": {
+    "wrtc": "0.0.55"
   }
 }

@@ -61,7 +61,8 @@ function Client (peerId, port, torrent, opts) {
         return new HTTPTracker(self, announceUrl, trackerOpts)
       } else if (protocol === 'udp:' && typeof UDPTracker === 'function') {
         return new UDPTracker(self, announceUrl, trackerOpts)
-      } else if (protocol === 'ws:' || protocol === 'wss:') {
+      } else if ((protocol === 'ws:' || protocol === 'wss:') &&
+          WebSocketTracker.supported) {
         return new WebSocketTracker(self, announceUrl, trackerOpts)
       }
       return null
