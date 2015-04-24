@@ -14,7 +14,8 @@
     "./lib/common-node": false,
     "./lib/http-tracker": false,
     "./lib/udp-tracker": false,
-    "./server": false
+    "./server": false,
+    "wrtc": false
   },
   "bugs": {
     "url": "https://github.com/feross/bittorrent-tracker/issues"
