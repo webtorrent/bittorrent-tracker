@@ -487,4 +487,7 @@ Server.prototype._onWebSocketError = function (socket, err) {
   self._onWebSocketClose(socket)
 }
 
-function toNumber (x) { return (x = Number(x)) >= 0 ? x : false }
+function toNumber (x) {
+  x = Number(x)
+  return x >= 0 ? x : false
+}
