@@ -183,6 +183,7 @@ Server.prototype.onHttpRequest = function (req, res, opts) {
         'failure reason': err.message
       }
     }
+    if (!self.listening) return
 
     delete response.action  // only needed for UDP encoding
     res.end(bencode.encode(response))
