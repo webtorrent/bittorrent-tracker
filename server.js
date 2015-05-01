@@ -219,7 +219,12 @@ Server.prototype.onUdpRequest = function (msg, rinfo) {
     response.connectionId = params.connectionId
 
     var buf = makeUdpPacket(response)
-    self.udp.send(buf, 0, buf.length, rinfo.port, rinfo.address)
+
+    try {
+      self.udp.send(buf, 0, buf.length, rinfo.port, rinfo.address)
+    } catch (err) {
+      self.emit('warning', err)
+    }
 
     if (params.action === common.ACTIONS.ANNOUNCE) {
       self.emit(common.EVENT_NAMES[params.event], params.addr)
