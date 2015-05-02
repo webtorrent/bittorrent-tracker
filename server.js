@@ -52,7 +52,8 @@ function Server (opts) {
   self.torrents = {}
 
   self.http = null
-  self.udp = null
+  self.udp4 = null
+  self.udp6 = null
   self.ws = null
 
   // start an http tracker unless the user explictly says no
@@ -65,10 +66,15 @@ function Server (opts) {
 
   // start a udp tracker unless the user explicitly says no
   if (opts.udp !== false) {
-    self.udp = dgram.createSocket('udp4')
-    self.udp.on('message', self.onUdpRequest.bind(self))
-    self.udp.on('error', self._onError.bind(self))
-    self.udp.on('listening', onListening)
+    self.udp4 = self.udp = dgram.createSocket('udp4')
+    self.udp4.on('message', self.onUdpRequest.bind(self))
+    self.udp4.on('error', self._onError.bind(self))
+    self.udp4.on('listening', onListening)
+
+    self.udp6 = dgram.createSocket('udp6')
+    self.udp6.on('message', self.onUdpRequest.bind(self))
+    self.udp6.on('error', self._onError.bind(self))
+    self.udp6.on('listening', onListening)
   }
 
   // start a websocket tracker (for WebTorrent) unless the user explicitly says no
@@ -83,7 +89,7 @@ function Server (opts) {
     self.ws.on('connection', self.onWebSocketConnection.bind(self))
   }
 
-  var num = !!(self.http || self.ws) + !!self.udp
+  var num = !!self.http + !!self.udp4 + !!self.udp6
   function onListening () {
     num -= 1
     if (num === 0) {
@@ -115,8 +121,9 @@ Server.prototype.listen = function (/* port, hostname, onlistening */) {
   // ATTENTION:
   // binding to :: only receives IPv4 connections if the bindv6only
   // sysctl is set 0, which is the default on many operating systems.
-  self.http && self.http.listen(port.http || port, hostname || '::')
-  self.udp && self.udp.bind(port.udp || port, hostname)
+  if (self.http) self.http.listen(port.http || port, hostname || '::')
+  if (self.udp4) self.udp4.bind(port.udp || port, hostname)
+  if (self.udp6) self.udp6.bind(port.udp || port, hostname)
 }
 
 Server.prototype.close = function (cb) {
@@ -126,9 +133,15 @@ Server.prototype.close = function (cb) {
 
   self.listening = false
 
-  if (self.udp) {
+  if (self.udp4) {
     try {
-      self.udp.close()
+      self.udp4.close()
+    } catch (err) {}
+  }
+
+  if (self.udp6) {
+    try {
+      self.udp6.close()
     } catch (err) {}
   }
 
@@ -222,7 +235,8 @@ Server.prototype.onUdpRequest = function (msg, rinfo) {
     var buf = makeUdpPacket(response)
 
     try {
-      self.udp.send(buf, 0, buf.length, rinfo.port, rinfo.address)
+      var udp = (rinfo.family === 'IPv4') ? self.udp4 : self.udp6
+      udp.send(buf, 0, buf.length, rinfo.port, rinfo.address)
     } catch (err) {
       self.emit('warning', err)
     }
