@@ -71,10 +71,11 @@ function Client (peerId, port, torrent, opts) {
 }
 
 /**
- * Simple convenience function to scrape a tracker for an infoHash without
- * needing to create a Client, pass it a parsed torrent, etc.
- * @param  {string}   announceUrl
- * @param  {string}   infoHash
+ * Simple convenience function to scrape a tracker for an info hash without needing to
+ * create a Client, pass it a parsed torrent, etc. Support scraping a tracker for multiple
+ * torrents at the same time.
+ * @param  {string} announceUrl
+ * @param  {string|Array.<string>} infoHash
  * @param  {function} cb
  */
 Client.scrape = function (announceUrl, infoHash, cb) {
@@ -83,15 +84,33 @@ Client.scrape = function (announceUrl, infoHash, cb) {
   var peerId = new Buffer('01234567890123456789') // dummy value
   var port = 6881 // dummy value
   var torrent = {
-    infoHash: infoHash,
+    infoHash: Array.isArray(infoHash) ? infoHash[0] : infoHash,
     announce: [ announceUrl ]
   }
   var client = new Client(peerId, port, torrent)
   client.once('error', cb)
-  client.once('scrape', function (data) {
-    cb(null, data)
+
+  var len = Array.isArray(infoHash) ? infoHash.length : 1
+  var results = {}
+  client.on('scrape', function (data) {
+    len -= 1
+    results[data.infoHash] = data
+    if (len === 0) {
+      client.destroy()
+      var keys = Object.keys(results)
+      if (keys.length === 1) {
+        cb(null, results[keys[0]])
+      } else {
+        cb(null, results)
+      }
+    }
   })
-  client.scrape()
+
+  infoHash = Array.isArray(infoHash)
+    ? infoHash.map(function (infoHash) { return new Buffer(infoHash, 'hex') })
+    : new Buffer(infoHash, 'hex')
+  client.scrape({ infoHash: infoHash })
+
 }
 
 /**

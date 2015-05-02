@@ -437,19 +437,19 @@ function makeUdpPacket (params) {
       ])
       break
     case common.ACTIONS.SCRAPE:
-      var firstInfoHash = Object.keys(params.files)[0]
-      var scrapeInfo = firstInfoHash ? {
-        complete: params.files[firstInfoHash].complete,
-        incomplete: params.files[firstInfoHash].incomplete,
-        completed: params.files[firstInfoHash].complete // TODO: this only provides a lower-bound
-      } : {}
-      packet = Buffer.concat([
+      var scrapeResponse = [
         common.toUInt32(common.ACTIONS.SCRAPE),
-        common.toUInt32(params.transactionId),
-        common.toUInt32(scrapeInfo.complete),
-        common.toUInt32(scrapeInfo.completed),
-        common.toUInt32(scrapeInfo.incomplete)
-      ])
+        common.toUInt32(params.transactionId)
+      ]
+      for (var infoHash in params.files) {
+        var file = params.files[infoHash]
+        scrapeResponse.push(
+          common.toUInt32(file.complete),
+          common.toUInt32(file.downloaded), // TODO: this only provides a lower-bound
+          common.toUInt32(file.incomplete)
+        )
+      }
+      packet = Buffer.concat(scrapeResponse)
       break
     case common.ACTIONS.ERROR:
       packet = Buffer.concat([
