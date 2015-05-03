@@ -110,7 +110,6 @@ Client.scrape = function (announceUrl, infoHash, cb) {
     ? infoHash.map(function (infoHash) { return new Buffer(infoHash, 'hex') })
     : new Buffer(infoHash, 'hex')
   client.scrape({ infoHash: infoHash })
-
 }
 
 /**
