@@ -118,12 +118,22 @@ Server.prototype.listen = function (/* port, hostname, onlistening */) {
 
   debug('listen %o %o', port, hostname)
 
-  // ATTENTION:
-  // binding to :: only receives IPv4 connections if the bindv6only
-  // sysctl is set 0, which is the default on many operating systems.
-  if (self.http) self.http.listen(port.http || port, (hostname && hostname.http) || hostname || '::')
-  if (self.udp4) self.udp4.bind(port.udp || port, (hostname && hostname.udp) || hostname)
-  if (self.udp6) self.udp6.bind(port.udp || port, (hostname && hostname.udp) || hostname)
+  function isObject (obj) {
+    return typeof obj === 'object' && obj !== null
+  }
+
+  var httpPort = isObject(port) ? (port.http || 0) : port
+  var udpPort = isObject(port) ? (port.udp || 0) : port
+
+  // binding to :: only receives IPv4 connections if the bindv6only sysctl is set 0,
+  // which is the default on many operating systems
+  var httpHostname = isObject(hostname) ? hostname.http : (hostname || '::')
+  var udp4Hostname = isObject(hostname) ? hostname.udp : hostname
+  var udp6Hostname = isObject(hostname) ? hostname.udp6 : hostname
+
+  if (self.http) self.http.listen(httpPort, httpHostname)
+  if (self.udp4) self.udp4.bind(udpPort, udp4Hostname)
+  if (self.udp6) self.udp6.bind(udpPort, udp6Hostname)
 }
 
 Server.prototype.close = function (cb) {
