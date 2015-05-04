@@ -25,6 +25,7 @@ inherits(Client, EventEmitter)
  * @param {Number} opts.numWant    number of peers to request
  * @param {Number} opts.interval   announce interval (in ms)
  * @param {Number} opts.rtcConfig  RTCPeerConnection configuration object
+ * @param {Number} opts.wrtc       custom webrtc implementation
  */
 function Client (peerId, port, torrent, opts) {
   var self = this
@@ -42,6 +43,9 @@ function Client (peerId, port, torrent, opts) {
     : new Buffer(torrent.infoHash, 'hex')
   self.torrentLength = torrent.length
 
+  self._rtcConfig = opts.rtcConfig
+  self._wrtc = opts.wrtc
+
   // optional
   self._numWant = opts.numWant || common.DEFAULT_ANNOUNCE_PEERS
   self._intervalMs = opts.interval || common.DEFAULT_ANNOUNCE_INTERVAL
@@ -51,9 +55,11 @@ function Client (peerId, port, torrent, opts) {
   if (typeof torrent.announce === 'string') torrent.announce = [ torrent.announce ]
   if (torrent.announce == null) torrent.announce = []
 
+  var trackerOpts = { interval: self._intervalMs }
+  var webrtcSupport = !!self._wrtc || typeof window !== 'undefined'
+
   self._trackers = torrent.announce
     .map(function (announceUrl) {
-      var trackerOpts = { interval: self._intervalMs }
       var protocol = url.parse(announceUrl).protocol
 
       if ((protocol === 'http:' || protocol === 'https:') &&
@@ -61,8 +67,7 @@ function Client (peerId, port, torrent, opts) {
         return new HTTPTracker(self, announceUrl, trackerOpts)
       } else if (protocol === 'udp:' && typeof UDPTracker === 'function') {
         return new UDPTracker(self, announceUrl, trackerOpts)
-      } else if ((protocol === 'ws:' || protocol === 'wss:') &&
-          WebSocketTracker.supported) {
+      } else if ((protocol === 'ws:' || protocol === 'wss:') && webrtcSupport) {
         return new WebSocketTracker(self, announceUrl, trackerOpts)
       }
       return null

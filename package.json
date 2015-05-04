@@ -14,8 +14,7 @@
     "./lib/common-node": false,
     "./lib/http-tracker": false,
     "./lib/udp-tracker": false,
-    "./server": false,
-    "wrtc": false
+    "./server": false
   },
   "bugs": {
     "url": "https://github.com/feross/bittorrent-tracker/issues"
@@ -64,8 +63,5 @@
   },
   "scripts": {
     "test": "standard && tape test/*.js"
-  },
-  "optionalDependencies": {
-    "wrtc": "0.0.55"
   }
 }
