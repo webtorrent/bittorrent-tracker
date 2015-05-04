@@ -116,7 +116,7 @@ Server.prototype.listen = function (/* port, hostname, onlistening */) {
 
   if (self.listening) throw new Error('server already listening')
 
-  debug('listen %o %s', port, hostname)
+  debug('listen %o %o', port, hostname)
 
   // ATTENTION:
   // binding to :: only receives IPv4 connections if the bindv6only
