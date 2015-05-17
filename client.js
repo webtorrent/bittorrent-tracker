@@ -232,6 +232,7 @@ Client.prototype.destroy = function () {
     if (tracker.destroy) tracker.destroy()
     tracker.setInterval(0) // stop announcing on intervals
   })
+  self._trackers = []
 }
 
 Client.prototype._defaultAnnounceOpts = function (opts) {
