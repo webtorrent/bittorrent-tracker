@@ -36,9 +36,9 @@ function testClientStart (t, serverType) {
       client.stop()
 
       client.once('update', function () {
-        server.close(function () {
-          t.pass('server close')
-        })
+        t.pass('got response to stop')
+        server.close()
+        client.destroy()
       })
     })
 
@@ -55,7 +55,7 @@ test('udp: client.start()', function (t) {
 })
 
 function testClientStop (t, serverType) {
-  t.plan(4)
+  t.plan(3)
   common.createServer(t, serverType, function (server, announceUrl) {
     parsedTorrent.announce = [ announceUrl ]
     var client = new Client(peerId1, port, parsedTorrent)
@@ -79,9 +79,8 @@ function testClientStop (t, serverType) {
         t.equal(typeof data.complete, 'number')
         t.equal(typeof data.incomplete, 'number')
 
-        server.close(function () {
-          t.pass('server close')
-        })
+        server.close()
+        client.destroy()
       })
     }, 1000)
   })
@@ -121,9 +120,9 @@ function testClientUpdate (t, serverType) {
         client.stop()
 
         client.once('update', function () {
-          server.close(function () {
-            t.pass('server close')
-          })
+          t.pass('got response to stop')
+          server.close()
+          client.destroy()
         })
       })
     })
@@ -139,7 +138,7 @@ test('udp: client.update()', function (t) {
 })
 
 function testClientScrape (t, serverType) {
-  t.plan(5)
+  t.plan(4)
   common.createServer(t, serverType, function (server, announceUrl) {
     parsedTorrent.announce = [ announceUrl ]
     var client = new Client(peerId1, port, parsedTorrent)
@@ -158,9 +157,8 @@ function testClientScrape (t, serverType) {
       t.equal(typeof data.incomplete, 'number')
       t.equal(typeof data.downloaded, 'number')
 
-      server.close(function () {
-        t.pass('server close')
-      })
+      server.close()
+      client.destroy()
     })
 
     client.scrape()
@@ -176,7 +174,7 @@ test('udp: client.scrape()', function (t) {
 })
 
 function testClientAnnounceWithNumWant (t, serverType) {
-  t.plan(1)
+  t.plan(4)
   common.createServer(t, serverType, function (server, announceUrl) {
     parsedTorrent.announce = [ announceUrl ]
     var client1 = new Client(peerId1, port, parsedTorrent)
@@ -200,10 +198,30 @@ function testClientAnnounceWithNumWant (t, serverType) {
         client3.on('peer', function () {
           t.pass('got one peer (this should only fire once)')
 
+          var num = 3
+          function tryCloseServer () {
+            num -= 1
+            if (num === 0) server.close()
+          }
+
           client1.stop()
+          client1.once('update', function () {
+            t.pass('got response to stop (client1)')
+            client1.destroy()
+            tryCloseServer()
+          })
           client2.stop()
+          client2.once('update', function () {
+            t.pass('got response to stop (client2)')
+            client2.destroy()
+            tryCloseServer()
+          })
           client3.stop()
-          server.close()
+          client3.once('update', function () {
+            t.pass('got response to stop (client3)')
+            client3.destroy()
+            tryCloseServer()
+          })
         })
       })
     })

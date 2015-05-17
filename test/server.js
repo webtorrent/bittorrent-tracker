@@ -8,7 +8,7 @@ var peerId2 = new Buffer('12345678901234567890')
 var torrentLength = 50000
 
 function serverTest (t, serverType, serverFamily) {
-  t.plan(26)
+  t.plan(25)
 
   var opts = serverType === 'http' ? { udp: false } : { http: false }
   var server = new Server(opts)
@@ -32,19 +32,19 @@ function serverTest (t, serverType, serverFamily) {
     var port = server[serverType].address().port
     var announceUrl = serverType + '://' + serverAddr + ':' + port + '/announce'
 
-    var client = new Client(peerId, 6881, {
+    var client1 = new Client(peerId, 6881, {
       infoHash: infoHash,
       length: torrentLength,
       announce: [ announceUrl ]
     })
 
-    client.start()
+    client1.start()
 
     server.once('start', function () {
       t.pass('got start message from client1')
     })
 
-    client.once('update', function (data) {
+    client1.once('update', function (data) {
       t.equal(data.announce, announceUrl)
       t.equal(data.complete, 0)
       t.equal(data.incomplete, 1)
@@ -61,16 +61,16 @@ function serverTest (t, serverType, serverFamily) {
         socket: undefined
       })
 
-      client.complete()
+      client1.complete()
 
-      client.once('update', function (data) {
+      client1.once('update', function (data) {
         t.equal(data.announce, announceUrl)
         t.equal(data.complete, 1)
         t.equal(data.incomplete, 0)
 
-        client.scrape()
+        client1.scrape()
 
-        client.once('scrape', function (data) {
+        client1.once('scrape', function (data) {
           t.equal(data.announce, announceUrl)
           t.equal(typeof data.complete, 'number')
           t.equal(typeof data.incomplete, 'number')
@@ -96,16 +96,16 @@ function serverTest (t, serverType, serverFamily) {
               t.equal(data.announce, announceUrl)
               t.equal(data.complete, 1)
               t.equal(data.incomplete, 0)
+              client2.destroy()
 
-              client.stop()
-              client.once('update', function (data) {
+              client1.stop()
+              client1.once('update', function (data) {
                 t.equal(data.announce, announceUrl)
                 t.equal(data.complete, 0)
                 t.equal(data.incomplete, 0)
 
-                server.close(function () {
-                  t.pass('server closed')
-                })
+                client1.destroy()
+                server.close()
               })
             })
           })

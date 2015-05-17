@@ -153,8 +153,6 @@ Client.prototype.stop = function (opts) {
   opts = self._defaultAnnounceOpts(opts)
   opts.event = 'stopped'
   self._announce(opts)
-
-  self.destroy()
 }
 
 /**

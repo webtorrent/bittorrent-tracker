@@ -47,9 +47,9 @@ test('large torrent: client.start()', function (t) {
       client.stop()
 
       client.once('update', function () {
-        server.close(function () {
-          t.pass('server close')
-        })
+        t.pass('got response to stop')
+        server.close()
+        client.destroy()
       })
     })
   })

@@ -39,6 +39,7 @@ function testSingle (t, serverType) {
       t.equal(typeof data.complete, 'number')
       t.equal(typeof data.incomplete, 'number')
       t.equal(typeof data.downloaded, 'number')
+      client.destroy()
       server.close(function () {
         t.end()
       })
@@ -147,7 +148,7 @@ test('server: multiple info_hash scrape (manual http request)', function (t) {
   })
 })
 
-test('server: all info_hash scrape', function (t) {
+test('server: all info_hash scrape (manual http request)', function (t) {
   var server = new Server({ udp: false })
   server.on('error', function (err) {
     t.error(err)
@@ -185,7 +186,7 @@ test('server: all info_hash scrape', function (t) {
         t.equal(typeof data.files[binaryBitlove].incomplete, 'number')
         t.equal(typeof data.files[binaryBitlove].downloaded, 'number')
 
-        client.stop()
+        client.destroy()
         server.close(function () {
           t.end()
         })

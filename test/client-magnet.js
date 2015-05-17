@@ -8,7 +8,7 @@ var parsedTorrent = magnet(uri)
 var peerId = new Buffer('01234567890123456789')
 
 test('magnet + udp: client.start/update/stop()', function (t) {
-  t.plan(11)
+  t.plan(10)
 
   var server = new Server({ http: false })
 
@@ -60,9 +60,8 @@ test('magnet + udp: client.start/update/stop()', function (t) {
           t.equal(typeof data.complete, 'number')
           t.equal(typeof data.incomplete, 'number')
 
-          server.close(function () {
-            t.pass('server closed')
-          })
+          server.close()
+          client.destroy()
         })
       })
     })
