@@ -52,13 +52,16 @@ function Client (peerId, port, torrent, opts) {
 
   debug('new client %s', self._infoHash.toString('hex'))
 
-  if (typeof torrent.announce === 'string') torrent.announce = [ torrent.announce ]
-  if (torrent.announce == null) torrent.announce = []
-
   var trackerOpts = { interval: self._intervalMs }
   var webrtcSupport = !!self._wrtc || typeof window !== 'undefined'
 
-  self._trackers = torrent.announce
+  var announce = (typeof torrent.announce === 'string')
+    ? [ torrent.announce ]
+    : torrent.announce == null
+      ? []
+      : torrent.announce
+
+  self._trackers = announce
     .map(function (announceUrl) {
       var protocol = url.parse(announceUrl).protocol
 
