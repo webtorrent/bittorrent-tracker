@@ -227,7 +227,7 @@ Client.prototype.destroy = function () {
   debug('destroy')
 
   self._trackers.forEach(function (tracker) {
-    if (tracker.destroy) tracker.destroy()
+    tracker.destroy()
     tracker.setInterval(0) // stop announcing on intervals
   })
   self._trackers = []
