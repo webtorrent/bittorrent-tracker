@@ -89,7 +89,7 @@ function serverTest (t, serverType, serverFamily) {
           })
 
           client2.once('peer', function (addr) {
-            t.equal(addr, clientAddr + ':6881')
+            t.ok(addr === clientAddr + ':6881' || addr === clientAddr + ':6882')
 
             client2.stop()
             client2.once('update', function (data) {
