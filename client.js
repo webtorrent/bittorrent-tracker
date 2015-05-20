@@ -38,6 +38,8 @@ function Client (peerId, port, torrent, opts) {
     ? peerId
     : new Buffer(peerId, 'hex')
   self._port = port
+  self._peerIdHex = self._peerId.toString('hex')
+
   self._infoHash = Buffer.isBuffer(torrent.infoHash)
     ? torrent.infoHash
     : new Buffer(torrent.infoHash, 'hex')
