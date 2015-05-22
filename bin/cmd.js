@@ -91,12 +91,12 @@ server.on('stop', function (addr) {
 
 server.listen(argv.port, function () {
   if (server.http && !argv.quiet) {
-    console.log('http server listening on ' + server.http.address().port)
+    console.log('HTTP tracker: http://localhost:' + server.http.address().port + '/announce')
   }
   if (server.udp && !argv.quiet) {
-    console.log('udp server listening on ' + server.udp.address().port)
+    console.log('UDP tracker: udp://localhost:' + server.udp.address().port)
   }
   if (server.ws && !argv.quiet) {
-    console.log('ws server listening on ' + server.http.address().port)
+    console.log('WebSocket tracker: ws://localhost:' + server.http.address().port)
   }
 })
