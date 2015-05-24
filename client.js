@@ -69,6 +69,7 @@ function Client (peerId, port, torrent, opts) {
 
   self._trackers = announce
     .map(function (announceUrl) {
+      announceUrl = announceUrl.toString()
       var protocol = url.parse(announceUrl).protocol
 
       if ((protocol === 'http:' || protocol === 'https:') &&
