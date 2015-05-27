@@ -275,7 +275,7 @@ Server.prototype._onWebSocketRequest = function (socket, params) {
   } catch (err) {
     socket.send(JSON.stringify({
       'failure reason': err.message,
-      info_hash: params.info_hash
+      info_hash: common.hexToBinary(params.info_hash)
     }), socket.onSend)
 
     // even though it's an error for the client, it's just a warning for the server.
@@ -302,7 +302,7 @@ Server.prototype._onWebSocketRequest = function (socket, params) {
     var peers = response.peers
     delete response.peers
     response.interval = self._intervalMs
-    response.info_hash = params.info_hash // as hex
+    response.info_hash = common.hexToBinary(params.info_hash)
 
     socket.send(JSON.stringify(response), socket.onSend)
     debug('sent response %s to %s', JSON.stringify(response), params.peer_id)
