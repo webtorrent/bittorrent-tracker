@@ -340,7 +340,7 @@ Server.prototype._onWebSocketRequest = function (socket, params) {
     }
 
     if (params.action === common.ACTIONS.ANNOUNCE) {
-      self.emit(common.EVENT_NAMES[params.event], params.addr)
+      self.emit(common.EVENT_NAMES[params.event], params.peer_id)
     }
   })
 }
