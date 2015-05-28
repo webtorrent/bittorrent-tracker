@@ -40,8 +40,8 @@
     "xtend": "^4.0.0"
   },
   "devDependencies": {
-    "magnet-uri": "^4.0.0",
     "parse-torrent": "^4.0.0",
+    "magnet-uri": "^5.0.0",
     "standard": "^3.2.0",
     "tape": "^4.0.0"
   },
