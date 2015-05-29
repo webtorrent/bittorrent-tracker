@@ -79,6 +79,11 @@ function Client (peerId, port, torrent, opts) {
         return new UDPTracker(self, announceUrl, trackerOpts)
       } else if ((protocol === 'ws:' || protocol === 'wss:') && webrtcSupport) {
         return new WebSocketTracker(self, announceUrl, trackerOpts)
+      } else {
+        process.nextTick(function () {
+          var err = new Error('unsupported tracker protocol for ' + announceUrl)
+          self.emit('warning', err)
+        })
       }
       return null
     })
