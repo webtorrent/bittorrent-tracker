@@ -66,12 +66,18 @@ function Server (opts) {
 
   // start a udp tracker unless the user explicitly says no
   if (opts.udp !== false) {
-    self.udp4 = self.udp = dgram.createSocket({type: 'udp4', reuseAddr: true})
+    var isNode10 = /^v0.10./.test(process.version)
+
+    self.udp4 = self.udp = dgram.createSocket(
+      isNode10 ? 'udp4' : { type: 'udp4', reuseAddr: true }
+    )
     self.udp4.on('message', self.onUdpRequest.bind(self))
     self.udp4.on('error', self._onError.bind(self))
     self.udp4.on('listening', onListening)
 
-    self.udp6 = dgram.createSocket({type: 'udp6', reuseAddr: true})
+    self.udp6 = dgram.createSocket(
+      isNode10 ? 'udp6' : { type: 'udp6', reuseAddr: true }
+    )
     self.udp6.on('message', self.onUdpRequest.bind(self))
     self.udp6.on('error', self._onError.bind(self))
     self.udp6.on('listening', onListening)
