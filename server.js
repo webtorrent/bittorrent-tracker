@@ -48,6 +48,7 @@ function Server (opts) {
   self._trustProxy = !!opts.trustProxy
   if (typeof opts.filter === 'function') self._filter = opts.filter
 
+  self._listenCalled = false
   self.listening = false
   self.destroyed = false
   self.torrents = {}
@@ -115,13 +116,14 @@ Server.prototype._onError = function (err) {
 Server.prototype.listen = function (/* port, hostname, onlistening */) {
   var self = this
 
+  if (self._listenCalled || self.listening) throw new Error('server already listening')
+  self._listenCalled = true
+
   var lastArg = arguments[arguments.length - 1]
   if (typeof lastArg === 'function') self.once('listening', lastArg)
 
   var port = toNumber(arguments[0]) || arguments[0] || 0
   var hostname = typeof arguments[1] !== 'function' ? arguments[1] : undefined
-
-  if (self.listening) throw new Error('server already listening')
 
   debug('listen %o %o', port, hostname)
 
