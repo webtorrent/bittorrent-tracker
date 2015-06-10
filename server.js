@@ -49,6 +49,7 @@ function Server (opts) {
   if (typeof opts.filter === 'function') self._filter = opts.filter
 
   self.listening = false
+  self.destroyed = false
   self.torrents = {}
 
   self.http = null
@@ -148,6 +149,7 @@ Server.prototype.close = function (cb) {
   debug('close')
 
   self.listening = false
+  self.destroyed = true
 
   if (self.udp4) {
     try {
@@ -212,7 +214,7 @@ Server.prototype.onHttpRequest = function (req, res, opts) {
         'failure reason': err.message
       }
     }
-    if (!self.listening) return
+    if (self.destroyed) return
 
     delete response.action  // only needed for UDP encoding
     res.end(bencode.encode(response))
@@ -243,7 +245,7 @@ Server.prototype.onUdpRequest = function (msg, rinfo) {
         'failure reason': err.message
       }
     }
-    if (!self.listening) return
+    if (self.destroyed) return
 
     response.transactionId = params.transactionId
     response.connectionId = params.connectionId
@@ -299,7 +301,7 @@ Server.prototype._onWebSocketRequest = function (socket, params) {
         'failure reason': err.message
       }
     }
-    if (!self.listening) return
+    if (self.destroyed) return
 
     if (socket.infoHashes.indexOf(params.info_hash) === -1) {
       socket.infoHashes.push(params.info_hash)
