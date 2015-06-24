@@ -42,7 +42,7 @@
   "devDependencies": {
     "magnet-uri": "^5.0.0",
     "parse-torrent": "^5.0.0",
-    "standard": "^3.2.0",
+    "standard": "^4.3.2",
     "tape": "^4.0.0"
   },
   "homepage": "http://webtorrent.io",
