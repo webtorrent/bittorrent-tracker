@@ -222,7 +222,7 @@ Server.prototype.onHttpRequest = function (req, res, opts) {
     res.end(bencode.encode(response))
 
     if (params.action === common.ACTIONS.ANNOUNCE) {
-      self.emit(common.EVENT_NAMES[params.event], params.addr)
+      self.emit(common.EVENT_NAMES[params.event], params.addr, params)
     }
   })
 }
@@ -262,7 +262,7 @@ Server.prototype.onUdpRequest = function (msg, rinfo) {
     }
 
     if (params.action === common.ACTIONS.ANNOUNCE) {
-      self.emit(common.EVENT_NAMES[params.event], params.addr)
+      self.emit(common.EVENT_NAMES[params.event], params.addr, params)
     }
   })
 }
@@ -350,7 +350,7 @@ Server.prototype._onWebSocketRequest = function (socket, params) {
     }
 
     if (params.action === common.ACTIONS.ANNOUNCE) {
-      self.emit(common.EVENT_NAMES[params.event], params.peer_id)
+      self.emit(common.EVENT_NAMES[params.event], params.peer_id, params)
     }
   })
 }
