@@ -61,8 +61,8 @@ function Server (opts) {
   // start an http tracker unless the user explictly says no
   if (opts.http !== false) {
     self.http = http.createServer()
-    self.http.on('request', self.onHttpRequest.bind(self))
-    self.http.on('error', self._onError.bind(self))
+    self.http.on('request', function (req, res) { self.onHttpRequest(req, res) })
+    self.http.on('error', function (err) { self._onError(err) })
     self.http.on('listening', onListening)
   }
 
@@ -73,15 +73,15 @@ function Server (opts) {
     self.udp4 = self.udp = dgram.createSocket(
       isNode10 ? 'udp4' : { type: 'udp4', reuseAddr: true }
     )
-    self.udp4.on('message', self.onUdpRequest.bind(self))
-    self.udp4.on('error', self._onError.bind(self))
+    self.udp4.on('message', function (msg, rinfo) { self.onUdpRequest(msg, rinfo) })
+    self.udp4.on('error', function (err) { self._onError(err) })
     self.udp4.on('listening', onListening)
 
     self.udp6 = dgram.createSocket(
       isNode10 ? 'udp6' : { type: 'udp6', reuseAddr: true }
     )
-    self.udp6.on('message', self.onUdpRequest.bind(self))
-    self.udp6.on('error', self._onError.bind(self))
+    self.udp6.on('message', function (msg, rinfo) { self.onUdpRequest(msg, rinfo) })
+    self.udp6.on('error', function (err) { self._onError(err) })
     self.udp6.on('listening', onListening)
   }
 
@@ -89,12 +89,12 @@ function Server (opts) {
   if (opts.ws === true) {
     if (!self.http) {
       self.http = http.createServer()
-      self.http.on('error', self._onError.bind(self))
+      self.http.on('error', function (err) { self._onError(err) })
       self.http.on('listening', onListening)
     }
     self.ws = new WebSocketServer({ server: self.http })
-    self.ws.on('error', self._onError.bind(self))
-    self.ws.on('connection', self.onWebSocketConnection.bind(self))
+    self.ws.on('error', function (err) { self._onError(err) })
+    self.ws.on('connection', function (socket) { self.onWebSocketConnection(socket) })
   }
 
   var num = !!self.http + !!self.udp4 + !!self.udp6
