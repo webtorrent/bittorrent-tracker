@@ -182,17 +182,17 @@ Server.prototype.getSwarm = function (infoHash, params, getSwarmCallback) {
 
   if (self._filter) {
     self._filter(infoHash, params, function (err, callback) {
-      if (err) {
-        getSwarmCallback(err, null)
-        return
-      }
+      if (err) return getSwarmCallback(err, null)
+      console.log(infoHash)
+      var swarm = self.torrents[infoHash]
+      if (!swarm) swarm = self.torrents[infoHash] = new Swarm(infoHash, self)
+      return getSwarmCallback(null, swarm)
     })
+  } else {
+    var swarm = self.torrents[infoHash]
+    if (!swarm) swarm = self.torrents[infoHash] = new Swarm(infoHash, self)
+    return getSwarmCallback(null, swarm)
   }
-
-  var swarm = self.torrents[infoHash]
-  if (!swarm) swarm = self.torrents[infoHash] = new Swarm(infoHash, self)
-
-  getSwarmCallback(null, swarm)
 }
 
 Server.prototype.onHttpRequest = function (req, res, opts) {
@@ -440,14 +440,16 @@ Server.prototype._onScrape = function (params, cb) {
     params.info_hash = Object.keys(self.torrents)
   }
 
-  series(params.info_hash.map(function (infoHash) {
-    var swarm = self.getSwarm(infoHash)
+  series(params.info_hash.map(function (infoHash, params) {
     return function (cb) {
-      swarm.scrape(params, function (err, scrapeInfo) {
-        cb(err, scrapeInfo && {
-          infoHash: infoHash,
-          complete: scrapeInfo.complete || 0,
-          incomplete: scrapeInfo.incomplete || 0
+      self.getSwarm(infoHash, params, function (err, swarm) {
+        if (err) return cb(err, null)
+        swarm.scrape(params, function (err, scrapeInfo) {
+          cb(err, scrapeInfo && {
+            infoHash: infoHash,
+            complete: scrapeInfo.complete || 0,
+            incomplete: scrapeInfo.incomplete || 0
+          })
         })
       })
     }
