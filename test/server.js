@@ -8,7 +8,7 @@ var peerId2 = new Buffer('12345678901234567890')
 var torrentLength = 50000
 
 function serverTest (t, serverType, serverFamily) {
-  t.plan(25)
+  t.plan(26)
 
   var opts = serverType === 'http' ? { udp: false } : { http: false }
   var server = new Server(opts)
