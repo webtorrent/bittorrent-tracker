@@ -15,8 +15,11 @@ var peerId = new Buffer('01234567890123456789')
 function testFilterOption (t, serverType) {
   t.plan(6)
   var opts = serverType === 'http' ? { udp: false } : { http: false }
-  opts.filter = function (infoHash) {
-    return infoHash !== parsedBitlove.infoHash
+  opts.filter = function (infoHash, params, cb) {
+    if (infoHash !== parsedBitlove.infoHash) {
+      return cb(null, true)
+    }
+    return cb(new Error('disallowed info_hash'), false)
   }
   var server = new Server(opts)
 

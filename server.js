@@ -181,9 +181,8 @@ Server.prototype.getSwarm = function (infoHash, params, getSwarmCallback) {
   if (Buffer.isBuffer(infoHash)) infoHash = infoHash.toString('hex')
 
   if (self._filter) {
-    self._filter(infoHash, params, function (err, callback) {
+    self._filter(infoHash, params, function (err, res) {
       if (err) return getSwarmCallback(err, null)
-      console.log(infoHash)
       var swarm = self.torrents[infoHash]
       if (!swarm) swarm = self.torrents[infoHash] = new Swarm(infoHash, self)
       return getSwarmCallback(null, swarm)
@@ -343,16 +342,12 @@ Server.prototype._onWebSocketRequest = function (socket, params, onWebSocketRequ
       debug('got answer %s from %s', JSON.stringify(params.answer), params.peer_id)
 
       self.getSwarm(params.info_hash, params, function (err, swarm) {
-        if (err) {
-          onWebSocketRequestCallback(err)
-          return
-        }
+        if (err) return onWebSocketRequestCallback(err)
         var toPeer = swarm.peers[params.to_peer_id]
         if (!toPeer) {
           var error = new Error('no peer with that `to_peer_id`')
           self.emit('warning', error)
-          onWebSocketRequestCallback(error)
-          return
+          return onWebSocketRequestCallback(error)
         }
 
         toPeer.socket.send(JSON.stringify({
@@ -387,10 +382,7 @@ Server.prototype._onRequest = function (params, cb) {
 Server.prototype._onAnnounce = function (params, cb) {
   var self = this
   self.getSwarm(params.info_hash, params, function (err, swarm) {
-    if (err) {
-      return cb(err)
-    }
-    if (swarm === null) {
+    if (swarm === null || err) {
       return cb(new Error('disallowed info_hash'))
     }
     if (!params.event || params.event === 'empty') params.event = 'update'

@@ -50,15 +50,18 @@ function serverTest (t, serverType, serverFamily) {
       t.equal(data.incomplete, 1)
 
       t.equal(Object.keys(server.torrents).length, 1)
-      t.equal(server.getSwarm(infoHash).complete, 0)
-      t.equal(server.getSwarm(infoHash).incomplete, 1)
-      t.equal(Object.keys(server.getSwarm(infoHash).peers).length, 1)
-      t.deepEqual(server.getSwarm(infoHash).peers[clientAddr + ':6881'], {
-        ip: clientIp,
-        port: 6881,
-        peerId: peerId.toString('hex'),
-        complete: false,
-        socket: undefined
+      server.getSwarm(infoHash, null, function (err, swarm) {
+        t.equal(err, null)
+        t.equal(swarm.complete, 0)
+        t.equal(swarm.incomplete, 1)
+        t.equal(Object.keys(swarm.peers).length, 1)
+        t.deepEqual(swarm.peers[clientAddr + ':6881'], {
+         ip: clientIp,
+          port: 6881,
+          peerId: peerId.toString('hex'),
+          complete: false,
+          socket: undefined
+        })
       })
 
       client1.complete()
