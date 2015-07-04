@@ -175,17 +175,23 @@ Server.prototype.close = function (cb) {
   else cb(null)
 }
 
-Server.prototype.getSwarm = function (infoHash, params) {
+Server.prototype.getSwarm = function (infoHash, params, getSwarmCallback) {
   var self = this
   if (!params) params = {}
   if (Buffer.isBuffer(infoHash)) infoHash = infoHash.toString('hex')
 
-  if (self._filter && !self._filter(infoHash, params)) return null
-
-  var swarm = self.torrents[infoHash]
-  if (!swarm) swarm = self.torrents[infoHash] = new Swarm(infoHash, self)
-
-  return swarm
+  if (self._filter) {
+    self._filter(infoHash, params, function (err, res) {
+      if (err) return getSwarmCallback(err, null)
+      var swarm = self.torrents[infoHash]
+      if (!swarm) swarm = self.torrents[infoHash] = new Swarm(infoHash, self)
+      return getSwarmCallback(null, swarm)
+    })
+  } else {
+    var swarm = self.torrents[infoHash]
+    if (!swarm) swarm = self.torrents[infoHash] = new Swarm(infoHash, self)
+    return getSwarmCallback(null, swarm)
+  }
 }
 
 Server.prototype.onHttpRequest = function (req, res, opts) {
@@ -277,7 +283,7 @@ Server.prototype.onWebSocketConnection = function (socket) {
   socket.on('close', self._onWebSocketClose.bind(self, socket))
 }
 
-Server.prototype._onWebSocketRequest = function (socket, params) {
+Server.prototype._onWebSocketRequest = function (socket, params, onWebSocketRequestCallback) {
   var self = this
 
   try {
@@ -291,6 +297,7 @@ Server.prototype._onWebSocketRequest = function (socket, params) {
     // even though it's an error for the client, it's just a warning for the server.
     // don't crash the server because a client sent bad data :)
     self.emit('warning', err)
+    onWebSocketRequestCallback(err)
     return
   }
 
@@ -303,7 +310,7 @@ Server.prototype._onWebSocketRequest = function (socket, params) {
         'failure reason': err.message
       }
     }
-    if (self.destroyed) return
+    if (self.destroyed) onWebSocketRequestCallback()
 
     if (socket.infoHashes.indexOf(params.info_hash) === -1) {
       socket.infoHashes.push(params.info_hash)
@@ -334,19 +341,23 @@ Server.prototype._onWebSocketRequest = function (socket, params) {
     if (params.answer) {
       debug('got answer %s from %s', JSON.stringify(params.answer), params.peer_id)
 
-      var swarm = self.getSwarm(params.info_hash, params)
-      var toPeer = swarm.peers[params.to_peer_id]
-      if (!toPeer) {
-        return self.emit('warning', new Error('no peer with that `to_peer_id`'))
-      }
+      self.getSwarm(params.info_hash, params, function (err, swarm) {
+        if (err) return onWebSocketRequestCallback(err)
+        var toPeer = swarm.peers[params.to_peer_id]
+        if (!toPeer) {
+          var error = new Error('no peer with that `to_peer_id`')
+          self.emit('warning', error)
+          return onWebSocketRequestCallback(error)
+        }
 
-      toPeer.socket.send(JSON.stringify({
-        answer: params.answer,
-        offer_id: params.offer_id,
-        peer_id: common.hexToBinary(params.peer_id),
-        info_hash: common.hexToBinary(params.info_hash)
-      }))
-      debug('sent answer to %s from %s', toPeer.peerId, params.peer_id)
+        toPeer.socket.send(JSON.stringify({
+          answer: params.answer,
+          offer_id: params.offer_id,
+          peer_id: common.hexToBinary(params.peer_id),
+          info_hash: common.hexToBinary(params.info_hash)
+        }))
+        debug('sent answer to %s from %s', toPeer.peerId, params.peer_id)
+      })
     }
 
     if (params.action === common.ACTIONS.ANNOUNCE) {
@@ -370,42 +381,45 @@ Server.prototype._onRequest = function (params, cb) {
 
 Server.prototype._onAnnounce = function (params, cb) {
   var self = this
-  var swarm = self.getSwarm(params.info_hash, params)
-  if (swarm === null) return cb(new Error('disallowed info_hash'))
-  if (!params.event || params.event === 'empty') params.event = 'update'
-  swarm.announce(params, function (err, response) {
-    if (err) return cb(err)
+  self.getSwarm(params.info_hash, params, function (err, swarm) {
+    if (swarm === null || err) {
+      return cb(new Error('disallowed info_hash'))
+    }
+    if (!params.event || params.event === 'empty') params.event = 'update'
+    swarm.announce(params, function (err, response) {
+      if (err) return cb(err)
 
-    if (!response.action) response.action = common.ACTIONS.ANNOUNCE
-    if (!response.interval) response.interval = Math.ceil(self._intervalMs / 1000)
+      if (!response.action) response.action = common.ACTIONS.ANNOUNCE
+      if (!response.interval) response.interval = Math.ceil(self._intervalMs / 1000)
 
-    if (params.compact === 1) {
-      var peers = response.peers
+      if (params.compact === 1) {
+        var peers = response.peers
 
-      // Find IPv4 peers
-      response.peers = string2compact(peers.filter(function (peer) {
-        return common.IPV4_RE.test(peer.ip)
-      }).map(function (peer) {
-        return peer.ip + ':' + peer.port
-      }))
-      // Find IPv6 peers
-      response.peers6 = string2compact(peers.filter(function (peer) {
-        return common.IPV6_RE.test(peer.ip)
-      }).map(function (peer) {
-        return '[' + peer.ip + ']:' + peer.port
-      }))
-    } else if (params.compact === 0) {
-      // IPv6 peers are not separate for non-compact responses
-      response.peers = response.peers.map(function (peer) {
-        return {
-          'peer id': peer.peerId,
-          ip: peer.ip,
-          port: peer.port
-        }
-      })
-    } // else, return full peer objects (used for websocket responses)
+        // Find IPv4 peers
+        response.peers = string2compact(peers.filter(function (peer) {
+          return common.IPV4_RE.test(peer.ip)
+        }).map(function (peer) {
+          return peer.ip + ':' + peer.port
+        }))
+        // Find IPv6 peers
+        response.peers6 = string2compact(peers.filter(function (peer) {
+          return common.IPV6_RE.test(peer.ip)
+        }).map(function (peer) {
+          return '[' + peer.ip + ']:' + peer.port
+        }))
+      } else if (params.compact === 0) {
+        // IPv6 peers are not separate for non-compact responses
+        response.peers = response.peers.map(function (peer) {
+          return {
+            'peer id': peer.peerId,
+            ip: peer.ip,
+            port: peer.port
+          }
+        })
+      } // else, return full peer objects (used for websocket responses)
 
-    cb(err, response)
+      cb(err, response)
+    })
   })
 }
 
@@ -418,14 +432,16 @@ Server.prototype._onScrape = function (params, cb) {
     params.info_hash = Object.keys(self.torrents)
   }
 
-  series(params.info_hash.map(function (infoHash) {
-    var swarm = self.getSwarm(infoHash)
+  series(params.info_hash.map(function (infoHash, params) {
     return function (cb) {
-      swarm.scrape(params, function (err, scrapeInfo) {
-        cb(err, scrapeInfo && {
-          infoHash: infoHash,
-          complete: scrapeInfo.complete || 0,
-          incomplete: scrapeInfo.incomplete || 0
+      self.getSwarm(infoHash, params, function (err, swarm) {
+        if (err) return cb(err, null)
+        swarm.scrape(params, function (err, scrapeInfo) {
+          cb(err, scrapeInfo && {
+            infoHash: infoHash,
+            complete: scrapeInfo.complete || 0,
+            incomplete: scrapeInfo.incomplete || 0
+          })
         })
       })
     }
