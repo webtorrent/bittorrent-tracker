@@ -112,13 +112,16 @@ var server = new Server({
   udp: true, // enable udp server? [default=true]
   http: true, // enable http server? [default=true]
   ws: true, // enable websocket server? [default=false]
-  filter: function (infoHash, params) {
+  filter: function (infoHash, params, cb) {
     // black/whitelist for disallowing/allowing torrents [default=allow all]
     // this example only allows this one torrent
-    return infoHash === 'aaa67059ed6bd08362da625b3ae77f6f4a075aaa'
+    cb(infoHash === 'aaa67059ed6bd08362da625b3ae77f6f4a075aaa')
 
-    // you can also block by peer id (whitelisting torrent clients) or by
-    // secret key, as you get full access to the original http GET
+    // it's possible to interface with a database or external system before
+    // deciding, because this function is async
+
+    // it's possible to block by peer id (whitelisting torrent clients) or
+    // by secret key, as you get full access to the original http/udp
     // request parameters in `params`
   })
 })
