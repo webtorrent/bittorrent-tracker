@@ -175,17 +175,17 @@ Server.prototype.close = function (cb) {
   else cb(null)
 }
 
-Server.prototype.getSwarm = function (infoHash, params) {
+Server.prototype.createSwarm = function (infoHash) {
   var self = this
-  if (!params) params = {}
   if (Buffer.isBuffer(infoHash)) infoHash = infoHash.toString('hex')
-
-  if (self._filter && !self._filter(infoHash, params)) return null
-
-  var swarm = self.torrents[infoHash]
-  if (!swarm) swarm = self.torrents[infoHash] = new Swarm(infoHash, self)
-
+  var swarm = self.torrents[infoHash] = new Swarm(infoHash, self)
   return swarm
+}
+
+Server.prototype.getSwarm = function (infoHash) {
+  var self = this
+  if (Buffer.isBuffer(infoHash)) infoHash = infoHash.toString('hex')
+  return self.torrents[infoHash]
 }
 
 Server.prototype.onHttpRequest = function (req, res, opts) {
@@ -334,7 +334,10 @@ Server.prototype._onWebSocketRequest = function (socket, params) {
     if (params.answer) {
       debug('got answer %s from %s', JSON.stringify(params.answer), params.peer_id)
 
-      var swarm = self.getSwarm(params.info_hash, params)
+      var swarm = self.getSwarm(params.info_hash)
+      if (!swarm) {
+        return self.emit('warning', new Error('no swarm with that `info_hash`'))
+      }
       var toPeer = swarm.peers[params.to_peer_id]
       if (!toPeer) {
         return self.emit('warning', new Error('no peer with that `to_peer_id`'))
@@ -370,43 +373,65 @@ Server.prototype._onRequest = function (params, cb) {
 
 Server.prototype._onAnnounce = function (params, cb) {
   var self = this
-  var swarm = self.getSwarm(params.info_hash, params)
-  if (swarm === null) return cb(new Error('disallowed info_hash'))
-  if (!params.event || params.event === 'empty') params.event = 'update'
-  swarm.announce(params, function (err, response) {
-    if (err) return cb(err)
 
-    if (!response.action) response.action = common.ACTIONS.ANNOUNCE
-    if (!response.interval) response.interval = Math.ceil(self._intervalMs / 1000)
+  var swarm = self.getSwarm(params.info_hash)
+  if (swarm) announce()
+  else createSwarm()
 
-    if (params.compact === 1) {
-      var peers = response.peers
-
-      // Find IPv4 peers
-      response.peers = string2compact(peers.filter(function (peer) {
-        return common.IPV4_RE.test(peer.ip)
-      }).map(function (peer) {
-        return peer.ip + ':' + peer.port
-      }))
-      // Find IPv6 peers
-      response.peers6 = string2compact(peers.filter(function (peer) {
-        return common.IPV6_RE.test(peer.ip)
-      }).map(function (peer) {
-        return '[' + peer.ip + ']:' + peer.port
-      }))
-    } else if (params.compact === 0) {
-      // IPv6 peers are not separate for non-compact responses
-      response.peers = response.peers.map(function (peer) {
-        return {
-          'peer id': peer.peerId,
-          ip: peer.ip,
-          port: peer.port
+  function createSwarm () {
+    if (self._filter) {
+      self._filter(params.info_hash, params, function (allowed) {
+        if (allowed) {
+          swarm = self.createSwarm(params.info_hash)
+          announce()
+        } else {
+          cb(new Error('disallowed info_hash'))
         }
       })
-    } // else, return full peer objects (used for websocket responses)
+    } else {
+      swarm = self.createSwarm(params.info_hash)
+      announce()
+    }
+  }
 
-    cb(err, response)
-  })
+  function announce () {
+    if (!params.event || params.event === 'empty') params.event = 'update'
+    swarm.announce(params, function (err, response) {
+      if (err) return cb(err)
+
+      if (!response.action) response.action = common.ACTIONS.ANNOUNCE
+      if (!response.interval) response.interval = Math.ceil(self._intervalMs / 1000)
+
+      if (params.compact === 1) {
+        var peers = response.peers
+
+        // Find IPv4 peers
+        response.peers = string2compact(peers.filter(function (peer) {
+          return common.IPV4_RE.test(peer.ip)
+        }).map(function (peer) {
+          return peer.ip + ':' + peer.port
+        }))
+        // Find IPv6 peers
+        response.peers6 = string2compact(peers.filter(function (peer) {
+          return common.IPV6_RE.test(peer.ip)
+        }).map(function (peer) {
+          return '[' + peer.ip + ']:' + peer.port
+        }))
+      } else if (params.compact === 0) {
+        // IPv6 peers are not separate for non-compact responses
+        response.peers = response.peers.map(function (peer) {
+          return {
+            'peer id': peer.peerId,
+            ip: peer.ip,
+            port: peer.port
+          }
+        })
+      } // else, return full peer objects (used for websocket responses)
+
+      cb(err, response)
+    })
+  }
+
 }
 
 Server.prototype._onScrape = function (params, cb) {
@@ -419,15 +444,20 @@ Server.prototype._onScrape = function (params, cb) {
   }
 
   series(params.info_hash.map(function (infoHash) {
-    var swarm = self.getSwarm(infoHash)
     return function (cb) {
-      swarm.scrape(params, function (err, scrapeInfo) {
-        cb(err, scrapeInfo && {
-          infoHash: infoHash,
-          complete: scrapeInfo.complete || 0,
-          incomplete: scrapeInfo.incomplete || 0
+      var swarm = self.getSwarm(infoHash)
+      if (swarm) {
+        swarm.scrape(params, function (err, scrapeInfo) {
+          if (err) return cb(err)
+          cb(null, {
+            infoHash: infoHash,
+            complete: (scrapeInfo && scrapeInfo.complete) || 0,
+            incomplete: (scrapeInfo && scrapeInfo.incomplete) || 0
+          })
         })
-      })
+      } else {
+        cb(null, { infoHash: infoHash, complete: 0, incomplete: 0 })
+      }
     }
   }), function (err, results) {
     if (err) return cb(err)
@@ -440,9 +470,9 @@ Server.prototype._onScrape = function (params, cb) {
 
     results.forEach(function (result) {
       response.files[common.hexToBinary(result.infoHash)] = {
-        complete: result.complete,
-        incomplete: result.incomplete,
-        downloaded: result.complete // TODO: this only provides a lower-bound
+        complete: result.complete || 0,
+        incomplete: result.incomplete || 0,
+        downloaded: result.complete || 0 // TODO: this only provides a lower-bound
       }
     })
 

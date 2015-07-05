@@ -15,8 +15,10 @@ var peerId = new Buffer('01234567890123456789')
 function testFilterOption (t, serverType) {
   t.plan(6)
   var opts = serverType === 'http' ? { udp: false } : { http: false }
-  opts.filter = function (infoHash) {
-    return infoHash !== parsedBitlove.infoHash
+  opts.filter = function (infoHash, params, cb) {
+    process.nextTick(function () {
+      cb(infoHash !== parsedBitlove.infoHash)
+    })
   }
   var server = new Server(opts)
 
