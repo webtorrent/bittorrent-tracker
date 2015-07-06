@@ -40,15 +40,15 @@ if (argv.help) {
   bittorrent-tracker - Start a bittorrent tracker server
 
   Usage:
-      bittorrent-tracker
+      bittorrent-tracker [OPTIONS]
 
   Options:
       -p, --port [number]     change the port [default: 8000]
           --trust-proxy       trust 'x-forwarded-for' header from reverse proxy
           --interval          tell clients to announce on this interval (ms)
-          --http              enable http server [default: true]
-          --udp               enable udp server [default: true]
-          --ws                enable websocket server [default: false]
+          --http              enable http server? [default: true]
+          --udp               enable udp server? [default: true]
+          --ws                enable websocket server? [default: false]
       -q, --quiet             only show error output
       -s, --silent            show no output
       -v, --version           print the current version
