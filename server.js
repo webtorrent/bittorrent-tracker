@@ -89,6 +89,10 @@ function Server (opts) {
   if (opts.ws === true) {
     if (!self.http) {
       self.http = http.createServer()
+      self.http.on('request', function (req, res) {
+        res.statusCode = 404
+        res.end('404 Not Found')
+      })
       self.http.on('error', function (err) { self._onError(err) })
       self.http.on('listening', onListening)
     }
