@@ -385,11 +385,13 @@ Server.prototype._onAnnounce = function (params, cb) {
   function createSwarm () {
     if (self._filter) {
       self._filter(params.info_hash, params, function (allowed) {
-        if (allowed) {
+        if (allowed instanceof Error) {
+          cb(allowed)
+        } else if (!allowed) {
+          cb(new Error('disallowed info_hash'))
+        } else {
           swarm = self.createSwarm(params.info_hash)
           announce()
-        } else {
-          cb(new Error('disallowed info_hash'))
         }
       })
     } else {
@@ -432,7 +434,7 @@ Server.prototype._onAnnounce = function (params, cb) {
         })
       } // else, return full peer objects (used for websocket responses)
 
-      cb(err, response)
+      cb(null, response)
     })
   }
 
