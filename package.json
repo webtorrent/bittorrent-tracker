@@ -21,7 +21,7 @@
   },
   "dependencies": {
     "bencode": "^0.7.0",
-    "bn.js": "^2.0.0",
+    "bn.js": "^3.0.1",
     "buffer-equal": "0.0.1",
     "compact2string": "^1.2.0",
     "debug": "^2.0.0",
