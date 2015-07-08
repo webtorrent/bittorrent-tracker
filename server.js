@@ -86,7 +86,7 @@ function Server (opts) {
   }
 
   // start a websocket tracker (for WebTorrent) unless the user explicitly says no
-  if (opts.ws === true) {
+  if (opts.ws !== false) {
     if (!self.http) {
       self.http = http.createServer()
       self.http.on('request', function (req, res) {

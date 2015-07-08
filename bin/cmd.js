@@ -22,10 +22,7 @@ var argv = minimist(process.argv.slice(2), {
     'ws'
   ],
   default: {
-    http: true,
-    port: 8000,
-    udp: true,
-    ws: false
+    port: 8000
   }
 })
 
@@ -40,18 +37,20 @@ if (argv.help) {
   bittorrent-tracker - Start a bittorrent tracker server
 
   Usage:
-      bittorrent-tracker [OPTIONS]
+    bittorrent-tracker [OPTIONS]
+
+  If no --http, --udp, or --ws option is supplied, all tracker types will be started.
 
   Options:
-      -p, --port [number]     change the port [default: 8000]
-          --trust-proxy       trust 'x-forwarded-for' header from reverse proxy
-          --interval          tell clients to announce on this interval (ms)
-          --http              enable http server? [default: true]
-          --udp               enable udp server? [default: true]
-          --ws                enable websocket server? [default: false]
-      -q, --quiet             only show error output
-      -s, --silent            show no output
-      -v, --version           print the current version
+    -p, --port [number]  change the port [default: 8000]
+        --trust-proxy    trust 'x-forwarded-for' header from reverse proxy
+        --interval       client announce interval (ms) [default: 600000]
+        --http           enable http server
+        --udp            enable udp server
+        --ws             enable websocket server
+    -q, --quiet          only show error output
+    -s, --silent         show no output
+    -v, --version        print the current version
 
   Please report bugs!  https://github.com/feross/bittorrent-tracker/issues
 
@@ -61,6 +60,12 @@ if (argv.help) {
 }
 
 if (argv.silent) argv.quiet = true
+
+var allFalsy = !argv.http && !argv.udp && !argv.ws
+
+argv.http = allFalsy || argv.http
+argv.udp = allFalsy || argv.udp
+argv.ws = allFalsy || argv.ws
 
 var server = new Server({
   http: argv.http,
@@ -90,7 +95,7 @@ server.on('stop', function (addr) {
 })
 
 server.listen(argv.port, function () {
-  if (server.http && !argv.quiet) {
+  if (server.http && argv.http && !argv.quiet) {
     console.log('HTTP tracker: http://localhost:' + server.http.address().port + '/announce')
   }
   if (server.udp && !argv.quiet) {
