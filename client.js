@@ -234,7 +234,7 @@ Client.prototype.setInterval = function (intervalMs) {
   })
 }
 
-Client.prototype.destroy = function () {
+Client.prototype.destroy = function (cb) {
   var self = this
   debug('destroy')
 
@@ -243,6 +243,7 @@ Client.prototype.destroy = function () {
     tracker.setInterval(0) // stop announcing on intervals
   })
   self._trackers = []
+  if (cb) process.nextTick(function () { cb(null) })
 }
 
 Client.prototype._defaultAnnounceOpts = function (opts) {
