@@ -18,7 +18,7 @@ inherits(Client, EventEmitter)
  *
  * Find torrent peers, to help a torrent client participate in a torrent swarm.
  *
- * @param {string} peerId          peer id
+ * @param {string|Buffer} peerId   peer id
  * @param {Number} port            torrent client listening port
  * @param {Object} torrent         parsed torrent
  * @param {Object} opts            options object
