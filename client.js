@@ -4,6 +4,7 @@ var debug = require('debug')('bittorrent-tracker')
 var EventEmitter = require('events').EventEmitter
 var inherits = require('inherits')
 var once = require('once')
+var parallel = require('run-parallel')
 var url = require('url')
 
 var common = require('./lib/common')
@@ -46,8 +47,10 @@ function Client (peerId, port, torrent, opts) {
   self._infoHashHex = self._infoHash.toString('hex')
   self._infoHashBinary = self._infoHash.toString('binary')
 
-  self._port = port
   self.torrentLength = torrent.length
+  self.destroyed = false
+
+  self._port = port
 
   self._rtcConfig = opts.rtcConfig
   self._wrtc = opts.wrtc
@@ -236,14 +239,19 @@ Client.prototype.setInterval = function (intervalMs) {
 
 Client.prototype.destroy = function (cb) {
   var self = this
+  if (self.destroyed) return
+  self.destroyed = true
   debug('destroy')
 
-  self._trackers.forEach(function (tracker) {
-    tracker.destroy()
-    tracker.setInterval(0) // stop announcing on intervals
+  var tasks = self._trackers.map(function (tracker) {
+    return function (cb) {
+      tracker.destroy(cb)
+      tracker.setInterval(0) // stop announcing on intervals
+    }
   })
+
+  parallel(tasks, cb)
   self._trackers = []
-  if (cb) process.nextTick(function () { cb(null) })
 }
 
 Client.prototype._defaultAnnounceOpts = function (opts) {
