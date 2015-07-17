@@ -97,6 +97,7 @@ function Server (opts) {
       self.http.on('listening', onListening)
     }
     self.ws = new WebSocketServer({ server: self.http })
+    self.ws.address = self.http.address.bind(self.http)
     self.ws.on('error', function (err) { self._onError(err) })
     self.ws.on('connection', function (socket) { self.onWebSocketConnection(socket) })
   }
