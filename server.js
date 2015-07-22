@@ -326,13 +326,18 @@ Server.prototype._onWebSocketRequest = function (socket, params) {
       debug('got offers %s from %s', JSON.stringify(params.offers), params.peer_id)
       debug('got %s peers from swarm %s', peers.length, params.info_hash)
       peers.forEach(function (peer, i) {
-        peer.socket.send(JSON.stringify({
-          offer: params.offers[i].offer,
-          offer_id: params.offers[i].offer_id,
-          peer_id: common.hexToBinary(params.peer_id),
-          info_hash: common.hexToBinary(params.info_hash)
-        }))
-        debug('sent offer to %s from %s', peer.peerId, params.peer_id)
+        var data_for_peer = JSON.stringify({
+            offer: params.offers[i].offer,
+            offer_id: params.offers[i].offer_id,
+            peer_id: common.hexToBinary(params.peer_id),
+            info_hash: common.hexToBinary(params.info_hash)
+	})
+        try {
+          peer.socket.send(data_for_peer);
+          debug('sent offer to %s from %s', peer.peerId, params.peer_id)
+	} catch (ex) {
+	  debug('error sending to peer %s: %s', peer.peerId, ex)
+	}
       })
     }
 
