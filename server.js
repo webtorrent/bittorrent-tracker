@@ -331,7 +331,7 @@ Server.prototype._onWebSocketRequest = function (socket, params) {
           offer_id: params.offers[i].offer_id,
           peer_id: common.hexToBinary(params.peer_id),
           info_hash: common.hexToBinary(params.info_hash)
-        }))
+        }), peer.socket.onSend)
         debug('sent offer to %s from %s', peer.peerId, params.peer_id)
       })
     }
@@ -353,7 +353,7 @@ Server.prototype._onWebSocketRequest = function (socket, params) {
         offer_id: params.offer_id,
         peer_id: common.hexToBinary(params.peer_id),
         info_hash: common.hexToBinary(params.info_hash)
-      }))
+      }), toPeer.socket.onSend)
       debug('sent answer to %s from %s', toPeer.peerId, params.peer_id)
     }
 
