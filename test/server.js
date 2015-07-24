@@ -54,8 +54,8 @@ function serverTest (t, serverType, serverFamily) {
       t.equal(Object.keys(server.torrents).length, 1)
       t.equal(swarm.complete, 0)
       t.equal(swarm.incomplete, 1)
-      t.equal(Object.keys(swarm.peers).length, 1)
-      t.deepEqual(swarm.peers[clientAddr + ':6881'], {
+      t.equal(swarm.peers.keys().length, 1)
+      t.deepEqual(swarm.peers.get(clientAddr + ':6881'), {
         ip: clientIp,
         port: 6881,
         peerId: peerId.toString('hex'),

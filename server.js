@@ -343,7 +343,7 @@ Server.prototype._onWebSocketRequest = function (socket, params) {
       if (!swarm) {
         return self.emit('warning', new Error('no swarm with that `info_hash`'))
       }
-      var toPeer = swarm.peers[params.to_peer_id]
+      var toPeer = swarm.peers.get(params.to_peer_id)
       if (!toPeer) {
         return self.emit('warning', new Error('no peer with that `to_peer_id`'))
       }
