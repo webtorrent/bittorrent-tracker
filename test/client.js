@@ -190,7 +190,7 @@ function testClientAnnounceWithNumWant (t, serverType) {
       })
       client2.start()
       client2.once('update', function () {
-        var client3 = new Client(peerId3, port + 2, parsedTorrent, { numWant: 1 })
+        var client3 = new Client(peerId3, port + 2, parsedTorrent, { numwant: 1 })
         client3.on('error', function (err) {
           t.error(err)
         })
@@ -228,10 +228,10 @@ function testClientAnnounceWithNumWant (t, serverType) {
   })
 }
 
-test('http: client announce with numWant', function (t) {
+test('http: client announce with numwant', function (t) {
   testClientAnnounceWithNumWant(t, 'http')
 })
 
-test('udp: client announce with numWant', function (t) {
+test('udp: client announce with numwant', function (t) {
   testClientAnnounceWithNumWant(t, 'udp')
 })

@@ -23,7 +23,7 @@ inherits(Client, EventEmitter)
  * @param {Number} port            torrent client listening port
  * @param {Object} torrent         parsed torrent
  * @param {Object} opts            options object
- * @param {Number} opts.numWant    number of peers to request
+ * @param {Number} opts.numwant    number of peers to request
  * @param {Number} opts.interval   announce interval (in ms)
  * @param {Number} opts.rtcConfig  RTCPeerConnection configuration object
  * @param {Number} opts.wrtc       custom webrtc implementation
@@ -56,7 +56,7 @@ function Client (peerId, port, torrent, opts) {
   self._wrtc = opts.wrtc
 
   // optional
-  self._numWant = opts.numWant || common.DEFAULT_ANNOUNCE_PEERS
+  self._numwant = opts.numwant || common.DEFAULT_ANNOUNCE_PEERS
   self._intervalMs = opts.interval || common.DEFAULT_ANNOUNCE_INTERVAL
 
   debug('new client %s', self._infoHashHex)
@@ -160,6 +160,7 @@ Client.prototype.start = function (opts) {
  * @param {Object} opts
  * @param {number=} opts.uploaded
  * @param {number=} opts.downloaded
+ * @param {number=} opts.numwant
  * @param {number=} opts.left (if not set, calculated automatically)
  */
 Client.prototype.stop = function (opts) {
@@ -175,6 +176,7 @@ Client.prototype.stop = function (opts) {
  * @param {Object} opts
  * @param {number=} opts.uploaded
  * @param {number=} opts.downloaded
+ * @param {number=} opts.numwant
  * @param {number=} opts.left (if not set, calculated automatically)
  */
 Client.prototype.complete = function (opts) {
@@ -194,6 +196,7 @@ Client.prototype.complete = function (opts) {
  * @param {Object} opts
  * @param {number=} opts.uploaded
  * @param {number=} opts.downloaded
+ * @param {number=} opts.numwant
  * @param {number=} opts.left (if not set, calculated automatically)
  */
 Client.prototype.update = function (opts) {
@@ -207,6 +210,7 @@ Client.prototype.update = function (opts) {
 Client.prototype._announce = function (opts) {
   var self = this
   self._trackers.forEach(function (tracker) {
+    // tracker should not modify `opts` object, it's passed to all trackers
     tracker.announce(opts)
   })
 }
@@ -214,15 +218,13 @@ Client.prototype._announce = function (opts) {
 /**
  * Send a scrape request to the trackers.
  * @param {Object} opts
- * @param {number=} opts.uploaded
- * @param {number=} opts.downloaded
- * @param {number=} opts.left (if not set, calculated automatically)
  */
 Client.prototype.scrape = function (opts) {
   var self = this
   debug('send `scrape`')
   if (!opts) opts = {}
   self._trackers.forEach(function (tracker) {
+    // tracker should not modify `opts` object, it's passed to all trackers
     tracker.scrape(opts)
   })
 }
@@ -258,7 +260,7 @@ Client.prototype._defaultAnnounceOpts = function (opts) {
   var self = this
   if (!opts) opts = {}
 
-  if (opts.numWant == null) opts.numWant = self._numWant
+  if (opts.numwant == null) opts.numwant = self._numwant
 
   if (opts.uploaded == null) opts.uploaded = 0
   if (opts.downloaded == null) opts.downloaded = 0
