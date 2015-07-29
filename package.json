@@ -12,8 +12,8 @@
   },
   "browser": {
     "./lib/common-node": false,
-    "./lib/http-tracker": false,
-    "./lib/udp-tracker": false,
+    "./lib/client/http-tracker": false,
+    "./lib/client/udp-tracker": false,
     "./server": false
   },
   "bugs": {

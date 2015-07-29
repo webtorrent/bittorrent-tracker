@@ -11,10 +11,10 @@ var string2compact = require('string2compact')
 var WebSocketServer = require('ws').Server
 
 var common = require('./lib/common')
-var Swarm = require('./lib/swarm')
-var parseHttpRequest = require('./lib/parse_http')
-var parseUdpRequest = require('./lib/parse_udp')
-var parseWebSocketRequest = require('./lib/parse_websocket')
+var Swarm = require('./lib/server/swarm')
+var parseHttpRequest = require('./lib/server/parse-http')
+var parseUdpRequest = require('./lib/server/parse-udp')
+var parseWebSocketRequest = require('./lib/server/parse-websocket')
 
 inherits(Server, EventEmitter)
 
