@@ -10,7 +10,7 @@ var torrentLength = 50000
 function serverTest (t, serverType, serverFamily) {
   t.plan(25)
 
-  var opts = serverType === 'http' ? { udp: false } : { http: false }
+  var opts = serverType === 'http' ? { udp: false, ws: false } : { http: false, ws: false }
   var server = new Server(opts)
   var serverAddr = serverFamily === 'inet6' ? '[::1]' : '127.0.0.1'
   var clientAddr = serverFamily === 'inet6' ? '[::1]' : '127.0.0.1'

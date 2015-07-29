@@ -14,7 +14,7 @@ var peerId = new Buffer('01234567890123456789')
 
 function testFilterOption (t, serverType) {
   t.plan(8)
-  var opts = serverType === 'http' ? { udp: false } : { http: false }
+  var opts = serverType === 'http' ? { udp: false, ws: false } : { http: false, ws: false }
   opts.filter = function (infoHash, params, cb) {
     process.nextTick(function () {
       cb(infoHash !== parsedBitlove.infoHash)
@@ -92,7 +92,7 @@ test('udp: filter option blocks tracker from tracking torrent', function (t) {
 
 function testFilterCustomError (t, serverType) {
   t.plan(8)
-  var opts = serverType === 'http' ? { udp: false } : { http: false }
+  var opts = serverType === 'http' ? { udp: false, ws: false } : { http: false, ws: false }
   opts.filter = function (infoHash, params, cb) {
     process.nextTick(function () {
       if (infoHash === parsedBitlove.infoHash) cb(new Error('bitlove blocked'))

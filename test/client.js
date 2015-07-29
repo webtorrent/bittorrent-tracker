@@ -98,7 +98,8 @@ function testClientUpdate (t, serverType) {
   t.plan(4)
   common.createServer(t, serverType, function (server, announceUrl) {
     parsedTorrent.announce = [ announceUrl ]
-    var client = new Client(peerId1, port, parsedTorrent, { interval: 2000 })
+    var client = new Client(peerId1, port, parsedTorrent)
+    client.setInterval(2000)
 
     client.on('error', function (err) {
       t.error(err)
@@ -190,11 +191,11 @@ function testClientAnnounceWithNumWant (t, serverType) {
       })
       client2.start()
       client2.once('update', function () {
-        var client3 = new Client(peerId3, port + 2, parsedTorrent, { numwant: 1 })
+        var client3 = new Client(peerId3, port + 2, parsedTorrent)
         client3.on('error', function (err) {
           t.error(err)
         })
-        client3.start()
+        client3.start({ numwant: 1 })
         client3.on('peer', function () {
           t.pass('got one peer (this should only fire once)')
 

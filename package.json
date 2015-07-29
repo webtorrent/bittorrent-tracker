@@ -37,6 +37,7 @@
     "simple-peer": "^5.0.0",
     "simple-websocket": "^2.0.0",
     "string2compact": "^1.1.1",
+    "uniq": "^1.0.1",
     "ws": "^0.7.1",
     "xtend": "^4.0.0"
   },

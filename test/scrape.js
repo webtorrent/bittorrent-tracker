@@ -109,7 +109,7 @@ test('udp: MULTI scrape using Client.scrape static method', function (t) {
 })
 
 test('server: multiple info_hash scrape (manual http request)', function (t) {
-  var server = new Server({ udp: false })
+  var server = new Server({ udp: false, ws: false })
   server.on('error', function (err) {
     t.error(err)
   })
@@ -149,7 +149,7 @@ test('server: multiple info_hash scrape (manual http request)', function (t) {
 })
 
 test('server: all info_hash scrape (manual http request)', function (t) {
-  var server = new Server({ udp: false })
+  var server = new Server({ udp: false, ws: false })
   server.on('error', function (err) {
     t.error(err)
   })

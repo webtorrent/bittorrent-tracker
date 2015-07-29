@@ -11,7 +11,7 @@ var peerId = new Buffer('01234567890123456789')
 test('large torrent: client.start()', function (t) {
   t.plan(5)
 
-  var server = new Server({ http: false })
+  var server = new Server({ http: false, ws: false })
 
   server.on('error', function (err) {
     t.fail(err.message)

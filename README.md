@@ -111,7 +111,7 @@ var Server = require('bittorrent-tracker').Server
 var server = new Server({
   udp: true, // enable udp server? [default=true]
   http: true, // enable http server? [default=true]
-  ws: true, // enable websocket server? [default=false]
+  ws: true, // enable websocket server? [default=true]
   filter: function (infoHash, params, cb) {
     // Blacklist/whitelist function for allowing/disallowing torrents. If this option is
     // omitted, all torrents are allowed. It is possible to interface with a database or

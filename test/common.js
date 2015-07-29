@@ -1,7 +1,7 @@
 var Server = require('../').Server
 
 exports.createServer = function (t, serverType, cb) {
-  var opts = serverType === 'http' ? { udp: false } : { http: false }
+  var opts = serverType === 'http' ? { udp: false, ws: false } : { http: false, ws: false }
   var server = new Server(opts)
 
   server.on('error', function (err) {

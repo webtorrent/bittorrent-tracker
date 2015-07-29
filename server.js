@@ -41,7 +41,7 @@ function Server (opts) {
 
   debug('new server %s', JSON.stringify(opts))
 
-  self._intervalMs = opts.interval
+  self.intervalMs = opts.interval
     ? opts.interval
     : 10 * 60 * 1000 // 10 min
 
@@ -316,7 +316,7 @@ Server.prototype._onWebSocketRequest = function (socket, params) {
 
     var peers = response.peers
     delete response.peers
-    response.interval = self._intervalMs
+    response.interval = self.intervalMs
     response.info_hash = common.hexToBinary(params.info_hash)
 
     socket.send(JSON.stringify(response), socket.onSend)
@@ -407,7 +407,7 @@ Server.prototype._onAnnounce = function (params, cb) {
       if (err) return cb(err)
 
       if (!response.action) response.action = common.ACTIONS.ANNOUNCE
-      if (!response.interval) response.interval = Math.ceil(self._intervalMs / 1000)
+      if (!response.interval) response.interval = Math.ceil(self.intervalMs / 1000)
 
       if (params.compact === 1) {
         var peers = response.peers
@@ -472,7 +472,7 @@ Server.prototype._onScrape = function (params, cb) {
     var response = {
       action: common.ACTIONS.SCRAPE,
       files: {},
-      flags: { min_request_interval: Math.ceil(self._intervalMs / 1000) }
+      flags: { min_request_interval: Math.ceil(self.intervalMs / 1000) }
     }
 
     results.forEach(function (result) {

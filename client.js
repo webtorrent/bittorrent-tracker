@@ -1,10 +1,11 @@
 module.exports = Client
 
-var debug = require('debug')('bittorrent-tracker')
 var EventEmitter = require('events').EventEmitter
+var debug = require('debug')('bittorrent-tracker')
 var inherits = require('inherits')
 var once = require('once')
 var parallel = require('run-parallel')
+var uniq = require('uniq')
 var url = require('url')
 
 var common = require('./lib/common')
@@ -23,8 +24,6 @@ inherits(Client, EventEmitter)
  * @param {Number} port            torrent client listening port
  * @param {Object} torrent         parsed torrent
  * @param {Object} opts            options object
- * @param {Number} opts.numwant    number of peers to request
- * @param {Number} opts.interval   announce interval (in ms)
  * @param {Number} opts.rtcConfig  RTCPeerConnection configuration object
  * @param {Number} opts.wrtc       custom webrtc implementation
  */
@@ -55,13 +54,8 @@ function Client (peerId, port, torrent, opts) {
   self._rtcConfig = opts.rtcConfig
   self._wrtc = opts.wrtc
 
-  // optional
-  self._numwant = opts.numwant || common.DEFAULT_ANNOUNCE_PEERS
-  self._intervalMs = opts.interval || common.DEFAULT_ANNOUNCE_INTERVAL
-
   debug('new client %s', self._infoHashHex)
 
-  var trackerOpts = { interval: self._intervalMs }
   var webrtcSupport = !!self._wrtc || typeof window !== 'undefined'
 
   var announce = (typeof torrent.announce === 'string')
@@ -70,18 +64,27 @@ function Client (peerId, port, torrent, opts) {
       ? []
       : torrent.announce
 
+  announce = announce.map(function (announceUrl) {
+    announceUrl = announceUrl.toString()
+    if (announceUrl[announceUrl.length - 1] === '/') {
+      // remove trailing slash from trackers to catch duplicates
+      announceUrl = announceUrl.substring(0, announceUrl.length - 1)
+    }
+    return announceUrl
+  })
+
+  announce = uniq(announce)
+
   self._trackers = announce
     .map(function (announceUrl) {
-      announceUrl = announceUrl.toString()
       var protocol = url.parse(announceUrl).protocol
-
       if ((protocol === 'http:' || protocol === 'https:') &&
           typeof HTTPTracker === 'function') {
-        return new HTTPTracker(self, announceUrl, trackerOpts)
+        return new HTTPTracker(self, announceUrl)
       } else if (protocol === 'udp:' && typeof UDPTracker === 'function') {
-        return new UDPTracker(self, announceUrl, trackerOpts)
+        return new UDPTracker(self, announceUrl)
       } else if ((protocol === 'ws:' || protocol === 'wss:') && webrtcSupport) {
-        return new WebSocketTracker(self, announceUrl, trackerOpts)
+        return new WebSocketTracker(self, announceUrl)
       } else {
         process.nextTick(function () {
           var err = new Error('unsupported tracker protocol for ' + announceUrl)
@@ -151,7 +154,7 @@ Client.prototype.start = function (opts) {
 
   // start announcing on intervals
   self._trackers.forEach(function (tracker) {
-    tracker.setInterval(self._intervalMs)
+    tracker.setInterval()
   })
 }
 
@@ -231,9 +234,7 @@ Client.prototype.scrape = function (opts) {
 
 Client.prototype.setInterval = function (intervalMs) {
   var self = this
-  debug('setInterval')
-  self._intervalMs = intervalMs
-
+  debug('setInterval %d', intervalMs)
   self._trackers.forEach(function (tracker) {
     tracker.setInterval(intervalMs)
   })
@@ -248,7 +249,6 @@ Client.prototype.destroy = function (cb) {
   var tasks = self._trackers.map(function (tracker) {
     return function (cb) {
       tracker.destroy(cb)
-      tracker.setInterval(0) // stop announcing on intervals
     }
   })
 
@@ -260,7 +260,7 @@ Client.prototype._defaultAnnounceOpts = function (opts) {
   var self = this
   if (!opts) opts = {}
 
-  if (opts.numwant == null) opts.numwant = self._numwant
+  if (opts.numwant == null) opts.numwant = common.DEFAULT_ANNOUNCE_PEERS
 
   if (opts.uploaded == null) opts.uploaded = 0
   if (opts.downloaded == null) opts.downloaded = 0
