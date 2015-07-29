@@ -130,7 +130,7 @@ Server.prototype.listen = function (/* port, hostname, onlistening */) {
   var port = toNumber(arguments[0]) || arguments[0] || 0
   var hostname = typeof arguments[1] !== 'function' ? arguments[1] : undefined
 
-  debug('listen %o %o', port, hostname)
+  debug('listen port: %o hostname: %o', port, hostname)
 
   function isObject (obj) {
     return typeof obj === 'object' && obj !== null
