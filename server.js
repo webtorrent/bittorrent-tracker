@@ -438,7 +438,6 @@ Server.prototype._onAnnounce = function (params, cb) {
       cb(null, response)
     })
   }
-
 }
 
 Server.prototype._onScrape = function (params, cb) {
