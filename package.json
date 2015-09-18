@@ -44,7 +44,7 @@
   "devDependencies": {
     "magnet-uri": "^5.0.0",
     "parse-torrent": "^5.0.0",
-    "standard": "^4.3.2",
+    "standard": "^5.3.0",
     "tape": "^4.0.0"
   },
   "keywords": [
