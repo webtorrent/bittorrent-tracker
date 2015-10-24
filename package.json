@@ -11,10 +11,10 @@
     "bittorrent-tracker": "./bin/cmd.js"
   },
   "browser": {
-    "./lib/common-node": false,
-    "./lib/client/http-tracker": false,
-    "./lib/client/udp-tracker": false,
-    "./server": false
+    "./lib/common-node.js": false,
+    "./lib/client/http-tracker.js": false,
+    "./lib/client/udp-tracker.js": false,
+    "./server.js": false
   },
   "bugs": {
     "url": "https://github.com/feross/bittorrent-tracker/issues"
