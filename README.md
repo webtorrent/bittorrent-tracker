@@ -22,16 +22,16 @@ This module is used by [WebTorrent](http://webtorrent.io).
 
 ## features
 
-- includes client & server implementations
-- supports all mainstream tracker types:
+- Includes client & server implementations
+- Supports all mainstream tracker types:
   - HTTP trackers
   - UDP trackers ([BEP 15](http://www.bittorrent.org/beps/bep_0015.html))
   - WebTorrent trackers ([BEP forthcoming](http://webtorrent.io))
-- supports ipv4 & ipv6
-- supports tracker "scrape" extension
-- robust and well-tested
-  - comprehensive test suite (runs entirely offline, so it's reliable)
-  - Used by popular clients: [WebTorrent](http://webtorrent.io), [peerflix](https://github.com/mafintosh/peerflix)), and [playback](https://mafintosh.github.io/playback/).
+- Supports ipv4 & ipv6
+- Supports tracker "scrape" extension
+- Robust and well-tested
+  - Comprehensive test suite (runs entirely offline, so it's reliable)
+  - Used by popular clients: [WebTorrent](http://webtorrent.io), [peerflix](https://github.com/mafintosh/peerflix), and [playback](https://mafintosh.github.io/playback/)
 
 Also see [bittorrent-dht](https://github.com/feross/bittorrent-dht).
 
