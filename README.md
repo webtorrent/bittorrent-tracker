@@ -13,20 +13,25 @@
 
 Node.js implementation of a [BitTorrent tracker](https://wiki.theory.org/BitTorrentSpecification#Tracker_HTTP.2FHTTPS_Protocol), client and server.
 
-A **BitTorrent tracker** is an HTTP service which responds to GET requests from BitTorrent
+A **BitTorrent tracker** is an web service which responds to requests from BitTorrent
 clients. The requests include metrics from clients that help the tracker keep overall
 statistics about the torrent. The response includes a peer list that helps the client
-participate in the torrent.
+participate in the torrent swarm.
 
 This module is used by [WebTorrent](http://webtorrent.io).
 
 ## features
 
 - includes client & server implementations
-- supports HTTP & UDP trackers ([BEP 15](http://www.bittorrent.org/beps/bep_0015.html))
-- supports tracker "scrape" extension
-- robust and well-tested (comprehensive test suite, and used by [WebTorrent](http://webtorrent.io) and [peerflix](https://github.com/mafintosh/peerflix))
+- supports all mainstream tracker types:
+  - HTTP trackers
+  - UDP trackers ([BEP 15](http://www.bittorrent.org/beps/bep_0015.html))
+  - WebTorrent trackers ([BEP forthcoming](http://webtorrent.io))
 - supports ipv4 & ipv6
+- supports tracker "scrape" extension
+- robust and well-tested
+  - comprehensive test suite (runs entirely offline, so it's reliable)
+  - Used by popular clients: [WebTorrent](http://webtorrent.io), [peerflix](https://github.com/mafintosh/peerflix)), and [playback](https://mafintosh.github.io/playback/).
 
 Also see [bittorrent-dht](https://github.com/feross/bittorrent-dht).
 
