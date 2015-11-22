@@ -198,18 +198,20 @@ $ bittorrent-tracker --help
   bittorrent-tracker - Start a bittorrent tracker server
 
   Usage:
-      bittorrent-tracker
+    bittorrent-tracker [OPTIONS]
+
+  If no --http, --udp, or --ws option is supplied, all tracker types will be started.
 
   Options:
-      -p, --port [number]     change the port [default: 8000]
-          --trust-proxy       trust 'x-forwarded-for' header from reverse proxy
-          --interval          tell clients to announce on this interval (ms)
-          --http              enable http server [default: true]
-          --udp               enable udp server [default: true]
-          --ws                enable ws server [default: false]
-      -q, --quiet             only show error output
-      -s, --silent            show no output
-      -v, --version           print the current version
+    -p, --port [number]  change the port [default: 8000]
+        --trust-proxy    trust 'x-forwarded-for' header from reverse proxy
+        --interval       client announce interval (ms) [default: 600000]
+        --http           enable http server
+        --udp            enable udp server
+        --ws             enable websocket server
+    -q, --quiet          only show error output
+    -s, --silent         show no output
+    -v, --version        print the current version
 
   Please report bugs!  https://github.com/feross/bittorrent-tracker/issues
 ```
