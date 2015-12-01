@@ -124,7 +124,7 @@ var server = new Server({
 
     // It is possible to block by peer id (whitelisting torrent clients) or by secret
     // key (private trackers). Full access to the original HTTP/UDP request parameters
-    // are available n `params`.
+    // are available in `params`.
 
     // This example only allows one torrent.
 
