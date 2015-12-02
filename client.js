@@ -40,11 +40,11 @@ function Client (peerId, port, torrent, opts) {
   self._peerIdHex = self._peerId.toString('hex')
   self._peerIdBinary = self._peerId.toString('binary')
 
-  self._infoHash = typeof torrent.infoHash === 'string'
+  self.infoHash = typeof torrent.infoHash === 'string'
     ? torrent.infoHash
     : torrent.infoHash.toString('hex')
-  self._infoHashBuffer = new Buffer(self._infoHash, 'hex')
-  self._infoHashBinary = self._infoHashBuffer.toString('binary')
+  self.infoHashBuffer = new Buffer(self.infoHash, 'hex')
+  self._infoHashBinary = self.infoHashBuffer.toString('binary')
 
   self.torrentLength = torrent.length
   self.destroyed = false
@@ -54,7 +54,7 @@ function Client (peerId, port, torrent, opts) {
   self._rtcConfig = opts.rtcConfig
   self._wrtc = opts.wrtc
 
-  debug('new client %s', self._infoHash)
+  debug('new client %s', self.infoHash)
 
   var webrtcSupport = !!self._wrtc || typeof window !== 'undefined'
 
