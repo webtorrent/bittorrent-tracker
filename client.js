@@ -40,10 +40,10 @@ function Client (peerId, port, torrent, opts) {
   self._peerIdHex = self._peerId.toString('hex')
   self._peerIdBinary = self._peerId.toString('binary')
 
-  self._infoHashBuffer = Buffer.isBuffer(torrent.infoHash)
+  self._infoHash = typeof torrent.infoHash === 'string'
     ? torrent.infoHash
-    : new Buffer(torrent.infoHash, 'hex')
-  self._infoHash = self._infoHashBuffer.toString('hex')
+    : torrent.infoHash.toString('hex')
+  self._infoHashBuffer = new Buffer(self._infoHash, 'hex')
   self._infoHashBinary = self._infoHashBuffer.toString('binary')
 
   self.torrentLength = torrent.length
