@@ -36,6 +36,7 @@ function testSingle (t, serverType) {
 
     client.on('scrape', function (data) {
       t.equal(data.announce, announceUrl)
+      t.equal(data.infoHash, parsedBitlove.infoHash)
       t.equal(typeof data.complete, 'number')
       t.equal(typeof data.incomplete, 'number')
       t.equal(typeof data.downloaded, 'number')
@@ -60,6 +61,7 @@ function clientScrapeStatic (t, serverType) {
     Client.scrape(announceUrl, infoHash1, function (err, data) {
       t.error(err)
       t.equal(data.announce, announceUrl)
+      t.equal(data.infoHash, infoHash1)
       t.equal(typeof data.complete, 'number')
       t.equal(typeof data.incomplete, 'number')
       t.equal(typeof data.downloaded, 'number')
@@ -84,11 +86,13 @@ function clientScrapeMulti (t, serverType) {
       t.error(err)
 
       t.equal(results[infoHash1].announce, announceUrl)
+      t.equal(results[infoHash1].infoHash, infoHash1)
       t.equal(typeof results[infoHash1].complete, 'number')
       t.equal(typeof results[infoHash1].incomplete, 'number')
       t.equal(typeof results[infoHash1].downloaded, 'number')
 
       t.equal(results[infoHash2].announce, announceUrl)
+      t.equal(results[infoHash2].infoHash, infoHash2)
       t.equal(typeof results[infoHash2].complete, 'number')
       t.equal(typeof results[infoHash2].incomplete, 'number')
       t.equal(typeof results[infoHash2].downloaded, 'number')
