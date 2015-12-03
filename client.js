@@ -34,11 +34,11 @@ function Client (peerId, port, torrent, opts) {
   if (!opts) opts = {}
 
   // required
-  self._peerId = Buffer.isBuffer(peerId)
+  self.peerId = typeof peerId === 'string'
     ? peerId
-    : new Buffer(peerId, 'hex')
-  self._peerIdHex = self._peerId.toString('hex')
-  self._peerIdBinary = self._peerId.toString('binary')
+    : peerId.toString('hex')
+  self.peerIdBuffer = new Buffer(self.peerId, 'hex')
+  self._peerIdBinary = self.peerIdBuffer.toString('binary')
 
   self.infoHash = typeof torrent.infoHash === 'string'
     ? torrent.infoHash
