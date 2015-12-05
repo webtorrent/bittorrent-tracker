@@ -316,6 +316,10 @@ Server.prototype._onWebSocketRequest = function (socket, params) {
 
     var peers = response.peers
     delete response.peers
+
+    // WebSocket tracker should have a shorter interval – default: 2 minutes
+    response.interval = Math.ceil(self.intervalMs / 1000 / 5)
+
     response.info_hash = common.hexToBinary(params.info_hash)
 
     socket.send(JSON.stringify(response), socket.onSend)
