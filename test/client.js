@@ -112,6 +112,8 @@ function testClientUpdate (t, serverType) {
     client.start()
 
     client.once('update', function () {
+      client.setInterval(2000)
+
       // after interval (2s), we should get another update
       client.once('update', function (data) {
         // received an update!
