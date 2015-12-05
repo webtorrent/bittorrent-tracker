@@ -316,7 +316,6 @@ Server.prototype._onWebSocketRequest = function (socket, params) {
 
     var peers = response.peers
     delete response.peers
-    response.interval = self.intervalMs
     response.info_hash = common.hexToBinary(params.info_hash)
 
     socket.send(JSON.stringify(response), socket.onSend)
