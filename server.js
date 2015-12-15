@@ -89,12 +89,17 @@ function Server (opts) {
   if (opts.ws !== false) {
     if (!self.http) {
       self.http = http.createServer()
-      self.http.on('request', function (req, res) {
-        res.statusCode = 404
-        res.end('404 Not Found')
-      })
       self.http.on('error', function (err) { self._onError(err) })
       self.http.on('listening', onListening)
+
+      // Add default http request handler if user does not add one on same tick
+      process.nextTick(function () {
+        if (self.http.listenerCount('request') > 0) return
+        self.http.on('request', function (req, res) {
+          res.statusCode = 404
+          res.end('404 Not Found')
+        })
+      })
     }
     self.ws = new WebSocketServer({ server: self.http })
     self.ws.address = self.http.address.bind(self.http)
