@@ -100,10 +100,13 @@ function Server (opts) {
       self.http.on('error', function (err) { self._onError(err) })
       self.http.on('listening', onListening)
 
-      // Add default http request handler if user does not add one on same tick
+      // Add default http request handler on next tick to give user the chance to add
+      // their own handler first. Handle requests untouched by user's handler.
       process.nextTick(function () {
-        if (self.http.listenerCount('request') > 0) return
         self.http.on('request', function (req, res) {
+          if (res.headersSent) return
+          // For websocket trackers, we only need to handle the UPGRADE http method.
+          // Return 404 for all other request types.
           res.statusCode = 404
           res.end('404 Not Found')
         })
