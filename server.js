@@ -61,9 +61,17 @@ function Server (opts) {
   // start an http tracker unless the user explictly says no
   if (opts.http !== false) {
     self.http = http.createServer()
-    self.http.on('request', function (req, res) { self.onHttpRequest(req, res) })
     self.http.on('error', function (err) { self._onError(err) })
     self.http.on('listening', onListening)
+
+    // Add default http request handler on next tick to give user the chance to add
+    // their own handler first. Handle requests untouched by user's handler.
+    process.nextTick(function () {
+      self.http.on('request', function (req, res) {
+        if (res.headersSent) return
+        self.onHttpRequest(req, res)
+      })
+    })
   }
 
   // start a udp tracker unless the user explicitly says no
