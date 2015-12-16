@@ -1,7 +1,7 @@
 {
   "name": "bittorrent-tracker",
   "description": "Simple, robust, BitTorrent tracker (client & server) implementation",
-  "version": "6.3.3",
+  "version": "6.3.4",
   "author": {
     "name": "Feross Aboukhadijeh",
     "email": "feross@feross.org",
