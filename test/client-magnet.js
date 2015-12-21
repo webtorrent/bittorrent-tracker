@@ -3,7 +3,7 @@ var magnet = require('magnet-uri')
 var Server = require('../').Server
 var test = require('tape')
 
-var uri = 'magnet:?xt=urn:btih:d2474e86c95b19b8bcfdb92bc12c9d44667cfa36&dn=Leaves+of+Grass+by+Walt+Whitman.epub&tr=udp%3A%2F%2Ftracker.openbittorrent.com%3A80'
+var uri = 'magnet:?xt=urn:btih:d2474e86c95b19b8bcfdb92bc12c9d44667cfa36&dn=Leaves+of+Grass+by+Walt+Whitman.epub'
 var parsedTorrent = magnet(uri)
 var peerId = new Buffer('01234567890123456789')
 
@@ -24,7 +24,7 @@ test('magnet + udp: client.start/update/stop()', function (t) {
     var port = server.udp.address().port
     var announceUrl = 'udp://127.0.0.1:' + port
 
-    // remove all tracker servers except a single UDP one, for now
+    // remove all tracker servers except a single UDP one
     parsedTorrent.announce = [ announceUrl ]
 
     var client = new Client(peerId, 6881, parsedTorrent)
