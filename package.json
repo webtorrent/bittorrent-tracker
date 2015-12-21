@@ -48,14 +48,14 @@
     "tape": "^4.0.0"
   },
   "keywords": [
-    "torrent",
     "bittorrent",
-    "tracker",
-    "stream",
-    "peer",
-    "wire",
     "p2p",
-    "peer-to-peer"
+    "peer",
+    "peer-to-peer",
+    "stream",
+    "torrent",
+    "tracker",
+    "wire"
   ],
   "license": "MIT",
   "main": "index.js",
