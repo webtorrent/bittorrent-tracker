@@ -102,7 +102,7 @@ client.on('scrape', function (data) {
   console.log('got a scrape response from tracker: ' + data.announce)
   console.log('number of seeders in the swarm: ' + data.complete)
   console.log('number of leechers in the swarm: ' + data.incomplete)
-  console.log('number of total downloads of this torrent: ' + data.incomplete)
+  console.log('number of total downloads of this torrent: ' + data.downloaded)
 })
 ```
 
