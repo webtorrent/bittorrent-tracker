@@ -447,7 +447,7 @@ Server.prototype._onAnnounce = function (params, cb) {
         // IPv6 peers are not separate for non-compact responses
         response.peers = response.peers.map(function (peer) {
           return {
-            'peer id': peer.peerId,
+            'peer id': common.hexToBinary(peer.peerId),
             ip: peer.ip,
             port: peer.port
           }
