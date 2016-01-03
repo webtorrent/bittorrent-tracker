@@ -196,17 +196,25 @@ Server.prototype.close = function (cb) {
   else cb(null)
 }
 
-Server.prototype.createSwarm = function (infoHash) {
+Server.prototype.createSwarm = function (infoHash, cb) {
   var self = this
   if (Buffer.isBuffer(infoHash)) infoHash = infoHash.toString('hex')
   var swarm = self.torrents[infoHash] = new Swarm(infoHash, self)
-  return swarm
+  if (cb) {
+    cb(swarm)
+  } else {
+    return swarm
+  }
 }
 
-Server.prototype.getSwarm = function (infoHash) {
+Server.prototype.getSwarm = function (infoHash, cb) {
   var self = this
   if (Buffer.isBuffer(infoHash)) infoHash = infoHash.toString('hex')
-  return self.torrents[infoHash]
+  if (cb) {
+    cb(self.torrents[infoHash])
+  } else {
+    return self.torrents[infoHash]
+  }
 }
 
 Server.prototype.onHttpRequest = function (req, res, opts) {
