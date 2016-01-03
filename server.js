@@ -196,17 +196,23 @@ Server.prototype.close = function (cb) {
   else cb(null)
 }
 
-Server.prototype.createSwarm = function (infoHash) {
+Server.prototype.createSwarm = function (infoHash, cb) {
   var self = this
   if (Buffer.isBuffer(infoHash)) infoHash = infoHash.toString('hex')
-  var swarm = self.torrents[infoHash] = new Swarm(infoHash, self)
-  return swarm
+
+  process.nextTick(function () {
+    var swarm = self.torrents[infoHash] = new Swarm(infoHash, self)
+    cb(null, swarm)
+  })
 }
 
-Server.prototype.getSwarm = function (infoHash) {
+Server.prototype.getSwarm = function (infoHash, cb) {
   var self = this
   if (Buffer.isBuffer(infoHash)) infoHash = infoHash.toString('hex')
-  return self.torrents[infoHash]
+
+  process.nextTick(function () {
+    cb(null, self.torrents[infoHash])
+  })
 }
 
 Server.prototype.onHttpRequest = function (req, res, opts) {
@@ -358,26 +364,35 @@ Server.prototype._onWebSocketRequest = function (socket, params) {
     if (params.answer) {
       debug('got answer %s from %s', JSON.stringify(params.answer), params.peer_id)
 
-      var swarm = self.getSwarm(params.info_hash)
-      if (!swarm) {
-        return self.emit('warning', new Error('no swarm with that `info_hash`'))
-      }
-      var toPeer = swarm.peers[params.to_peer_id]
-      if (!toPeer) {
-        return self.emit('warning', new Error('no peer with that `to_peer_id`'))
-      }
+      self.getSwarm(params.info_hash, function (err, swarm) {
+        if (err) return self.emit('warning', err)
+        if (!swarm) {
+          return self.emit('warning', new Error('no swarm with that `info_hash`'))
+        }
+        var toPeer = swarm.peers[params.to_peer_id]
+        if (!toPeer) {
+          return self.emit('warning', new Error('no peer with that `to_peer_id`'))
+        }
 
-      toPeer.socket.send(JSON.stringify({
-        answer: params.answer,
-        offer_id: params.offer_id,
-        peer_id: common.hexToBinary(params.peer_id),
-        info_hash: common.hexToBinary(params.info_hash)
-      }), toPeer.socket.onSend)
-      debug('sent answer to %s from %s', toPeer.peerId, params.peer_id)
+        toPeer.socket.send(JSON.stringify({
+          answer: params.answer,
+          offer_id: params.offer_id,
+          peer_id: common.hexToBinary(params.peer_id),
+          info_hash: common.hexToBinary(params.info_hash)
+        }), toPeer.socket.onSend)
+        debug('sent answer to %s from %s', toPeer.peerId, params.peer_id)
+
+        done()
+      })
+    } else {
+      done()
     }
 
-    if (params.action === common.ACTIONS.ANNOUNCE) {
-      self.emit(common.EVENT_NAMES[params.event], params.peer_id, params)
+    function done () {
+      // emit event once the announce is fully "processed"
+      if (params.action === common.ACTIONS.ANNOUNCE) {
+        self.emit(common.EVENT_NAMES[params.event], params.peer_id, params)
+      }
     }
   })
 }
@@ -398,9 +413,14 @@ Server.prototype._onRequest = function (params, cb) {
 Server.prototype._onAnnounce = function (params, cb) {
   var self = this
 
-  var swarm = self.getSwarm(params.info_hash)
-  if (swarm) announce()
-  else createSwarm()
+  self.getSwarm(params.info_hash, function (err, swarm) {
+    if (err) return cb(err)
+    if (swarm) {
+      announce(swarm)
+    } else {
+      createSwarm()
+    }
+  })
 
   function createSwarm () {
     if (self._filter) {
@@ -410,17 +430,21 @@ Server.prototype._onAnnounce = function (params, cb) {
         } else if (!allowed) {
           cb(new Error('disallowed info_hash'))
         } else {
-          swarm = self.createSwarm(params.info_hash)
-          announce()
+          self.createSwarm(params.info_hash, function (err, swarm) {
+            if (err) return cb(err)
+            announce(swarm)
+          })
         }
       })
     } else {
-      swarm = self.createSwarm(params.info_hash)
-      announce()
+      self.createSwarm(params.info_hash, function (err, swarm) {
+        if (err) return cb(err)
+        announce(swarm)
+      })
     }
   }
 
-  function announce () {
+  function announce (swarm) {
     if (!params.event || params.event === 'empty') params.event = 'update'
     swarm.announce(params, function (err, response) {
       if (err) return cb(err)
@@ -470,19 +494,21 @@ Server.prototype._onScrape = function (params, cb) {
 
   series(params.info_hash.map(function (infoHash) {
     return function (cb) {
-      var swarm = self.getSwarm(infoHash)
-      if (swarm) {
-        swarm.scrape(params, function (err, scrapeInfo) {
-          if (err) return cb(err)
-          cb(null, {
-            infoHash: infoHash,
-            complete: (scrapeInfo && scrapeInfo.complete) || 0,
-            incomplete: (scrapeInfo && scrapeInfo.incomplete) || 0
+      self.getSwarm(infoHash, function (err, swarm) {
+        if (err) return cb(err)
+        if (swarm) {
+          swarm.scrape(params, function (err, scrapeInfo) {
+            if (err) return cb(err)
+            cb(null, {
+              infoHash: infoHash,
+              complete: (scrapeInfo && scrapeInfo.complete) || 0,
+              incomplete: (scrapeInfo && scrapeInfo.incomplete) || 0
+            })
           })
-        })
-      } else {
-        cb(null, { infoHash: infoHash, complete: 0, incomplete: 0 })
-      }
+        } else {
+          cb(null, { infoHash: infoHash, complete: 0, incomplete: 0 })
+        }
+      })
     }
   }), function (err, results) {
     if (err) return cb(err)
