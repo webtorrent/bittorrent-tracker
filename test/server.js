@@ -8,7 +8,7 @@ var peerId2 = new Buffer('12345678901234567890')
 var torrentLength = 50000
 
 function serverTest (t, serverType, serverFamily) {
-  t.plan(26)
+  t.plan(25)
 
   var opts = serverType === 'http' ? { udp: false, ws: false } : { http: false, ws: false }
   var server = new Server(opts)
@@ -49,22 +49,18 @@ function serverTest (t, serverType, serverFamily) {
       t.equal(data.complete, 0)
       t.equal(data.incomplete, 1)
 
-      var swarm = server.getSwarm(infoHash)
-
-      server.getSwarm(infoHash, function (asyncSwarm) {
-        t.deepEqual(swarm, asyncSwarm)
-      })
-
-      t.equal(Object.keys(server.torrents).length, 1)
-      t.equal(swarm.complete, 0)
-      t.equal(swarm.incomplete, 1)
-      t.equal(Object.keys(swarm.peers).length, 1)
-      t.deepEqual(swarm.peers[clientAddr + ':6881'], {
-        ip: clientIp,
-        port: 6881,
-        peerId: peerId.toString('hex'),
-        complete: false,
-        socket: undefined
+      server.getSwarm(infoHash, function (swarm) {
+        t.equal(Object.keys(server.torrents).length, 1)
+        t.equal(swarm.complete, 0)
+        t.equal(swarm.incomplete, 1)
+        t.equal(Object.keys(swarm.peers).length, 1)
+        t.deepEqual(swarm.peers[clientAddr + ':6881'], {
+          ip: clientIp,
+          port: 6881,
+          peerId: peerId.toString('hex'),
+          complete: false,
+          socket: undefined
+        })
       })
 
       client1.complete()
