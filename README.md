@@ -1,10 +1,10 @@
 # bittorrent-tracker [![travis][travis-image]][travis-url] [![npm][npm-image]][npm-url] [![downloads][downloads-image]][downloads-url]
 
-[travis-image]: https://img.shields.io/travis/feross/bittorrent-tracker/master.svg?style=flat
+[travis-image]: https://img.shields.io/travis/feross/bittorrent-tracker/master.svg
 [travis-url]: https://travis-ci.org/feross/bittorrent-tracker
-[npm-image]: https://img.shields.io/npm/v/bittorrent-tracker.svg?style=flat
+[npm-image]: https://img.shields.io/npm/v/bittorrent-tracker.svg
 [npm-url]: https://npmjs.org/package/bittorrent-tracker
-[downloads-image]: https://img.shields.io/npm/dm/bittorrent-tracker.svg?style=flat
+[downloads-image]: https://img.shields.io/npm/dm/bittorrent-tracker.svg
 [downloads-url]: https://npmjs.org/package/bittorrent-tracker
 
 #### Simple, robust, BitTorrent tracker (client & server) implementation
