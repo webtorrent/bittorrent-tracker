@@ -5,6 +5,7 @@ var commonTest = require('./common')
 var fs = require('fs')
 var get = require('simple-get')
 var parseTorrent = require('parse-torrent')
+var path = require('path')
 var Server = require('../').Server
 var test = require('tape')
 
@@ -13,7 +14,7 @@ var binaryInfoHash1 = commonLib.hexToBinary(infoHash1)
 var infoHash2 = 'bbb67059ed6bd08362da625b3ae77f6f4a075bbb'
 var binaryInfoHash2 = commonLib.hexToBinary(infoHash2)
 
-var bitlove = fs.readFileSync(__dirname + '/torrents/bitlove-intro.torrent')
+var bitlove = fs.readFileSync(path.join(__dirname, 'torrents/bitlove-intro.torrent'))
 var parsedBitlove = parseTorrent(bitlove)
 var binaryBitlove = commonLib.hexToBinary(parsedBitlove.infoHash)
 

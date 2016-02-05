@@ -1,10 +1,11 @@
 var Client = require('../')
 var fs = require('fs')
 var parseTorrent = require('parse-torrent')
+var path = require('path')
 var Server = require('../').Server
 var test = require('tape')
 
-var torrent = fs.readFileSync(__dirname + '/torrents/sintel-5gb.torrent')
+var torrent = fs.readFileSync(path.join(__dirname, 'torrents/sintel-5gb.torrent'))
 var parsedTorrent = parseTorrent(torrent)
 var peerId = new Buffer('01234567890123456789')
 

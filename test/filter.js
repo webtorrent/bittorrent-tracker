@@ -1,13 +1,14 @@
 var Client = require('../')
 var fs = require('fs')
 var parseTorrent = require('parse-torrent')
+var path = require('path')
 var Server = require('../').Server
 var test = require('tape')
 
-var bitlove = fs.readFileSync(__dirname + '/torrents/bitlove-intro.torrent')
+var bitlove = fs.readFileSync(path.join(__dirname, 'torrents/bitlove-intro.torrent'))
 var parsedBitlove = parseTorrent(bitlove)
 
-var leaves = fs.readFileSync(__dirname + '/torrents/leaves.torrent')
+var leaves = fs.readFileSync(path.join(__dirname, 'torrents/leaves.torrent'))
 var parsedLeaves = parseTorrent(leaves)
 
 var peerId = new Buffer('01234567890123456789')
