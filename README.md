@@ -185,6 +185,23 @@ server.torrents[infoHash].peers
 
 The http server will handle requests for the following paths: `/announce`, `/scrape`. Requests for other paths will not be handled.
 
+## multi scrape
+
+Scraping multiple torrent info is possible with a static `Client.scrape` method:
+
+```js
+var Client = require('bittorrent-tracker')
+Client.scrape(announceUrl, [ infoHash1, infoHash2 ], function (err, results) {
+  results[infoHash1].announce
+  results[infoHash1].infoHash
+  results[infoHash1].complete
+  results[infoHash1].incomplete
+  results[infoHash1].downloaded
+
+  // ...
+})
+````
+
 ## command line
 
 Easily start a tracker server:
