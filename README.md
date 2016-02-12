@@ -133,7 +133,7 @@ var server = new Server({
 
     // In addition to returning a boolean (`true` for allowed, `false` for disallowed),
     // you can return an `Error` object to disallow and provide a custom reason.
-  })
+  }
 })
 
 // Internal http, udp, and websocket servers exposed as public properties.
