@@ -128,7 +128,7 @@ test('server: multiple info_hash scrape (manual http request)', function (t) {
     var url = scrapeUrl + '?' + commonLib.querystringStringify({
       info_hash: [ binaryInfoHash1, binaryInfoHash2 ]
     })
-    get.concat(url, function (err, data, res) {
+    get.concat(url, function (err, res, data) {
       if (err) throw err
       t.equal(res.statusCode, 200)
 
@@ -178,7 +178,7 @@ test('server: all info_hash scrape (manual http request)', function (t) {
 
     server.once('start', function () {
       // now do a scrape of everything by omitting the info_hash param
-      get.concat(scrapeUrl, function (err, data, res) {
+      get.concat(scrapeUrl, function (err, res, data) {
         if (err) throw err
 
         t.equal(res.statusCode, 200)
