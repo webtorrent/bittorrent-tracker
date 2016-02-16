@@ -35,7 +35,7 @@
     "run-series": "^1.0.2",
     "simple-get": "^2.0.0",
     "simple-peer": "^6.0.0",
-    "simple-websocket": "^3.0.0",
+    "simple-websocket": "^4.0.0",
     "string2compact": "^1.1.1",
     "uniq": "^1.0.1",
     "ws": "^1.0.0",
