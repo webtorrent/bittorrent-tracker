@@ -157,7 +157,7 @@ Server.prototype.listen = function (/* port, hostname, onlistening */) {
 
   // binding to :: only receives IPv4 connections if the bindv6only sysctl is set 0,
   // which is the default on many operating systems
-  var httpHostname = isObject(hostname) ? hostname.http : (hostname || '::')
+  var httpHostname = isObject(hostname) ? hostname.http : hostname
   var udp4Hostname = isObject(hostname) ? hostname.udp : hostname
   var udp6Hostname = isObject(hostname) ? hostname.udp6 : hostname
 
