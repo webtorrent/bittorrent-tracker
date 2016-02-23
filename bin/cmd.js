@@ -21,6 +21,11 @@ var argv = minimist(process.argv.slice(2), {
     'version',
     'ws'
   ],
+  string: [
+    'http-hostname',
+    'udp-hostname',
+    'udp6-hostname'
+  ],
   default: {
     port: 8000
   }
@@ -42,15 +47,18 @@ if (argv.help) {
   If no --http, --udp, or --ws option is supplied, all tracker types will be started.
 
   Options:
-    -p, --port [number]  change the port [default: 8000]
-        --trust-proxy    trust 'x-forwarded-for' header from reverse proxy
-        --interval       client announce interval (ms) [default: 600000]
-        --http           enable http server
-        --udp            enable udp server
-        --ws             enable websocket server
-    -q, --quiet          only show error output
-    -s, --silent         show no output
-    -v, --version        print the current version
+    -p, --port [number]           change the port [default: 8000]
+        --http-hostname [string]  change the http server hostname [default: '::']
+        --udp-hostname [string]   change the udp hostname [default: '0.0.0.0']
+        --udp6-hostname [string]  change the udp6 hostname [default: '::']
+        --trust-proxy             trust 'x-forwarded-for' header from reverse proxy
+        --interval                client announce interval (ms) [default: 600000]
+        --http                    enable http server
+        --udp                     enable udp server
+        --ws                      enable websocket server
+    -q, --quiet                   only show error output
+    -s, --silent                  show no output
+    -v, --version                 print the current version
 
   Please report bugs!  https://github.com/feross/bittorrent-tracker/issues
 
@@ -94,14 +102,35 @@ server.on('stop', function (addr) {
   if (!argv.quiet) console.log('stop: ' + addr)
 })
 
-server.listen(argv.port, function () {
+var hostname = {
+  http: argv['http-hostname'],
+  udp4: argv['udp-hostname'],
+  udp6: argv['upd6-hostname']
+}
+
+server.listen(argv.port, hostname, function () {
   if (server.http && argv.http && !argv.quiet) {
-    console.log('HTTP tracker: http://localhost:' + server.http.address().port + '/announce')
+    var httpAddr = server.http.address()
+    var httpHost = httpAddr.address !== '::' ? httpAddr.address : 'localhost'
+    var httpPort = httpAddr.port
+    console.log('HTTP tracker: http://' + httpHost + ':' + httpPort + '/announce')
   }
   if (server.udp && !argv.quiet) {
-    console.log('UDP tracker: udp://localhost:' + server.udp.address().port)
+    var udpAddr = server.udp.address()
+    var udpHost = udpAddr.address
+    var udpPort = udpAddr.port
+    console.log('UDP tracker: udp://' + udpHost + ':' + udpPort)
+  }
+  if (server.udp6 && !argv.quiet) {
+    var udp6Addr = server.udp6.address()
+    var udp6Host = udp6Addr.address !== '::' ? udp6Addr.address : 'localhost'
+    var udp6Port = udp6Addr.port
+    console.log('UDP6 tracker: udp://' + udp6Host + ':' + udp6Port)
   }
   if (server.ws && !argv.quiet) {
-    console.log('WebSocket tracker: ws://localhost:' + server.http.address().port)
+    var wsAddr = server.http.address()
+    var wsHost = wsAddr.address !== '::' ? wsAddr.address : 'localhost'
+    var wsPort = wsAddr.port
+    console.log('WebSocket tracker: ws://' + wsHost + ':' + wsPort)
   }
 })
