@@ -1,7 +1,8 @@
 module.exports = Client
 
-var EventEmitter = require('events').EventEmitter
 var debug = require('debug')('bittorrent-tracker')
+var EventEmitter = require('events').EventEmitter
+var extend = require('xtend')
 var inherits = require('inherits')
 var once = require('once')
 var parallel = require('run-parallel')
@@ -20,12 +21,13 @@ inherits(Client, EventEmitter)
  *
  * Find torrent peers, to help a torrent client participate in a torrent swarm.
  *
- * @param {string|Buffer} peerId   peer id
- * @param {Number} port            torrent client listening port
- * @param {Object} torrent         parsed torrent
- * @param {Object} opts            options object
- * @param {Number} opts.rtcConfig  RTCPeerConnection configuration object
- * @param {Number} opts.wrtc       custom webrtc implementation
+ * @param {string|Buffer} peerId         peer id
+ * @param {Number} port                  torrent client listening port
+ * @param {Object} torrent               parsed torrent
+ * @param {Object} opts                  options object
+ * @param {Number} opts.rtcConfig        RTCPeerConnection configuration object
+ * @param {Number} opts.wrtc             custom webrtc implementation
+ * @param {Object} opts.getAnnounceOpts  callback to provide data to tracker
  */
 function Client (peerId, port, torrent, opts) {
   var self = this
@@ -270,9 +272,7 @@ Client.prototype._defaultAnnounceOpts = function (opts) {
     opts.left = self.torrentLength - opts.downloaded
   }
 
-  if (opts.getAnnounceOpts == null) {
-    opts.getAnnounceOpts = self._getAnnounceOpts
-  }
+  if (self._getAnnounceOpts) opts = extend(opts, self._getAnnounceOpts())
 
   return opts
 }
