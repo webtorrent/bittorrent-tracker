@@ -53,6 +53,7 @@ function Client (peerId, port, torrent, opts) {
 
   self._rtcConfig = opts.rtcConfig
   self._wrtc = opts.wrtc
+  self._getAnnounceOpts = opts.getAnnounceOpts
 
   debug('new client %s', self.infoHash)
 
@@ -268,5 +269,10 @@ Client.prototype._defaultAnnounceOpts = function (opts) {
   if (opts.left == null && self.torrentLength != null) {
     opts.left = self.torrentLength - opts.downloaded
   }
+
+  if (opts.getAnnounceOpts == null) {
+    opts.getAnnounceOpts = self._getAnnounceOpts
+  }
+
   return opts
 }
