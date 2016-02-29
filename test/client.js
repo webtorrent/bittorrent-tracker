@@ -12,28 +12,33 @@ var peerId2 = new Buffer('12345678901234567890')
 var peerId3 = new Buffer('23456789012345678901')
 var port = 6881
 
+function mockWebSocketTracker (client) {
+  client._trackers[0]._generateOffers = function (numwant, cb) {
+    var offers = []
+    for (var i = 0; i < numwant; i++) {
+      offers.push('fake_offer_' + i)
+    }
+    process.nextTick(function () {
+      cb(offers)
+    })
+  }
+}
+
 function testClientStart (t, serverType) {
-  t.plan(5)
+  t.plan(4)
   common.createServer(t, serverType, function (server, announceUrl) {
     parsedTorrent.announce = [ announceUrl ]
-    var client = new Client(peerId1, port, parsedTorrent)
+    var client = new Client(peerId1, port, parsedTorrent, { wrtc: {} })
 
-    client.on('error', function (err) {
-      t.error(err)
-    })
-
-    client.on('warning', function (err) {
-      t.error(err)
-    })
+    if (serverType === 'ws') mockWebSocketTracker(client)
+    client.on('error', function (err) { t.error(err) })
+    client.on('warning', function (err) { t.error(err) })
 
     client.once('update', function (data) {
       t.equal(data.announce, announceUrl)
       t.equal(typeof data.complete, 'number')
       t.equal(typeof data.incomplete, 'number')
-    })
 
-    client.once('peer', function () {
-      t.pass('there is at least one peer')
       client.stop()
 
       client.once('update', function () {
@@ -55,19 +60,19 @@ test('udp: client.start()', function (t) {
   testClientStart(t, 'udp')
 })
 
+test('ws: client.start()', function (t) {
+  testClientStart(t, 'ws')
+})
+
 function testClientStop (t, serverType) {
   t.plan(3)
   common.createServer(t, serverType, function (server, announceUrl) {
     parsedTorrent.announce = [ announceUrl ]
-    var client = new Client(peerId1, port, parsedTorrent)
+    var client = new Client(peerId1, port, parsedTorrent, { wrtc: {} })
 
-    client.on('error', function (err) {
-      t.error(err)
-    })
-
-    client.on('warning', function (err) {
-      t.error(err)
-    })
+    if (serverType === 'ws') mockWebSocketTracker(client)
+    client.on('error', function (err) { t.error(err) })
+    client.on('warning', function (err) { t.error(err) })
 
     client.start()
 
@@ -95,20 +100,21 @@ test('udp: client.stop()', function (t) {
   testClientStop(t, 'udp')
 })
 
+test('ws: client.stop()', function (t) {
+  testClientStop(t, 'ws')
+})
+
 function testClientUpdate (t, serverType) {
   t.plan(4)
   common.createServer(t, serverType, function (server, announceUrl) {
     parsedTorrent.announce = [ announceUrl ]
-    var client = new Client(peerId1, port, parsedTorrent)
+    var client = new Client(peerId1, port, parsedTorrent, { wrtc: {} })
+
+    if (serverType === 'ws') mockWebSocketTracker(client)
+    client.on('error', function (err) { t.error(err) })
+    client.on('warning', function (err) { t.error(err) })
+
     client.setInterval(2000)
-
-    client.on('error', function (err) {
-      t.error(err)
-    })
-
-    client.on('warning', function (err) {
-      t.error(err)
-    })
 
     client.start()
 
@@ -141,19 +147,19 @@ test('udp: client.update()', function (t) {
   testClientUpdate(t, 'udp')
 })
 
+test('ws: client.update()', function (t) {
+  testClientUpdate(t, 'ws')
+})
+
 function testClientScrape (t, serverType) {
   t.plan(4)
   common.createServer(t, serverType, function (server, announceUrl) {
     parsedTorrent.announce = [ announceUrl ]
-    var client = new Client(peerId1, port, parsedTorrent)
+    var client = new Client(peerId1, port, parsedTorrent, { wrtc: {} })
 
-    client.on('error', function (err) {
-      t.error(err)
-    })
-
-    client.on('warning', function (err) {
-      t.error(err)
-    })
+    if (serverType === 'ws') mockWebSocketTracker(client)
+    client.on('error', function (err) { t.error(err) })
+    client.on('warning', function (err) { t.error(err) })
 
     client.once('scrape', function (data) {
       t.equal(data.announce, announceUrl)
@@ -177,27 +183,37 @@ test('udp: client.scrape()', function (t) {
   testClientScrape(t, 'udp')
 })
 
+// TODO: uncomment once scrape is supported on WebSocket trackers
+// test('ws: client.scrape()', function (t) {
+//   testClientScrape(t, 'ws')
+// })
+
 function testClientAnnounceWithNumWant (t, serverType) {
   t.plan(4)
   common.createServer(t, serverType, function (server, announceUrl) {
     parsedTorrent.announce = [ announceUrl ]
-    var client1 = new Client(peerId1, port, parsedTorrent)
-    client1.on('error', function (err) {
-      t.error(err)
-    })
+    var client1 = new Client(peerId1, port, parsedTorrent, { wrtc: {} })
+
+    if (serverType === 'ws') mockWebSocketTracker(client1)
+    client1.on('error', function (err) { t.error(err) })
+    client1.on('warning', function (err) { t.error(err) })
 
     client1.start()
     client1.once('update', function () {
-      var client2 = new Client(peerId2, port + 1, parsedTorrent)
-      client2.on('error', function (err) {
-        t.error(err)
-      })
+      var client2 = new Client(peerId2, port + 1, parsedTorrent, { wrtc: {} })
+
+      if (serverType === 'ws') mockWebSocketTracker(client2)
+      client2.on('error', function (err) { t.error(err) })
+      client2.on('warning', function (err) { t.error(err) })
+
       client2.start()
       client2.once('update', function () {
-        var client3 = new Client(peerId3, port + 2, parsedTorrent)
-        client3.on('error', function (err) {
-          t.error(err)
-        })
+        var client3 = new Client(peerId3, port + 2, parsedTorrent, { wrtc: {} })
+
+        if (serverType === 'ws') mockWebSocketTracker(client3)
+        client3.on('error', function (err) { t.error(err) })
+        client3.on('warning', function (err) { t.error(err) })
+
         client3.start({ numwant: 1 })
         client3.on('peer', function () {
           t.pass('got one peer (this should only fire once)')
@@ -238,4 +254,8 @@ test('http: client announce with numwant', function (t) {
 
 test('udp: client announce with numwant', function (t) {
   testClientAnnounceWithNumWant(t, 'udp')
+})
+
+test('ws: client announce with numwant', function (t) {
+  testClientAnnounceWithNumWant(t, 'ws')
 })
