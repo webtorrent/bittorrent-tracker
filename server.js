@@ -325,10 +325,13 @@ Server.prototype._onWebSocketRequest = function (socket, params) {
 
   self._onRequest(params, function (err, response) {
     if (err) {
+      socket.send(JSON.stringify({
+        'failure reason': err.message,
+        info_hash: common.hexToBinary(params.info_hash)
+      }), socket.onSend)
+
       self.emit('warning', err)
-      response = {
-        'failure reason': err.message
-      }
+      return
     }
     if (self.destroyed) return
 
