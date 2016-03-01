@@ -6,7 +6,6 @@ var fs = require('fs')
 var get = require('simple-get')
 var parseTorrent = require('parse-torrent')
 var path = require('path')
-var Server = require('../').Server
 var test = require('tape')
 
 var infoHash1 = 'aaa67059ed6bd08362da625b3ae77f6f4a075aaa'
@@ -114,22 +113,18 @@ test('udp: MULTI scrape using Client.scrape static method', function (t) {
 })
 
 test('server: multiple info_hash scrape (manual http request)', function (t) {
-  var server = new Server({ udp: false, ws: false })
-  server.on('error', function (err) {
-    t.error(err)
-  })
-  server.on('warning', function (err) {
-    t.error(err)
-  })
+  t.plan(13)
 
-  server.listen(0, function () {
-    var port = server.http.address().port
-    var scrapeUrl = 'http://127.0.0.1:' + port + '/scrape'
+  commonTest.createServer(t, 'http', function (server, announceUrl) {
+    var scrapeUrl = announceUrl.replace('/announce', '/scrape')
+
     var url = scrapeUrl + '?' + commonLib.querystringStringify({
       info_hash: [ binaryInfoHash1, binaryInfoHash2 ]
     })
+
     get.concat(url, function (err, res, data) {
-      if (err) throw err
+      t.error(err)
+
       t.equal(res.statusCode, 200)
 
       data = bencode.decode(data)
@@ -146,40 +141,29 @@ test('server: multiple info_hash scrape (manual http request)', function (t) {
       t.equal(typeof data.files[binaryInfoHash2].incomplete, 'number')
       t.equal(typeof data.files[binaryInfoHash2].downloaded, 'number')
 
-      server.close(function () {
-        t.end()
-      })
+      server.close(function () { t.pass('server closed') })
     })
   })
 })
 
 test('server: all info_hash scrape (manual http request)', function (t) {
-  var server = new Server({ udp: false, ws: false })
-  server.on('error', function (err) {
-    t.error(err)
-  })
-  server.on('warning', function (err) {
-    t.error(err)
-  })
-
-  server.listen(0, function () {
-    var port = server.http.address().port
-    var announceUrl = 'http://127.0.0.1:' + port + '/announce'
-    var scrapeUrl = 'http://127.0.0.1:' + port + '/scrape'
+  t.plan(10)
+  commonTest.createServer(t, 'http', function (server, announceUrl) {
+    var scrapeUrl = announceUrl.replace('/announce', '/scrape')
 
     parsedBitlove.announce = [ announceUrl ]
 
     // announce a torrent to the tracker
-    var client = new Client(peerId, port, parsedBitlove)
-    client.on('error', function (err) {
-      t.error(err)
-    })
+    var client = new Client(peerId, 6881, parsedBitlove)
+    client.on('error', function (err) { t.error(err) })
+    client.on('warning', function (err) { t.error(err) })
+
     client.start()
 
     server.once('start', function () {
       // now do a scrape of everything by omitting the info_hash param
       get.concat(scrapeUrl, function (err, res, data) {
-        if (err) throw err
+        t.error(err)
 
         t.equal(res.statusCode, 200)
         data = bencode.decode(data)
@@ -191,10 +175,8 @@ test('server: all info_hash scrape (manual http request)', function (t) {
         t.equal(typeof data.files[binaryBitlove].incomplete, 'number')
         t.equal(typeof data.files[binaryBitlove].downloaded, 'number')
 
-        client.destroy()
-        server.close(function () {
-          t.end()
-        })
+        client.destroy(function () { t.pass('client destroyed') })
+        server.close(function () { t.pass('server closed') })
       })
     })
   })
