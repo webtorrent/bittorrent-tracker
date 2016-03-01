@@ -1,5 +1,5 @@
 var Client = require('../')
-var Server = require('../').Server
+var common = require('./common')
 var test = require('tape')
 
 var infoHash = '4cb67059ed6bd08362da625b3ae77f6f4a075705'
@@ -8,29 +8,18 @@ var peerId2 = new Buffer('12345678901234567890')
 var torrentLength = 50000
 
 function serverTest (t, serverType, serverFamily) {
-  t.plan(26)
+  t.plan(25)
 
-  var opts = serverType === 'http' ? { udp: false, ws: false } : { http: false, ws: false }
-  var server = new Server(opts)
-  var serverAddr = serverFamily === 'inet6' ? '[::1]' : '127.0.0.1'
-  var clientAddr = serverFamily === 'inet6' ? '[::1]' : '127.0.0.1'
-  var clientIp = serverFamily === 'inet6' ? '::1' : '127.0.0.1'
+  var hostname = serverFamily === 'inet6'
+    ? '[::1]'
+    : '127.0.0.1'
+  var clientIp = serverFamily === 'inet6'
+    ? '::1'
+    : '127.0.0.1'
 
-  server.on('error', function (err) {
-    t.fail(err.message)
-  })
-
-  server.on('warning', function (err) {
-    t.fail(err.message)
-  })
-
-  server.on('listening', function () {
-    t.pass('server listening')
-  })
-
-  server.listen(0, function () {
+  common.createServer(t, serverType, function (server) {
     var port = server[serverType].address().port
-    var announceUrl = serverType + '://' + serverAddr + ':' + port + '/announce'
+    var announceUrl = serverType + '://' + hostname + ':' + port + '/announce'
 
     var client1 = new Client(peerId, 6881, {
       infoHash: infoHash,
@@ -56,7 +45,7 @@ function serverTest (t, serverType, serverFamily) {
         t.equal(swarm.complete, 0)
         t.equal(swarm.incomplete, 1)
         t.equal(Object.keys(swarm.peers).length, 1)
-        t.deepEqual(swarm.peers[clientAddr + ':6881'], {
+        t.deepEqual(swarm.peers[hostname + ':6881'], {
           ip: clientIp,
           port: 6881,
           peerId: peerId.toString('hex'),
@@ -92,7 +81,7 @@ function serverTest (t, serverType, serverFamily) {
             })
 
             client2.once('peer', function (addr) {
-              t.ok(addr === clientAddr + ':6881' || addr === clientAddr + ':6882')
+              t.ok(addr === hostname + ':6881' || addr === hostname + ':6882')
 
               client2.stop()
               client2.once('update', function (data) {
