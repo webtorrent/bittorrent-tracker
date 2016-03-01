@@ -12,25 +12,13 @@ var peerId2 = new Buffer('12345678901234567890')
 var peerId3 = new Buffer('23456789012345678901')
 var port = 6881
 
-function mockWebSocketTracker (client) {
-  client._trackers[0]._generateOffers = function (numwant, cb) {
-    var offers = []
-    for (var i = 0; i < numwant; i++) {
-      offers.push({ fake_offer: 'fake_offer_' + i })
-    }
-    process.nextTick(function () {
-      cb(offers)
-    })
-  }
-}
-
 function testClientStart (t, serverType) {
   t.plan(4)
   common.createServer(t, serverType, function (server, announceUrl) {
     parsedTorrent.announce = [ announceUrl ]
     var client = new Client(peerId1, port, parsedTorrent, { wrtc: {} })
 
-    if (serverType === 'ws') mockWebSocketTracker(client)
+    if (serverType === 'ws') common.mockWebsocketTracker(client)
     client.on('error', function (err) { t.error(err) })
     client.on('warning', function (err) { t.error(err) })
 
@@ -70,7 +58,7 @@ function testClientStop (t, serverType) {
     parsedTorrent.announce = [ announceUrl ]
     var client = new Client(peerId1, port, parsedTorrent, { wrtc: {} })
 
-    if (serverType === 'ws') mockWebSocketTracker(client)
+    if (serverType === 'ws') common.mockWebsocketTracker(client)
     client.on('error', function (err) { t.error(err) })
     client.on('warning', function (err) { t.error(err) })
 
@@ -110,7 +98,7 @@ function testClientUpdate (t, serverType) {
     parsedTorrent.announce = [ announceUrl ]
     var client = new Client(peerId1, port, parsedTorrent, { wrtc: {} })
 
-    if (serverType === 'ws') mockWebSocketTracker(client)
+    if (serverType === 'ws') common.mockWebsocketTracker(client)
     client.on('error', function (err) { t.error(err) })
     client.on('warning', function (err) { t.error(err) })
 
@@ -157,7 +145,7 @@ function testClientScrape (t, serverType) {
     parsedTorrent.announce = [ announceUrl ]
     var client = new Client(peerId1, port, parsedTorrent, { wrtc: {} })
 
-    if (serverType === 'ws') mockWebSocketTracker(client)
+    if (serverType === 'ws') common.mockWebsocketTracker(client)
     client.on('error', function (err) { t.error(err) })
     client.on('warning', function (err) { t.error(err) })
 
@@ -198,7 +186,7 @@ function testClientAnnounceWithParams (t, serverType) {
       t.equal(params.testParam, 'this is a test')
     })
 
-    if (serverType === 'ws') mockWebSocketTracker(client)
+    if (serverType === 'ws') common.mockWebsocketTracker(client)
     client.on('error', function (err) { t.error(err) })
     client.on('warning', function (err) { t.error(err) })
 
@@ -248,7 +236,7 @@ function testClientGetAnnounceOpts (t, serverType) {
       t.equal(params.testParam, 'this is a test')
     })
 
-    if (serverType === 'ws') mockWebSocketTracker(client)
+    if (serverType === 'ws') common.mockWebsocketTracker(client)
     client.on('error', function (err) { t.error(err) })
     client.on('warning', function (err) { t.error(err) })
 
@@ -284,7 +272,7 @@ function testClientAnnounceWithNumWant (t, serverType) {
     parsedTorrent.announce = [ announceUrl ]
     var client1 = new Client(peerId1, port, parsedTorrent, { wrtc: {} })
 
-    if (serverType === 'ws') mockWebSocketTracker(client1)
+    if (serverType === 'ws') common.mockWebsocketTracker(client1)
     client1.on('error', function (err) { t.error(err) })
     client1.on('warning', function (err) { t.error(err) })
 
@@ -292,7 +280,7 @@ function testClientAnnounceWithNumWant (t, serverType) {
     client1.once('update', function () {
       var client2 = new Client(peerId2, port + 1, parsedTorrent, { wrtc: {} })
 
-      if (serverType === 'ws') mockWebSocketTracker(client2)
+      if (serverType === 'ws') common.mockWebsocketTracker(client2)
       client2.on('error', function (err) { t.error(err) })
       client2.on('warning', function (err) { t.error(err) })
 
@@ -300,7 +288,7 @@ function testClientAnnounceWithNumWant (t, serverType) {
       client2.once('update', function () {
         var client3 = new Client(peerId3, port + 2, parsedTorrent, { wrtc: {} })
 
-        if (serverType === 'ws') mockWebSocketTracker(client3)
+        if (serverType === 'ws') common.mockWebsocketTracker(client3)
         client3.on('error', function (err) { t.error(err) })
         client3.on('warning', function (err) { t.error(err) })
 

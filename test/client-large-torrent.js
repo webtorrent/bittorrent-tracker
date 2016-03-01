@@ -1,49 +1,29 @@
+var common = require('./common')
 var Client = require('../')
 var fs = require('fs')
 var parseTorrent = require('parse-torrent')
 var path = require('path')
-var Server = require('../').Server
 var test = require('tape')
 
 var torrent = fs.readFileSync(path.join(__dirname, 'torrents/sintel-5gb.torrent'))
 var parsedTorrent = parseTorrent(torrent)
 var peerId = new Buffer('01234567890123456789')
 
-test('large torrent: client.start()', function (t) {
-  t.plan(5)
+function testLargeTorrent (t, serverType) {
+  t.plan(4)
 
-  var server = new Server({ http: false, ws: false })
+  common.createServer(t, serverType, function (server, announceUrl) {
+    parsedTorrent.announce = [ announceUrl ]
+    var client = new Client(peerId, 6881, parsedTorrent, { wrtc: {} })
 
-  server.on('error', function (err) {
-    t.fail(err.message)
-  })
-
-  server.on('warning', function (err) {
-    t.fail(err.message)
-  })
-
-  server.listen(0, function () {
-    var port = server.udp.address().port
-
-    // remove all tracker servers except a single UDP one, for now
-    parsedTorrent.announce = [ 'udp://127.0.0.1:' + port ]
-
-    var client = new Client(peerId, 6881, parsedTorrent)
-
-    client.on('error', function (err) {
-      t.error(err)
-    })
+    if (serverType === 'ws') common.mockWebsocketTracker(client)
+    client.on('error', function (err) { t.error(err) })
+    client.on('warning', function (err) { t.error(err) })
 
     client.once('update', function (data) {
-      t.equal(data.announce, 'udp://127.0.0.1:' + port)
+      t.equal(data.announce, announceUrl)
       t.equal(typeof data.complete, 'number')
       t.equal(typeof data.incomplete, 'number')
-    })
-
-    client.start()
-
-    client.once('peer', function () {
-      t.pass('there is at least one peer')
 
       client.stop()
 
@@ -53,5 +33,19 @@ test('large torrent: client.start()', function (t) {
         client.destroy()
       })
     })
+
+    client.start()
   })
+}
+
+test('http: large torrent: client.start()', function (t) {
+  testLargeTorrent(t, 'http')
+})
+
+test('udp: large torrent: client.start()', function (t) {
+  testLargeTorrent(t, 'udp')
+})
+
+test('ws: large torrent: client.start()', function (t) {
+  testLargeTorrent(t, 'ws')
 })
