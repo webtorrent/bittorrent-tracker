@@ -1,5 +1,5 @@
-var common = require('./common')
 var Client = require('../')
+var common = require('./common')
 var fs = require('fs')
 var parseTorrent = require('parse-torrent')
 var path = require('path')
@@ -10,7 +10,7 @@ var parsedTorrent = parseTorrent(torrent)
 var peerId = new Buffer('01234567890123456789')
 
 function testLargeTorrent (t, serverType) {
-  t.plan(4)
+  t.plan(9)
 
   common.createServer(t, serverType, function (server, announceUrl) {
     parsedTorrent.announce = [ announceUrl ]
@@ -25,12 +25,23 @@ function testLargeTorrent (t, serverType) {
       t.equal(typeof data.complete, 'number')
       t.equal(typeof data.incomplete, 'number')
 
-      client.stop()
+      client.update()
 
-      client.once('update', function () {
-        t.pass('got response to stop')
-        server.close()
-        client.destroy()
+      client.once('update', function (data) {
+        t.equal(data.announce, announceUrl)
+        t.equal(typeof data.complete, 'number')
+        t.equal(typeof data.incomplete, 'number')
+
+        client.stop()
+
+        client.once('update', function (data) {
+          t.equal(data.announce, announceUrl)
+          t.equal(typeof data.complete, 'number')
+          t.equal(typeof data.incomplete, 'number')
+
+          server.close()
+          client.destroy()
+        })
       })
     })
 
