@@ -1,53 +1,32 @@
 var Client = require('../')
+var common = require('./common')
 var magnet = require('magnet-uri')
-var Server = require('../').Server
 var test = require('tape')
 
 var uri = 'magnet:?xt=urn:btih:d2474e86c95b19b8bcfdb92bc12c9d44667cfa36&dn=Leaves+of+Grass+by+Walt+Whitman.epub'
 var parsedTorrent = magnet(uri)
 var peerId = new Buffer('01234567890123456789')
 
-test('magnet + udp: client.start/update/stop()', function (t) {
-  t.plan(10)
+function testMagnet (t, serverType) {
+  t.plan(9)
 
-  var server = new Server({ http: false, ws: false })
-
-  server.on('error', function (err) {
-    t.fail(err.message)
-  })
-
-  server.on('warning', function (err) {
-    t.fail(err.message)
-  })
-
-  server.listen(0, function () {
-    var port = server.udp.address().port
-    var announceUrl = 'udp://127.0.0.1:' + port
-
-    // remove all tracker servers except a single UDP one
+  common.createServer(t, serverType, function (server, announceUrl) {
     parsedTorrent.announce = [ announceUrl ]
 
-    var client = new Client(peerId, 6881, parsedTorrent)
+    var client = new Client(peerId, 6881, parsedTorrent, { wrtc: {} })
 
-    client.on('error', function (err) {
-      t.error(err)
-    })
+    if (serverType === 'ws') common.mockWebsocketTracker(client)
+    client.on('error', function (err) { t.error(err) })
+    client.on('warning', function (err) { t.error(err) })
 
     client.once('update', function (data) {
       t.equal(data.announce, announceUrl)
       t.equal(typeof data.complete, 'number')
       t.equal(typeof data.incomplete, 'number')
-    })
-
-    client.start()
-
-    client.once('peer', function () {
-      t.pass('there is at least one peer')
 
       client.update()
 
       client.once('update', function (data) {
-        // receive one final update after calling stop
         t.equal(data.announce, announceUrl)
         t.equal(typeof data.complete, 'number')
         t.equal(typeof data.incomplete, 'number')
@@ -55,7 +34,6 @@ test('magnet + udp: client.start/update/stop()', function (t) {
         client.stop()
 
         client.once('update', function (data) {
-          // received an update!
           t.equal(data.announce, announceUrl)
           t.equal(typeof data.complete, 'number')
           t.equal(typeof data.incomplete, 'number')
@@ -65,5 +43,19 @@ test('magnet + udp: client.start/update/stop()', function (t) {
         })
       })
     })
+
+    client.start()
   })
+}
+
+test('http: magnet: client.start/update/stop()', function (t) {
+  testMagnet(t, 'http')
+})
+
+test('udp: magnet: client.start/update/stop()', function (t) {
+  testMagnet(t, 'udp')
+})
+
+test('ws: magnet: client.start/update/stop()', function (t) {
+  testMagnet(t, 'ws')
 })
