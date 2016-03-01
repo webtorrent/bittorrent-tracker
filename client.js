@@ -273,6 +273,5 @@ Client.prototype._defaultAnnounceOpts = function (opts) {
   }
 
   if (self._getAnnounceOpts) opts = extend(opts, self._getAnnounceOpts())
-
   return opts
 }

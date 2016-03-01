@@ -16,7 +16,7 @@ function mockWebSocketTracker (client) {
   client._trackers[0]._generateOffers = function (numwant, cb) {
     var offers = []
     for (var i = 0; i < numwant; i++) {
-      offers.push('fake_offer_' + i)
+      offers.push({ fake_offer: 'fake_offer_' + i })
     }
     process.nextTick(function () {
       cb(offers)
@@ -187,6 +187,96 @@ test('udp: client.scrape()', function (t) {
 // test('ws: client.scrape()', function (t) {
 //   testClientScrape(t, 'ws')
 // })
+
+function testClientAnnounceWithParams (t, serverType) {
+  t.plan(5)
+  common.createServer(t, serverType, function (server, announceUrl) {
+    parsedTorrent.announce = [ announceUrl ]
+    var client = new Client(peerId1, port, parsedTorrent, { wrtc: {} })
+
+    server.on('start', function (peer, params) {
+      t.equal(params.testParam, 'this is a test')
+    })
+
+    if (serverType === 'ws') mockWebSocketTracker(client)
+    client.on('error', function (err) { t.error(err) })
+    client.on('warning', function (err) { t.error(err) })
+
+    client.once('update', function (data) {
+      t.equal(data.announce, announceUrl)
+      t.equal(typeof data.complete, 'number')
+      t.equal(typeof data.incomplete, 'number')
+
+      client.stop()
+
+      client.once('update', function () {
+        t.pass('got response to stop')
+        server.close()
+        client.destroy()
+      })
+    })
+
+    client.start({
+      testParam: 'this is a test'
+    })
+  })
+}
+
+test('http: client.announce() with params', function (t) {
+  testClientAnnounceWithParams(t, 'http')
+})
+
+test('ws: client.announce() with params', function (t) {
+  testClientAnnounceWithParams(t, 'ws')
+})
+
+function testClientGetAnnounceOpts (t, serverType) {
+  t.plan(5)
+  common.createServer(t, serverType, function (server, announceUrl) {
+    parsedTorrent.announce = [ announceUrl ]
+    var opts = {
+      getAnnounceOpts: function () {
+        return {
+          testParam: 'this is a test'
+        }
+      },
+      wrtc: {}
+    }
+    var client = new Client(peerId1, port, parsedTorrent, opts)
+
+    server.on('start', function (peer, params) {
+      t.equal(params.testParam, 'this is a test')
+    })
+
+    if (serverType === 'ws') mockWebSocketTracker(client)
+    client.on('error', function (err) { t.error(err) })
+    client.on('warning', function (err) { t.error(err) })
+
+    client.once('update', function (data) {
+      t.equal(data.announce, announceUrl)
+      t.equal(typeof data.complete, 'number')
+      t.equal(typeof data.incomplete, 'number')
+
+      client.stop()
+
+      client.once('update', function () {
+        t.pass('got response to stop')
+        server.close()
+        client.destroy()
+      })
+    })
+
+    client.start()
+  })
+}
+
+test('http: client `opts.getAnnounceOpts`', function (t) {
+  testClientGetAnnounceOpts(t, 'http')
+})
+
+test('ws: client `opts.getAnnounceOpts`', function (t) {
+  testClientGetAnnounceOpts(t, 'ws')
+})
 
 function testClientAnnounceWithNumWant (t, serverType) {
   t.plan(4)
