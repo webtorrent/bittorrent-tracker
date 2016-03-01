@@ -255,7 +255,3 @@ test('http: client announce with numwant', function (t) {
 test('udp: client announce with numwant', function (t) {
   testClientAnnounceWithNumWant(t, 'udp')
 })
-
-test('ws: client announce with numwant', function (t) {
-  testClientAnnounceWithNumWant(t, 'ws')
-})
