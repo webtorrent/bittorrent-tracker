@@ -311,8 +311,7 @@ Server.prototype._onWebSocketRequest = function (socket, params) {
     params = parseWebSocketRequest(socket, params)
   } catch (err) {
     socket.send(JSON.stringify({
-      'failure reason': err.message,
-      info_hash: common.hexToBinary(params.info_hash)
+      'failure reason': err.message
     }), socket.onSend)
 
     // even though it's an error for the client, it's just a warning for the server.
