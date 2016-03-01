@@ -1,23 +1,25 @@
 var Server = require('../').Server
 
-exports.createServer = function (t, serverType, cb) {
-  var server = new Server({
-    http: serverType === 'http',
-    udp: serverType === 'udp',
-    ws: serverType === 'ws'
-  })
+exports.createServer = function (t, opts, cb) {
+  if (typeof opts === 'string') opts = { serverType: opts }
+
+  opts.http = (opts.serverType === 'http')
+  opts.udp = (opts.serverType === 'udp')
+  opts.ws = (opts.serverType === 'ws')
+
+  var server = new Server(opts)
 
   server.on('error', function (err) { t.error(err) })
   server.on('warning', function (err) { t.error(err) })
 
   server.listen(0, function () {
-    var port = server[serverType].address().port
+    var port = server[opts.serverType].address().port
     var announceUrl
-    if (serverType === 'http') {
+    if (opts.serverType === 'http') {
       announceUrl = 'http://127.0.0.1:' + port + '/announce'
-    } else if (serverType === 'udp') {
+    } else if (opts.serverType === 'udp') {
       announceUrl = 'udp://127.0.0.1:' + port
-    } else if (serverType === 'ws') {
+    } else if (opts.serverType === 'ws') {
       announceUrl = 'ws://127.0.0.1:' + port
     }
 

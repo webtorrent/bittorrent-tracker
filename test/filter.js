@@ -1,8 +1,8 @@
 var Client = require('../')
+var common = require('./common')
 var fs = require('fs')
 var parseTorrent = require('parse-torrent')
 var path = require('path')
-var Server = require('../').Server
 var test = require('tape')
 
 var bitlove = fs.readFileSync(path.join(__dirname, 'torrents/bitlove-intro.torrent'))
@@ -15,55 +15,38 @@ var peerId = new Buffer('01234567890123456789')
 
 function testFilterOption (t, serverType) {
   t.plan(8)
-  var opts = serverType === 'http' ? { udp: false, ws: false } : { http: false, ws: false }
+
+  var opts = { serverType: serverType } // this is test-suite-only option
   opts.filter = function (infoHash, params, cb) {
     process.nextTick(function () {
       cb(infoHash !== parsedBitlove.infoHash)
     })
   }
-  var server = new Server(opts)
 
-  server.on('error', function (err) {
-    t.error(err)
-  })
-
-  server.listen(0, function () {
-    var port = server[serverType].address().port
-    var announceUrl = serverType === 'http'
-      ? 'http://127.0.0.1:' + port + '/announce'
-      : 'udp://127.0.0.1:' + port
-
+  common.createServer(t, opts, function (server, announceUrl) {
     parsedBitlove.announce = [ announceUrl ]
     parsedLeaves.announce = [ announceUrl ]
 
-    var client = new Client(peerId, port, parsedBitlove)
+    var client = new Client(peerId, 6881, parsedBitlove, { wrtc: {} })
 
-    client.on('error', function (err) {
-      t.error(err)
-    })
+    client.on('error', function (err) { t.error(err) })
+    if (serverType === 'ws') common.mockWebsocketTracker(client)
 
     client.once('warning', function (err) {
       t.ok(/disallowed info_hash/.test(err.message), 'got client warning')
 
       client.destroy(function () {
         t.pass('client destroyed')
-        client = new Client(peerId, port, parsedLeaves)
+        client = new Client(peerId, 6881, parsedLeaves, { wrtc: {} })
+        if (serverType === 'ws') common.mockWebsocketTracker(client)
 
-        client.on('error', function (err) {
-          t.error(err)
-        })
-        client.on('warning', function (err) {
-          t.error(err)
-        })
+        client.on('error', function (err) { t.error(err) })
+        client.on('warning', function (err) { t.error(err) })
 
         client.on('update', function () {
           t.pass('got announce')
-          client.destroy(function () {
-            t.pass('client destroyed')
-          })
-          server.close(function () {
-            t.pass('server closed')
-          })
+          client.destroy(function () { t.pass('client destroyed') })
+          server.close(function () { t.pass('server closed') })
         })
 
         server.on('start', function () {
@@ -74,6 +57,7 @@ function testFilterOption (t, serverType) {
       })
     })
 
+    server.removeAllListeners('warning')
     server.once('warning', function (err) {
       t.ok(/disallowed info_hash/.test(err.message), 'got server warning')
       t.equal(Object.keys(server.torrents).length, 0)
@@ -91,58 +75,45 @@ test('udp: filter option blocks tracker from tracking torrent', function (t) {
   testFilterOption(t, 'udp')
 })
 
+test('ws: filter option blocks tracker from tracking torrent', function (t) {
+  testFilterOption(t, 'ws')
+})
+
 function testFilterCustomError (t, serverType) {
   t.plan(8)
-  var opts = serverType === 'http' ? { udp: false, ws: false } : { http: false, ws: false }
+
+  var opts = { serverType: serverType } // this is test-suite-only option
   opts.filter = function (infoHash, params, cb) {
     process.nextTick(function () {
       if (infoHash === parsedBitlove.infoHash) cb(new Error('bitlove blocked'))
       else cb(true)
     })
   }
-  var server = new Server(opts)
 
-  server.on('error', function (err) {
-    t.error(err)
-  })
-
-  server.listen(0, function () {
-    var port = server[serverType].address().port
-    var announceUrl = serverType === 'http'
-      ? 'http://127.0.0.1:' + port + '/announce'
-      : 'udp://127.0.0.1:' + port
-
+  common.createServer(t, opts, function (server, announceUrl) {
     parsedBitlove.announce = [ announceUrl ]
     parsedLeaves.announce = [ announceUrl ]
 
-    var client = new Client(peerId, port, parsedBitlove)
+    var client = new Client(peerId, 6881, parsedBitlove, { wrtc: {} })
 
-    client.on('error', function (err) {
-      t.error(err)
-    })
+    client.on('error', function (err) { t.error(err) })
+    if (serverType === 'ws') common.mockWebsocketTracker(client)
 
     client.once('warning', function (err) {
       t.ok(/bitlove blocked/.test(err.message), 'got client warning')
 
       client.destroy(function () {
         t.pass('client destroyed')
-        client = new Client(peerId, port, parsedLeaves)
+        client = new Client(peerId, 6881, parsedLeaves, { wrtc: {} })
+        if (serverType === 'ws') common.mockWebsocketTracker(client)
 
-        client.on('error', function (err) {
-          t.error(err)
-        })
-        client.on('warning', function (err) {
-          t.error(err)
-        })
+        client.on('error', function (err) { t.error(err) })
+        client.on('warning', function (err) { t.error(err) })
 
         client.on('update', function () {
           t.pass('got announce')
-          client.destroy(function () {
-            t.pass('client destroyed')
-          })
-          server.close(function () {
-            t.pass('server closed')
-          })
+          client.destroy(function () { t.pass('client destroyed') })
+          server.close(function () { t.pass('server closed') })
         })
 
         server.on('start', function () {
@@ -153,6 +124,7 @@ function testFilterCustomError (t, serverType) {
       })
     })
 
+    server.removeAllListeners('warning')
     server.once('warning', function (err) {
       t.ok(/bitlove blocked/.test(err.message), 'got server warning')
       t.equal(Object.keys(server.torrents).length, 0)
@@ -168,4 +140,8 @@ test('http: filter option with custom error', function (t) {
 
 test('udp: filter option filter option with custom error', function (t) {
   testFilterCustomError(t, 'udp')
+})
+
+test('ws: filter option filter option with custom error', function (t) {
+  testFilterCustomError(t, 'ws')
 })
