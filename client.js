@@ -21,13 +21,13 @@ inherits(Client, EventEmitter)
  *
  * Find torrent peers, to help a torrent client participate in a torrent swarm.
  *
- * @param {string|Buffer} peerId         peer id
- * @param {Number} port                  torrent client listening port
- * @param {Object} torrent               parsed torrent
- * @param {Object} opts                  options object
- * @param {Number} opts.rtcConfig        RTCPeerConnection configuration object
- * @param {Number} opts.wrtc             custom webrtc implementation
- * @param {Object} opts.getAnnounceOpts  callback to provide data to tracker
+ * @param {string|Buffer} peerId           peer id
+ * @param {Number} port                    torrent client listening port
+ * @param {Object} torrent                 parsed torrent
+ * @param {Object} opts                    options object
+ * @param {Number} opts.rtcConfig          RTCPeerConnection configuration object
+ * @param {Number} opts.wrtc               custom webrtc impl (useful in node.js)
+ * @param {function} opts.getAnnounceOpts  callback to provide data to tracker
  */
 function Client (peerId, port, torrent, opts) {
   var self = this

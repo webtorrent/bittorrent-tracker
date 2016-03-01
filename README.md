@@ -58,6 +58,22 @@ var parsedTorrent = parseTorrent(torrent) // { infoHash: 'xxx', length: xx, anno
 var peerId = new Buffer('01234567890123456789')
 var port = 6881
 
+// optional options dictionary
+var opts = {
+  rtcConfig: {}, // RTCPeerConnection configuration object
+  wrtc: {}, // custom webrtc impl (useful in node.js)
+  getAnnounceOpts: function () {
+    // provide a callback that will be called whenever announce() is called
+    // internally (on timer), or by the user
+    return {
+      uploaded: 0,
+      downloaded: 0,
+      left: 0,
+      customParam: 'blah' // custom parameters supported
+    }
+  }
+}
+
 var client = new Client(peerId, port, parsedTorrent)
 
 client.on('error', function (err) {
@@ -88,6 +104,14 @@ client.complete()
 
 // force a tracker announce. will trigger more 'update' events and maybe more 'peer' events
 client.update()
+
+// provide parameters to the tracker
+client.update({
+  uploaded: 0,
+  downloaded: 0,
+  left: 0,
+  customParam: 'blah' // custom parameters supported
+})
 
 // stop getting peers from the tracker, gracefully leave the swarm
 client.stop()
