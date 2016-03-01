@@ -60,8 +60,10 @@ var port = 6881
 
 // optional options dictionary
 var opts = {
-  rtcConfig: {}, // RTCPeerConnection configuration object
-  wrtc: {}, // custom webrtc impl (useful in node.js)
+  // RTCPeerConnection config object (only used in browser)
+  rtcConfig: {},
+  // custom webrtc impl, useful in node to specify [wrtc](https://npmjs.com/package/wrtc)
+  wrtc: {},
   getAnnounceOpts: function () {
     // provide a callback that will be called whenever announce() is called
     // internally (on timer), or by the user
