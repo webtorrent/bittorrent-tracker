@@ -294,21 +294,23 @@ Server.prototype.onUdpRequest = function (msg, rinfo) {
   })
 }
 
-Server.prototype.onWebSocketConnection = function (socket) {
+Server.prototype.onWebSocketConnection = function (socket, opts) {
   var self = this
+  if (!opts) opts = {}
+  opts.trustProxy = opts.trustProxy || self._trustProxy
   socket.peerId = null // as hex
   socket.infoHashes = []
   socket.onSend = self._onWebSocketSend.bind(self, socket)
-  socket.on('message', self._onWebSocketRequest.bind(self, socket))
+  socket.on('message', self._onWebSocketRequest.bind(self, socket, opts))
   socket.on('error', self._onWebSocketError.bind(self, socket))
   socket.on('close', self._onWebSocketClose.bind(self, socket))
 }
 
-Server.prototype._onWebSocketRequest = function (socket, params) {
+Server.prototype._onWebSocketRequest = function (socket, opts, params) {
   var self = this
 
   try {
-    params = parseWebSocketRequest(socket, params)
+    params = parseWebSocketRequest(socket, opts, params)
   } catch (err) {
     socket.send(JSON.stringify({
       'failure reason': err.message
