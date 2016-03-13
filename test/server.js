@@ -1,6 +1,7 @@
 var Client = require('../')
 var common = require('./common')
 var test = require('tape')
+var wrtc = require('wrtc')
 
 var infoHash = '4cb67059ed6bd08362da625b3ae77f6f4a075705'
 var peerId = new Buffer('01234567890123456789')
@@ -25,7 +26,7 @@ function serverTest (t, serverType, serverFamily) {
       infoHash: infoHash,
       length: torrentLength,
       announce: [ announceUrl ]
-    })
+    }, { wrtc: wrtc })
 
     client1.start()
 
@@ -45,14 +46,19 @@ function serverTest (t, serverType, serverFamily) {
         t.equal(swarm.complete, 0)
         t.equal(swarm.incomplete, 1)
         t.equal(Object.keys(swarm.peers).length, 1)
-        t.deepEqual(swarm.peers[hostname + ':6881'], {
-          type: serverType,
-          ip: clientIp,
-          port: 6881,
-          peerId: peerId.toString('hex'),
-          complete: false,
-          socket: undefined
-        })
+
+        if (serverType !== 'ws') {
+          t.deepEqual(swarm.peers[hostname + ':6881'], {
+            type: serverType,
+            ip: clientIp,
+            port: 6881,
+            peerId: peerId.toString('hex'),
+            complete: false,
+            socket: undefined
+          })
+        } else {
+          t.equal(swarm.peers[peerId.toString('hex')].complete, false)
+        }
 
         client1.complete()
 
@@ -73,7 +79,7 @@ function serverTest (t, serverType, serverFamily) {
               infoHash: infoHash,
               length: torrentLength,
               announce: [ announceUrl ]
-            })
+            }, { wrtc: wrtc })
 
             client2.start()
 
@@ -82,7 +88,7 @@ function serverTest (t, serverType, serverFamily) {
             })
 
             client2.once('peer', function (addr) {
-              t.ok(addr === hostname + ':6881' || addr === hostname + ':6882')
+              t.ok(addr === hostname + ':6881' || addr === hostname + ':6882' || addr.id === peerId.toString('hex'))
 
               client2.stop()
               client2.once('update', function (data) {
@@ -108,6 +114,10 @@ function serverTest (t, serverType, serverFamily) {
     })
   })
 }
+
+test('websocket server', function (t) {
+  serverTest(t, 'ws', 'inet')
+})
 
 test('http ipv4 server', function (t) {
   serverTest(t, 'http', 'inet')

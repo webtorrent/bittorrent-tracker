@@ -45,7 +45,8 @@
     "magnet-uri": "^5.0.0",
     "parse-torrent": "^5.0.0",
     "standard": "^6.0.4",
-    "tape": "^4.0.0"
+    "tape": "^4.0.0",
+    "wrtc": "0.0.59"
   },
   "keywords": [
     "bittorrent",
