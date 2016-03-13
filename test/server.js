@@ -46,6 +46,7 @@ function serverTest (t, serverType, serverFamily) {
         t.equal(swarm.incomplete, 1)
         t.equal(Object.keys(swarm.peers).length, 1)
         t.deepEqual(swarm.peers[hostname + ':6881'], {
+          type: serverType,
           ip: clientIp,
           port: 6881,
           peerId: peerId.toString('hex'),
