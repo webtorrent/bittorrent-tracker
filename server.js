@@ -327,6 +327,7 @@ Server.prototype._onWebSocketRequest = function (socket, opts, params) {
   self._onRequest(params, function (err, response) {
     if (err) {
       socket.send(JSON.stringify({
+        action: params.action,
         'failure reason': err.message,
         info_hash: common.hexToBinary(params.info_hash)
       }), socket.onSend)
@@ -336,9 +337,14 @@ Server.prototype._onWebSocketRequest = function (socket, opts, params) {
     }
     if (self.destroyed) return
 
-    if (socket.infoHashes.indexOf(params.info_hash) === -1) {
-      socket.infoHashes.push(params.info_hash)
-    }
+    var hashes
+    if (typeof params.info_hash === 'string') hashes = [ params.info_hash ]
+    else hashes = params.info_hash
+    hashes.forEach(function (info_hash) {
+      if (socket.infoHashes.indexOf(info_hash) === -1) {
+        socket.infoHashes.push(info_hash)
+      }
+    })
 
     var peers = response.peers
     delete response.peers
