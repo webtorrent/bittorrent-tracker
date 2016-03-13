@@ -42,6 +42,7 @@
     "xtend": "^4.0.0"
   },
   "devDependencies": {
+    "electron-webrtc": "^0.1.0",
     "magnet-uri": "^5.0.0",
     "parse-torrent": "^5.0.0",
     "standard": "^6.0.4",
