@@ -86,7 +86,7 @@ function Client (peerId, port, torrent, opts) {
         return new HTTPTracker(self, announceUrl)
       } else if (protocol === 'udp:' && typeof UDPTracker === 'function') {
         return new UDPTracker(self, announceUrl)
-      } else if (((protocol === 'ws:') || protocol === 'wss:') && webrtcSupport) {
+      } else if ((protocol === 'ws:' || protocol === 'wss:') && webrtcSupport) {
         // Don't try to add http tracker on an https website
         if (protocol === 'ws:' && location && location.protocol && location.protocol === 'https:') {
           process.nextTick(function () {
