@@ -1,7 +1,7 @@
 var Client = require('../')
 var common = require('./common')
 var test = require('tape')
-var wrtc = require('wrtc')
+var wrtc = require('electron-webrtc')()
 
 var infoHash = '4cb67059ed6bd08362da625b3ae77f6f4a075705'
 var peerId = new Buffer('01234567890123456789')
