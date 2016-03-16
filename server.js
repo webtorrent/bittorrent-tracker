@@ -327,7 +327,7 @@ Server.prototype._onWebSocketRequest = function (socket, opts, params) {
   self._onRequest(params, function (err, response) {
     if (err) {
       socket.send(JSON.stringify({
-        action: params.action,
+        action: params.action === common.ACTIONS.ANNOUNCE ? 'announce' : 'scrape',
         'failure reason': err.message,
         info_hash: common.hexToBinary(params.info_hash)
       }), socket.onSend)
@@ -337,22 +337,18 @@ Server.prototype._onWebSocketRequest = function (socket, opts, params) {
     }
     if (self.destroyed) return
 
-    var hashes
-    if (typeof params.info_hash === 'string') hashes = [ params.info_hash ]
-    else hashes = params.info_hash
-    hashes.forEach(function (info_hash) {
-      if (socket.infoHashes.indexOf(info_hash) === -1) {
-        socket.infoHashes.push(info_hash)
-      }
-    })
+    response.action = params.action === common.ACTIONS.ANNOUNCE ? 'announce' : 'scrape'
 
-    var peers = response.peers
-    delete response.peers
+    var peers
+    if (response.action === 'announce') {
+      peers = response.peers
+      delete response.peers
 
-    // WebSocket tracker should have a shorter interval – default: 2 minutes
-    response.interval = Math.ceil(self.intervalMs / 1000 / 5)
+      response.info_hash = common.hexToBinary(params.info_hash)
 
-    response.info_hash = common.hexToBinary(params.info_hash)
+      // WebSocket tracker should have a shorter interval – default: 2 minutes
+      response.interval = Math.ceil(self.intervalMs / 1000 / 5)
+    }
 
     socket.send(JSON.stringify(response), socket.onSend)
     debug('sent response %s to %s', JSON.stringify(response), params.peer_id)
