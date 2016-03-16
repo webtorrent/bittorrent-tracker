@@ -1,33 +1,29 @@
 var Client = require('../')
 var common = require('./common')
-var fs = require('fs')
-var parseTorrent = require('parse-torrent')
-var path = require('path')
+var extend = require('xtend')
+var fixtures = require('webtorrent-fixtures')
 var test = require('tape')
-
-var bitlove = fs.readFileSync(path.join(__dirname, 'torrents/bitlove-intro.torrent'))
-var parsedBitlove = parseTorrent(bitlove)
-
-var leaves = fs.readFileSync(path.join(__dirname, 'torrents/leaves.torrent'))
-var parsedLeaves = parseTorrent(leaves)
 
 var peerId = new Buffer('01234567890123456789')
 
 function testFilterOption (t, serverType) {
   t.plan(8)
 
+  var parsedAlice = extend(fixtures.alice.parsedTorrent)
+  var parsedLeaves = extend(fixtures.leaves.parsedTorrent)
+
   var opts = { serverType: serverType } // this is test-suite-only option
   opts.filter = function (infoHash, params, cb) {
     process.nextTick(function () {
-      cb(infoHash !== parsedBitlove.infoHash)
+      cb(infoHash !== parsedAlice.infoHash)
     })
   }
 
   common.createServer(t, opts, function (server, announceUrl) {
-    parsedBitlove.announce = [ announceUrl ]
+    parsedAlice.announce = [ announceUrl ]
     parsedLeaves.announce = [ announceUrl ]
 
-    var client = new Client(peerId, 6881, parsedBitlove, { wrtc: {} })
+    var client = new Client(peerId, 6881, parsedAlice, { wrtc: {} })
 
     client.on('error', function (err) { t.error(err) })
     if (serverType === 'ws') common.mockWebsocketTracker(client)
@@ -82,25 +78,28 @@ test('ws: filter option blocks tracker from tracking torrent', function (t) {
 function testFilterCustomError (t, serverType) {
   t.plan(8)
 
+  var parsedLeaves = extend(fixtures.leaves.parsedTorrent)
+  var parsedAlice = extend(fixtures.alice.parsedTorrent)
+
   var opts = { serverType: serverType } // this is test-suite-only option
   opts.filter = function (infoHash, params, cb) {
     process.nextTick(function () {
-      if (infoHash === parsedBitlove.infoHash) cb(new Error('bitlove blocked'))
+      if (infoHash === parsedAlice.infoHash) cb(new Error('alice blocked'))
       else cb(true)
     })
   }
 
   common.createServer(t, opts, function (server, announceUrl) {
-    parsedBitlove.announce = [ announceUrl ]
+    parsedAlice.announce = [ announceUrl ]
     parsedLeaves.announce = [ announceUrl ]
 
-    var client = new Client(peerId, 6881, parsedBitlove, { wrtc: {} })
+    var client = new Client(peerId, 6881, parsedAlice, { wrtc: {} })
 
     client.on('error', function (err) { t.error(err) })
     if (serverType === 'ws') common.mockWebsocketTracker(client)
 
     client.once('warning', function (err) {
-      t.ok(/bitlove blocked/.test(err.message), 'got client warning')
+      t.ok(/alice blocked/.test(err.message), 'got client warning')
 
       client.destroy(function () {
         t.pass('client destroyed')
@@ -126,7 +125,7 @@ function testFilterCustomError (t, serverType) {
 
     server.removeAllListeners('warning')
     server.once('warning', function (err) {
-      t.ok(/bitlove blocked/.test(err.message), 'got server warning')
+      t.ok(/alice blocked/.test(err.message), 'got server warning')
       t.equal(Object.keys(server.torrents).length, 0)
     })
 

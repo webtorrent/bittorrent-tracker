@@ -1,12 +1,9 @@
 var Client = require('../')
 var common = require('./common')
-var fs = require('fs')
-var parseTorrent = require('parse-torrent')
-var path = require('path')
+var extend = require('xtend')
+var fixtures = require('webtorrent-fixtures')
 var test = require('tape')
 
-var torrent = fs.readFileSync(path.join(__dirname, 'torrents/bitlove-intro.torrent'))
-var parsedTorrent = parseTorrent(torrent)
 var peerId1 = new Buffer('01234567890123456789')
 var peerId2 = new Buffer('12345678901234567890')
 var peerId3 = new Buffer('23456789012345678901')
@@ -14,6 +11,9 @@ var port = 6881
 
 function testClientStart (t, serverType) {
   t.plan(4)
+
+  var parsedTorrent = extend(fixtures.leaves.parsedTorrent)
+
   common.createServer(t, serverType, function (server, announceUrl) {
     parsedTorrent.announce = [ announceUrl ]
     var client = new Client(peerId1, port, parsedTorrent, { wrtc: {} })
@@ -54,6 +54,9 @@ test('ws: client.start()', function (t) {
 
 function testClientStop (t, serverType) {
   t.plan(3)
+
+  var parsedTorrent = extend(fixtures.leaves.parsedTorrent)
+
   common.createServer(t, serverType, function (server, announceUrl) {
     parsedTorrent.announce = [ announceUrl ]
     var client = new Client(peerId1, port, parsedTorrent, { wrtc: {} })
@@ -94,6 +97,9 @@ test('ws: client.stop()', function (t) {
 
 function testClientUpdate (t, serverType) {
   t.plan(4)
+
+  var parsedTorrent = extend(fixtures.leaves.parsedTorrent)
+
   common.createServer(t, serverType, function (server, announceUrl) {
     parsedTorrent.announce = [ announceUrl ]
     var client = new Client(peerId1, port, parsedTorrent, { wrtc: {} })
@@ -141,6 +147,9 @@ test('ws: client.update()', function (t) {
 
 function testClientScrape (t, serverType) {
   t.plan(4)
+
+  var parsedTorrent = extend(fixtures.leaves.parsedTorrent)
+
   common.createServer(t, serverType, function (server, announceUrl) {
     parsedTorrent.announce = [ announceUrl ]
     var client = new Client(peerId1, port, parsedTorrent, { wrtc: {} })
@@ -178,6 +187,9 @@ test('udp: client.scrape()', function (t) {
 
 function testClientAnnounceWithParams (t, serverType) {
   t.plan(5)
+
+  var parsedTorrent = extend(fixtures.leaves.parsedTorrent)
+
   common.createServer(t, serverType, function (server, announceUrl) {
     parsedTorrent.announce = [ announceUrl ]
     var client = new Client(peerId1, port, parsedTorrent, { wrtc: {} })
@@ -220,6 +232,9 @@ test('ws: client.announce() with params', function (t) {
 
 function testClientGetAnnounceOpts (t, serverType) {
   t.plan(5)
+
+  var parsedTorrent = extend(fixtures.leaves.parsedTorrent)
+
   common.createServer(t, serverType, function (server, announceUrl) {
     parsedTorrent.announce = [ announceUrl ]
     var opts = {
@@ -268,6 +283,9 @@ test('ws: client `opts.getAnnounceOpts`', function (t) {
 
 function testClientAnnounceWithNumWant (t, serverType) {
   t.plan(4)
+
+  var parsedTorrent = extend(fixtures.leaves.parsedTorrent)
+
   common.createServer(t, serverType, function (server, announceUrl) {
     parsedTorrent.announce = [ announceUrl ]
     var client1 = new Client(peerId1, port, parsedTorrent, { wrtc: {} })

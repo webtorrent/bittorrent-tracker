@@ -1,16 +1,15 @@
 var Client = require('../')
 var common = require('./common')
-var fs = require('fs')
-var parseTorrent = require('parse-torrent')
-var path = require('path')
+var extend = require('xtend')
+var fixtures = require('webtorrent-fixtures')
 var test = require('tape')
 
-var torrent = fs.readFileSync(path.join(__dirname, 'torrents/sintel-5gb.torrent'))
-var parsedTorrent = parseTorrent(torrent)
 var peerId = new Buffer('01234567890123456789')
 
 function testLargeTorrent (t, serverType) {
   t.plan(9)
+
+  var parsedTorrent = extend(fixtures.sintel.parsedTorrent)
 
   common.createServer(t, serverType, function (server, announceUrl) {
     parsedTorrent.announce = [ announceUrl ]

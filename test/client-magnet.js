@@ -1,14 +1,15 @@
 var Client = require('../')
 var common = require('./common')
+var fixtures = require('webtorrent-fixtures')
 var magnet = require('magnet-uri')
 var test = require('tape')
 
-var uri = 'magnet:?xt=urn:btih:d2474e86c95b19b8bcfdb92bc12c9d44667cfa36&dn=Leaves+of+Grass+by+Walt+Whitman.epub'
-var parsedTorrent = magnet(uri)
 var peerId = new Buffer('01234567890123456789')
 
 function testMagnet (t, serverType) {
   t.plan(9)
+
+  var parsedTorrent = magnet(fixtures.leaves.magnetURI)
 
   common.createServer(t, serverType, function (server, announceUrl) {
     parsedTorrent.announce = [ announceUrl ]

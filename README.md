@@ -52,7 +52,7 @@ var Client = require('bittorrent-tracker')
 var parseTorrent = require('parse-torrent')
 var fs = require('fs')
 
-var torrent = fs.readFileSync(__dirname + '/torrents/bitlove-intro.torrent')
+var torrent = fs.readFileSync(__dirname + '/torrents/name.torrent')
 var parsedTorrent = parseTorrent(torrent) // { infoHash: 'xxx', length: xx, announce: ['xx', 'xx'] }
 
 var peerId = new Buffer('01234567890123456789')
