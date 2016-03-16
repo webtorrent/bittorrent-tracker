@@ -64,6 +64,7 @@
     "url": "git://github.com/feross/bittorrent-tracker.git"
   },
   "scripts": {
+    "update-authors": "./bin/update-authors.sh",
     "test": "standard && tape test/*.js"
   }
 }
