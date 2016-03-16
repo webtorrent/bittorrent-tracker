@@ -87,6 +87,14 @@ function Client (peerId, port, torrent, opts) {
       } else if (protocol === 'udp:' && typeof UDPTracker === 'function') {
         return new UDPTracker(self, announceUrl)
       } else if ((protocol === 'ws:' || protocol === 'wss:') && webrtcSupport) {
+        // Don't try to add http tracker on an https website
+        if (protocol === 'ws:' && location && location.protocol && location.protocol === 'https:') {
+          process.nextTick(function () {
+            var err = new Error('unsupported http tracker on https: ' + announceUrl)
+            self.emit('warning', err)
+          })
+          return null
+        }
         return new WebSocketTracker(self, announceUrl)
       } else {
         process.nextTick(function () {
