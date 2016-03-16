@@ -31,7 +31,7 @@ client.on('scrape', function (data) {
 Bundle up `scrape.js` and it's dependencies into a single file called `bundle.js`:
 
 ```bash
-browserify scrape.js -o bundle.js`
+browserify scrape.js -o bundle.js
 ```
 
 `index.html`:
