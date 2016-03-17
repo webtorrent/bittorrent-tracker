@@ -3,6 +3,5 @@ sudo: false
 node_js:
   - "node"
   - "4"
-  - "0.12"
 before_script:
   - export DISPLAY=:99.0; sh -e /etc/init.d/xvfb start
