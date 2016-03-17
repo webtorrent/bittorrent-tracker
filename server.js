@@ -599,7 +599,6 @@ Server.prototype._onWebSocketClose = function (socket) {
     var swarm = self.torrents[infoHash]
     if (swarm) {
       swarm.announce({
-        type: 'ws',
         event: 'stopped',
         numwant: 0,
         peer_id: socket.peerId

@@ -8,8 +8,8 @@ var peerId = new Buffer('01234567890123456789')
 var peerId2 = new Buffer('12345678901234567890')
 var torrentLength = 50000
 
-function serverTest (t, serverType, serverFamily) {
-  t.plan(25)
+function serverTest (t, serverType, serverFamily, cb) {
+  t.plan(30)
 
   var hostname = serverFamily === 'inet6'
     ? '[::1]'
@@ -47,17 +47,20 @@ function serverTest (t, serverType, serverFamily) {
         t.equal(swarm.incomplete, 1)
         t.equal(Object.keys(swarm.peers).length, 1)
 
-        if (serverType !== 'ws') {
-          t.deepEqual(swarm.peers[hostname + ':6881'], {
-            type: serverType,
-            ip: clientIp,
-            port: 6881,
-            peerId: peerId.toString('hex'),
-            complete: false,
-            socket: undefined
-          })
+        var id = serverType === 'ws'
+          ? peerId.toString('hex')
+          : hostname + ':6881'
+
+        t.equal(swarm.peers[id].type, serverType)
+        t.equal(swarm.peers[id].ip, clientIp)
+        t.equal(swarm.peers[id].peerId, peerId.toString('hex'))
+        t.equal(swarm.peers[id].complete, false)
+        if (serverType === 'ws') {
+          t.equal(typeof swarm.peers[id].port, 'number')
+          t.ok(swarm.peers[id].socket)
         } else {
-          t.equal(swarm.peers[peerId.toString('hex')].complete, false)
+          t.equal(swarm.peers[id].port, 6881)
+          t.notOk(swarm.peers[id].socket)
         }
 
         client1.complete()
@@ -104,7 +107,7 @@ function serverTest (t, serverType, serverFamily) {
                   t.equal(data.incomplete, 0)
 
                   client1.destroy()
-                  server.close()
+                  server.close(cb)
                 })
               })
             })
@@ -115,19 +118,13 @@ function serverTest (t, serverType, serverFamily) {
   })
 }
 
-test('create daemon', function (t) {
-  wrtc = require('electron-webrtc')()
-  wrtc.electronDaemon.once('ready', t.end)
-})
-
 test('websocket server', function (t) {
-  serverTest(t, 'ws', 'inet')
-})
-
-// cleanup
-test('cleanup electron-eval daemon', function (t) {
-  wrtc.close()
-  t.end()
+  wrtc = require('electron-webrtc')()
+  wrtc.electronDaemon.once('ready', function () {
+    serverTest(t, 'ws', 'inet', function () {
+      wrtc.close()
+    })
+  })
 })
 
 test('http ipv4 server', function (t) {
