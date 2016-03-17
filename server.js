@@ -337,6 +337,15 @@ Server.prototype._onWebSocketRequest = function (socket, opts, params) {
     }
     if (self.destroyed) return
 
+    var hashes
+    if (typeof params.info_hash === 'string') hashes = [ params.info_hash ]		
+    else hashes = params.info_hash
+    hashes.forEach(function (info_hash) {
+      if (socket.infoHashes.indexOf(info_hash) === -1) {
+        socket.infoHashes.push(info_hash)
+      }
+    })
+
     response.action = params.action === common.ACTIONS.ANNOUNCE ? 'announce' : 'scrape'
 
     var peers
