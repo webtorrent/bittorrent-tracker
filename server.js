@@ -299,7 +299,7 @@ Server.prototype.onWebSocketConnection = function (socket, opts) {
   if (!opts) opts = {}
   opts.trustProxy = opts.trustProxy || self._trustProxy
   socket.peerId = null // as hex
-  socket.infoHashes = []
+  socket.infoHashes = [] // swarms that this socket is participating in
   socket.onSend = self._onWebSocketSend.bind(self, socket)
   socket.on('message', self._onWebSocketRequest.bind(self, socket, opts))
   socket.on('error', self._onWebSocketError.bind(self, socket))
@@ -337,21 +337,18 @@ Server.prototype._onWebSocketRequest = function (socket, opts, params) {
     }
     if (self.destroyed) return
 
-    var hashes
-    if (typeof params.info_hash === 'string') hashes = [ params.info_hash ]
-    else hashes = params.info_hash
-    hashes.forEach(function (info_hash) {
-      if (socket.infoHashes.indexOf(info_hash) === -1) {
-        socket.infoHashes.push(info_hash)
-      }
-    })
-
     response.action = params.action === common.ACTIONS.ANNOUNCE ? 'announce' : 'scrape'
 
     var peers
     if (response.action === 'announce') {
       peers = response.peers
       delete response.peers
+
+      params.info_hash.forEach(function (info_hash) {
+        if (socket.infoHashes.indexOf(info_hash) === -1) {
+          socket.infoHashes.push(info_hash)
+        }
+      })
 
       response.info_hash = common.hexToBinary(params.info_hash)
 
