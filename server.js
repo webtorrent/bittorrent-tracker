@@ -303,13 +303,13 @@ Server.prototype.onWebSocketConnection = function (socket, opts) {
   socket.onSend = self._onWebSocketSend.bind(self, socket)
 
   socket.onMessageBound = self._onWebSocketRequest.bind(self, socket, opts)
-  socket.on('message', self.onMessageBound)
+  socket.on('message', socket.onMessageBound)
 
   socket.onErrorBound = self._onWebSocketError.bind(self, socket)
-  socket.on('error', self.onErrorBound)
+  socket.on('error', socket.onErrorBound)
 
   socket.onCloseBound = self._onWebSocketClose.bind(self, socket)
-  socket.on('close', self.onCloseBound)
+  socket.on('close', socket.onCloseBound)
 }
 
 Server.prototype._onWebSocketRequest = function (socket, opts, params) {
