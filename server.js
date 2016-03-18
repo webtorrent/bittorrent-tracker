@@ -301,9 +301,15 @@ Server.prototype.onWebSocketConnection = function (socket, opts) {
   socket.peerId = null // as hex
   socket.infoHashes = [] // swarms that this socket is participating in
   socket.onSend = self._onWebSocketSend.bind(self, socket)
-  socket.on('message', self._onWebSocketRequest.bind(self, socket, opts))
-  socket.on('error', self._onWebSocketError.bind(self, socket))
-  socket.on('close', self._onWebSocketClose.bind(self, socket))
+
+  socket.onMessageBound = self._onWebSocketRequest.bind(self, socket, opts)
+  socket.on('message', self.onMessageBound)
+
+  socket.onErrorBound = self._onWebSocketError.bind(self, socket)
+  socket.on('error', self.onErrorBound)
+
+  socket.onCloseBound = self._onWebSocketClose.bind(self, socket)
+  socket.on('close', self.onCloseBound)
 }
 
 Server.prototype._onWebSocketRequest = function (socket, opts, params) {
@@ -598,19 +604,27 @@ Server.prototype._onWebSocketSend = function (socket, err) {
 
 Server.prototype._onWebSocketClose = function (socket) {
   var self = this
-  if (!socket.peerId || !socket.infoHashes) return
-  debug('websocket close')
+  debug('websocket close %s', socket.peerId)
 
-  socket.infoHashes.forEach(function (infoHash) {
-    var swarm = self.torrents[infoHash]
-    if (swarm) {
-      swarm.announce({
-        event: 'stopped',
-        numwant: 0,
-        peer_id: socket.peerId
-      }, function () {})
-    }
-  })
+  if (socket.peerId) {
+    socket.infoHashes.forEach(function (infoHash) {
+      var swarm = self.torrents[infoHash]
+      if (swarm) {
+        swarm.announce({
+          event: 'stopped',
+          numwant: 0,
+          peer_id: socket.peerId
+        }, function () {})
+      }
+    })
+  }
+
+  socket.peerId = null
+  socket.infoHashes = null
+  socket.onSend = null
+  socket.removeListener('message', socket.onMessageBound)
+  socket.removeListener('error', socket.onErrorBound)
+  socket.removeListener('close', socket.onCloseBound)
 }
 
 Server.prototype._onWebSocketError = function (socket, err) {
