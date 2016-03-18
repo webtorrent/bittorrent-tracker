@@ -350,11 +350,9 @@ Server.prototype._onWebSocketRequest = function (socket, opts, params) {
       peers = response.peers
       delete response.peers
 
-      params.info_hash.forEach(function (info_hash) {
-        if (socket.infoHashes.indexOf(info_hash) === -1) {
-          socket.infoHashes.push(info_hash)
-        }
-      })
+      if (socket.infoHashes.indexOf(params.info_hash) === -1) {
+        socket.infoHashes.push(params.info_hash)
+      }
 
       response.info_hash = common.hexToBinary(params.info_hash)
 
