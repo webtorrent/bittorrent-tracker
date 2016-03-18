@@ -622,9 +622,15 @@ Server.prototype._onWebSocketClose = function (socket) {
   socket.peerId = null
   socket.infoHashes = null
   socket.onSend = null
+
   socket.removeListener('message', socket.onMessageBound)
+  socket.onMessageBound = null
+
   socket.removeListener('error', socket.onErrorBound)
+  socket.onErrorBound = null
+
   socket.removeListener('close', socket.onCloseBound)
+  socket.onCloseBound = null
 }
 
 Server.prototype._onWebSocketError = function (socket, err) {
