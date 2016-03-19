@@ -168,7 +168,7 @@ Server.prototype.listen = function (/* port, hostname, onlistening */) {
 
 Server.prototype.close = function (cb) {
   var self = this
-  if (!cb) cb = function () {}
+  if (!cb) cb = noop
   debug('close')
 
   self.listening = false
@@ -298,6 +298,7 @@ Server.prototype.onWebSocketConnection = function (socket, opts) {
   var self = this
   if (!opts) opts = {}
   opts.trustProxy = opts.trustProxy || self._trustProxy
+
   socket.peerId = null // as hex
   socket.infoHashes = [] // swarms that this socket is participating in
   socket.onSend = self._onWebSocketSend.bind(self, socket)
@@ -331,6 +332,7 @@ Server.prototype._onWebSocketRequest = function (socket, opts, params) {
   if (!socket.peerId) socket.peerId = params.peer_id // as hex
 
   self._onRequest(params, function (err, response) {
+    if (self.destroyed) return
     if (err) {
       socket.send(JSON.stringify({
         action: params.action === common.ACTIONS.ANNOUNCE ? 'announce' : 'scrape',
@@ -341,7 +343,6 @@ Server.prototype._onWebSocketRequest = function (socket, opts, params) {
       self.emit('warning', err)
       return
     }
-    if (self.destroyed) return
 
     response.action = params.action === common.ACTIONS.ANNOUNCE ? 'announce' : 'scrape'
 
@@ -612,14 +613,17 @@ Server.prototype._onWebSocketClose = function (socket) {
           event: 'stopped',
           numwant: 0,
           peer_id: socket.peerId
-        }, function () {})
+        }, noop)
       }
     })
   }
 
+  // ignore all future errors
+  socket.onSend = noop
+  socket.on('error', noop)
+
   socket.peerId = null
   socket.infoHashes = null
-  socket.onSend = null
 
   socket.removeListener('message', socket.onMessageBound)
   socket.onMessageBound = null
@@ -642,3 +646,5 @@ function toNumber (x) {
   x = Number(x)
   return x >= 0 ? x : false
 }
+
+function noop () {}
