@@ -364,8 +364,8 @@ Server.prototype._onWebSocketRequest = function (socket, opts, params) {
     socket.send(JSON.stringify(response), socket.onSend)
     debug('sent response %s to %s', JSON.stringify(response), params.peer_id)
 
-    if (params.offers) {
-      debug('got offers %o from %s', params.offers, params.peer_id)
+    if (Array.isArray(params.offers)) {
+      debug('got %s offers from %s', params.offers.length, params.peer_id)
       debug('got %s peers from swarm %s', peers.length, params.info_hash)
       peers.forEach(function (peer, i) {
         peer.socket.send(JSON.stringify({
