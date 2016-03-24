@@ -38,6 +38,7 @@
     "simple-websocket": "^4.0.0",
     "string2compact": "^1.1.1",
     "uniq": "^1.0.1",
+    "varstruct": "^5.2.0",
     "ws": "^1.0.0",
     "xtend": "^4.0.0"
   },
