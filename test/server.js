@@ -1,14 +1,19 @@
 var Client = require('../')
 var common = require('./common')
 var test = require('tape')
-var wrtc
+var wrtc = require('electron-webrtc')()
+
+var wrtcReady = false
+wrtc.electronDaemon.once('ready', function () {
+  wrtcReady = true
+})
 
 var infoHash = '4cb67059ed6bd08362da625b3ae77f6f4a075705'
 var peerId = new Buffer('01234567890123456789')
 var peerId2 = new Buffer('12345678901234567890')
 var torrentLength = 50000
 
-function serverTest (t, serverType, serverFamily, cb) {
+function serverTest (t, serverType, serverFamily) {
   t.plan(30)
 
   var hostname = serverFamily === 'inet6'
@@ -107,7 +112,8 @@ function serverTest (t, serverType, serverFamily, cb) {
                   t.equal(data.incomplete, 0)
 
                   client1.destroy()
-                  server.close(cb)
+                  server.close()
+                  if (serverType === 'ws') wrtc.close()
                 })
               })
             })
@@ -119,12 +125,14 @@ function serverTest (t, serverType, serverFamily, cb) {
 }
 
 test('websocket server', function (t) {
-  wrtc = require('electron-webrtc')()
-  wrtc.electronDaemon.once('ready', function () {
-    serverTest(t, 'ws', 'inet', function () {
-      wrtc.close()
-    })
-  })
+  if (wrtcReady) {
+    runTest()
+  } else {
+    wrtc.electronDaemon.once('ready', runTest)
+  }
+  function runTest () {
+    serverTest(t, 'ws', 'inet')
+  }
 })
 
 test('http ipv4 server', function (t) {
