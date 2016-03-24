@@ -369,6 +369,7 @@ Server.prototype._onWebSocketRequest = function (socket, opts, params) {
       debug('got %s peers from swarm %s', peers.length, params.info_hash)
       peers.forEach(function (peer, i) {
         peer.socket.send(JSON.stringify({
+          action: 'announce',
           offer: params.offers[i].offer,
           offer_id: params.offers[i].offer_id,
           peer_id: common.hexToBinary(params.peer_id),
@@ -392,6 +393,7 @@ Server.prototype._onWebSocketRequest = function (socket, opts, params) {
         }
 
         toPeer.socket.send(JSON.stringify({
+          action: 'announce',
           answer: params.answer,
           offer_id: params.offer_id,
           peer_id: common.hexToBinary(params.peer_id),
