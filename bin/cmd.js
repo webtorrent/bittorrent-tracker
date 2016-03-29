@@ -19,7 +19,8 @@ var argv = minimist(process.argv.slice(2), {
     'trust-proxy',
     'udp',
     'version',
-    'ws'
+    'ws',
+    'no-stats'
   ],
   string: [
     'http-hostname',
@@ -56,6 +57,7 @@ if (argv.help) {
         --http                    enable http server
         --udp                     enable udp server
         --ws                      enable websocket server
+        --no-stats                disable web-based statistics
     -q, --quiet                   only show error output
     -s, --silent                  show no output
     -v, --version                 print the current version
@@ -75,9 +77,12 @@ argv.http = allFalsy || argv.http
 argv.udp = allFalsy || argv.udp
 argv.ws = allFalsy || argv.ws
 
+argv['no-stats'] = !!argv['no-stats']
+
 var server = new Server({
   http: argv.http,
   interval: argv.interval,
+  stats: argv['no-stats'],
   trustProxy: argv['trust-proxy'],
   udp: argv.udp,
   ws: argv.ws
@@ -132,5 +137,11 @@ server.listen(argv.port, hostname, function () {
     var wsHost = wsAddr.address !== '::' ? wsAddr.address : 'localhost'
     var wsPort = wsAddr.port
     console.log('WebSocket tracker: ws://' + wsHost + ':' + wsPort)
+  }
+  if (server.http && argv['no-stats'] && !argv.quiet) {
+    var statsAddr = server.http.address()
+    var statsHost = statsAddr.address !== '::' ? statsAddr.address : 'localhost'
+    var statsPort = statsAddr.port
+    console.log('Tracker statistics: http://' + statsHost + ':' + statsPort)
   }
 })
