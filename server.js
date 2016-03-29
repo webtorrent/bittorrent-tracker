@@ -113,7 +113,9 @@ function Server (opts) {
       })
     }
     self.ws = new WebSocketServer({ server: self.http })
-    self.ws.address = self.http.address.bind(self.http)
+    self.ws.address = function () {
+      return self.http.address()
+    }
     self.ws.on('error', function (err) { self._onError(err) })
     self.ws.on('connection', function (socket) { self.onWebSocketConnection(socket) })
   }
@@ -301,15 +303,23 @@ Server.prototype.onWebSocketConnection = function (socket, opts) {
 
   socket.peerId = null // as hex
   socket.infoHashes = [] // swarms that this socket is participating in
-  socket.onSend = self._onWebSocketSend.bind(self, socket)
+  socket.onSend = function (err) {
+    self._onWebSocketSend(socket, err)
+  }
 
-  socket.onMessageBound = self._onWebSocketRequest.bind(self, socket, opts)
+  socket.onMessageBound = function (params) {
+    self._onWebSocketRequest(socket, opts, params)
+  }
   socket.on('message', socket.onMessageBound)
 
-  socket.onErrorBound = self._onWebSocketError.bind(self, socket)
+  socket.onErrorBound = function (err) {
+    self._onWebSocketError(socket, err)
+  }
   socket.on('error', socket.onErrorBound)
 
-  socket.onCloseBound = self._onWebSocketClose.bind(self, socket)
+  socket.onCloseBound = function () {
+    self._onWebSocketClose(socket)
+  }
   socket.on('close', socket.onCloseBound)
 }
 
