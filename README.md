@@ -32,7 +32,7 @@ This module is used by [WebTorrent](http://webtorrent.io).
 - Robust and well-tested
   - Comprehensive test suite (runs entirely offline, so it's reliable)
   - Used by popular clients: [WebTorrent](http://webtorrent.io), [peerflix](https://github.com/mafintosh/peerflix), and [playback](https://mafintosh.github.io/playback/)
-- Web-Based Statistics
+- Tracker stats avaialable via web interface at `/stats`
 
 Also see [bittorrent-dht](https://github.com/feross/bittorrent-dht).
 
@@ -144,7 +144,7 @@ var server = new Server({
   udp: true, // enable udp server? [default=true]
   http: true, // enable http server? [default=true]
   ws: true, // enable websocket server? [default=true]
-  stats: true, // enable web-based statistics [default=true]
+  stats: true, // enable web-based statistics? [default=true]
   filter: function (infoHash, params, cb) {
     // Blacklist/whitelist function for allowing/disallowing torrents. If this option is
     // omitted, all torrents are allowed. It is possible to interface with a database or

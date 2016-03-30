@@ -31,6 +31,7 @@ inherits(Server, EventEmitter)
  * @param {boolean} opts.http       start an http server? (default: true)
  * @param {boolean} opts.udp        start a udp server? (default: true)
  * @param {boolean} opts.ws         start a websocket server? (default: true)
+ * @param {boolean} opts.stats      enable web-based statistics? (default: true)
  * @param {function} opts.filter    black/whitelist fn for disallowing/allowing torrents
  */
 function Server (opts) {
@@ -128,7 +129,7 @@ function Server (opts) {
     }
 
     // Http handler for '/stats' route
-    self.http.on('request', function (req, res, opts) {
+    self.http.on('request', function (req, res) {
       if (res.headersSent) return
 
       var infoHashes = Object.keys(self.torrents)
