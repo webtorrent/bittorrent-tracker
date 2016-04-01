@@ -12,9 +12,13 @@ function testMagnet (t, serverType) {
   var parsedTorrent = magnet(fixtures.leaves.magnetURI)
 
   common.createServer(t, serverType, function (server, announceUrl) {
-    parsedTorrent.announce = [ announceUrl ]
-
-    var client = new Client(peerId, 6881, parsedTorrent, { wrtc: {} })
+    var client = new Client({
+      infoHash: parsedTorrent.infoHash,
+      announce: announceUrl,
+      peerId: peerId,
+      port: 6881,
+      wrtc: {}
+    })
 
     if (serverType === 'ws') common.mockWebsocketTracker(client)
     client.on('error', function (err) { t.error(err) })

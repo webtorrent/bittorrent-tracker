@@ -1,8 +1,8 @@
 var bencode = require('bencode')
 var Client = require('../')
+var common = require('./common')
 var commonLib = require('../lib/common')
 var commonTest = require('./common')
-var extend = require('xtend')
 var fixtures = require('webtorrent-fixtures')
 var get = require('simple-get')
 var test = require('tape')
@@ -10,25 +10,24 @@ var test = require('tape')
 var peerId = new Buffer('01234567890123456789')
 
 function testSingle (t, serverType) {
-  var parsedTorrent = extend(fixtures.leaves.parsedTorrent)
-
   commonTest.createServer(t, serverType, function (server, announceUrl) {
-    parsedTorrent.announce = [ announceUrl ]
-    var client = new Client(peerId, 6881, parsedTorrent)
-
-    client.on('error', function (err) {
-      t.error(err)
+    var client = new Client({
+      infoHash: fixtures.leaves.parsedTorrent.infoHash,
+      announce: announceUrl,
+      peerId: peerId,
+      port: 6881,
+      wrtc: {}
     })
 
-    client.on('warning', function (err) {
-      t.error(err)
-    })
+    if (serverType === 'ws') common.mockWebsocketTracker(client)
+    client.on('error', function (err) { t.error(err) })
+    client.on('warning', function (err) { t.error(err) })
 
     client.scrape()
 
     client.on('scrape', function (data) {
       t.equal(data.announce, announceUrl)
-      t.equal(data.infoHash, parsedTorrent.infoHash)
+      t.equal(data.infoHash, fixtures.leaves.parsedTorrent.infoHash)
       t.equal(typeof data.complete, 'number')
       t.equal(typeof data.incomplete, 'number')
       t.equal(typeof data.downloaded, 'number')
@@ -48,9 +47,17 @@ test('udp: single info_hash scrape', function (t) {
   testSingle(t, 'udp')
 })
 
+test('ws: single info_hash scrape', function (t) {
+  testSingle(t, 'ws')
+})
+
 function clientScrapeStatic (t, serverType) {
   commonTest.createServer(t, serverType, function (server, announceUrl) {
-    Client.scrape(announceUrl, fixtures.leaves.parsedTorrent.infoHash, function (err, data) {
+    var client = Client.scrape({
+      announce: announceUrl,
+      infoHash: fixtures.leaves.parsedTorrent.infoHash,
+      wrtc: {}
+    }, function (err, data) {
       t.error(err)
       t.equal(data.announce, announceUrl)
       t.equal(data.infoHash, fixtures.leaves.parsedTorrent.infoHash)
@@ -61,6 +68,7 @@ function clientScrapeStatic (t, serverType) {
         t.end()
       })
     })
+    if (serverType === 'ws') common.mockWebsocketTracker(client)
   })
 }
 
@@ -72,12 +80,19 @@ test('udp: scrape using Client.scrape static method', function (t) {
   clientScrapeStatic(t, 'udp')
 })
 
+test('ws: scrape using Client.scrape static method', function (t) {
+  clientScrapeStatic(t, 'ws')
+})
+
 function clientScrapeMulti (t, serverType) {
   var infoHash1 = fixtures.leaves.parsedTorrent.infoHash
   var infoHash2 = fixtures.alice.parsedTorrent.infoHash
 
   commonTest.createServer(t, serverType, function (server, announceUrl) {
-    Client.scrape(announceUrl, [ infoHash1, infoHash2 ], function (err, results) {
+    Client.scrape({
+      infoHash: [ infoHash1, infoHash2 ],
+      announce: announceUrl
+    }, function (err, results) {
       t.error(err)
 
       t.equal(results[infoHash1].announce, announceUrl)
@@ -147,16 +162,18 @@ test('server: multiple info_hash scrape (manual http request)', function (t) {
 test('server: all info_hash scrape (manual http request)', function (t) {
   t.plan(10)
 
-  var parsedTorrent = extend(fixtures.leaves.parsedTorrent)
-  var binaryInfoHash = commonLib.hexToBinary(parsedTorrent.infoHash)
+  var binaryInfoHash = commonLib.hexToBinary(fixtures.leaves.parsedTorrent.infoHash)
 
   commonTest.createServer(t, 'http', function (server, announceUrl) {
     var scrapeUrl = announceUrl.replace('/announce', '/scrape')
 
-    parsedTorrent.announce = [ announceUrl ]
-
     // announce a torrent to the tracker
-    var client = new Client(peerId, 6881, parsedTorrent)
+    var client = new Client({
+      infoHash: fixtures.leaves.parsedTorrent.infoHash,
+      announce: announceUrl,
+      peerId: peerId,
+      port: 6881
+    })
     client.on('error', function (err) { t.error(err) })
     client.on('warning', function (err) { t.error(err) })
 

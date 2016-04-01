@@ -21,37 +21,42 @@ inherits(Client, EventEmitter)
  *
  * Find torrent peers, to help a torrent client participate in a torrent swarm.
  *
- * @param {string|Buffer} peerId           peer id
- * @param {Number} port                    torrent client listening port
- * @param {Object} torrent                 parsed torrent
- * @param {Object} opts                    options object
- * @param {Number} opts.rtcConfig          RTCPeerConnection configuration object
- * @param {Number} opts.wrtc               custom webrtc impl (useful in node.js)
- * @param {function} opts.getAnnounceOpts  callback to provide data to tracker
+ * @param {Object} opts                          options object
+ * @param {string|Buffer} opts.infoHash          torrent info hash
+ * @param {string|Buffer} opts.peerId            peer id
+ * @param {string|Array.<string>} opts.announce  announce
+ * @param {number} opts.port                     torrent client listening port
+ * @param {function} opts.getAnnounceOpts        callback to provide data to tracker
+ * @param {number} opts.rtcConfig                RTCPeerConnection configuration object
+ * @param {number} opts.wrtc                     custom webrtc impl (useful in node.js)
  */
-function Client (peerId, port, torrent, opts) {
+function Client (opts) {
   var self = this
-  if (!(self instanceof Client)) return new Client(peerId, port, torrent, opts)
+  if (!(self instanceof Client)) return new Client(opts)
   EventEmitter.call(self)
   if (!opts) opts = {}
 
+  if (!opts.peerId) throw new Error('Option `peerId` is required')
+  if (!opts.infoHash) throw new Error('Option `infoHash` is required')
+  if (!opts.announce) throw new Error('Option `announce` is required')
+  if (!process.browser && !opts.port) throw new Error('Option `port` is required')
+
   // required
-  self.peerId = typeof peerId === 'string'
-    ? peerId
-    : peerId.toString('hex')
-  self.peerIdBuffer = new Buffer(self.peerId, 'hex')
-  self._peerIdBinary = self.peerIdBuffer.toString('binary')
+  self.peerId = typeof opts.peerId === 'string'
+    ? opts.peerId
+    : opts.peerId.toString('hex')
+  self._peerIdBuffer = new Buffer(self.peerId, 'hex')
+  self._peerIdBinary = self._peerIdBuffer.toString('binary')
 
-  self.infoHash = typeof torrent.infoHash === 'string'
-    ? torrent.infoHash
-    : torrent.infoHash.toString('hex')
-  self.infoHashBuffer = new Buffer(self.infoHash, 'hex')
-  self._infoHashBinary = self.infoHashBuffer.toString('binary')
+  self.infoHash = typeof opts.infoHash === 'string'
+    ? opts.infoHash
+    : opts.infoHash.toString('hex')
+  self._infoHashBuffer = new Buffer(self.infoHash, 'hex')
+  self._infoHashBinary = self._infoHashBuffer.toString('binary')
 
-  self.torrentLength = torrent.length
+  self._port = opts.port
+
   self.destroyed = false
-
-  self._port = port
 
   self._rtcConfig = opts.rtcConfig
   self._wrtc = opts.wrtc
@@ -61,11 +66,11 @@ function Client (peerId, port, torrent, opts) {
 
   var webrtcSupport = !!self._wrtc || typeof window !== 'undefined'
 
-  var announce = (typeof torrent.announce === 'string')
-    ? [ torrent.announce ]
-    : torrent.announce == null
+  var announce = (typeof opts.announce === 'string')
+    ? [ opts.announce ]
+    : opts.announce == null
       ? []
-      : torrent.announce
+      : opts.announce
 
   announce = announce.map(function (announceUrl) {
     announceUrl = announceUrl.toString()
@@ -112,23 +117,27 @@ function Client (peerId, port, torrent, opts) {
  * Simple convenience function to scrape a tracker for an info hash without needing to
  * create a Client, pass it a parsed torrent, etc. Support scraping a tracker for multiple
  * torrents at the same time.
- * @param  {string} announceUrl
- * @param  {string|Array.<string>} infoHash
+ * @params {Object} opts
+ * @param  {string|Array.<string>} opts.infoHash
+ * @param  {string} opts.announce
  * @param  {function} cb
  */
-Client.scrape = function (announceUrl, infoHash, cb) {
+Client.scrape = function (opts, cb) {
   cb = once(cb)
 
-  var peerId = new Buffer('01234567890123456789') // dummy value
-  var port = 6881 // dummy value
-  var torrent = {
-    infoHash: Array.isArray(infoHash) ? infoHash[0] : infoHash,
-    announce: [ announceUrl ]
-  }
-  var client = new Client(peerId, port, torrent)
+  if (!opts.infoHash) throw new Error('Option `infoHash` is required')
+  if (!opts.announce) throw new Error('Option `announce` is required')
+
+  var clientOpts = extend(opts, {
+    infoHash: Array.isArray(opts.infoHash) ? opts.infoHash[0] : opts.infoHash,
+    peerId: new Buffer('01234567890123456789'), // dummy value
+    port: 6881 // dummy value
+  })
+
+  var client = new Client(clientOpts)
   client.once('error', cb)
 
-  var len = Array.isArray(infoHash) ? infoHash.length : 1
+  var len = Array.isArray(opts.infoHash) ? opts.infoHash.length : 1
   var results = {}
   client.on('scrape', function (data) {
     len -= 1
@@ -144,10 +153,11 @@ Client.scrape = function (announceUrl, infoHash, cb) {
     }
   })
 
-  infoHash = Array.isArray(infoHash)
-    ? infoHash.map(function (infoHash) { return new Buffer(infoHash, 'hex') })
-    : new Buffer(infoHash, 'hex')
-  client.scrape({ infoHash: infoHash })
+  opts.infoHash = Array.isArray(opts.infoHash)
+    ? opts.infoHash.map(function (infoHash) { return new Buffer(infoHash, 'hex') })
+    : new Buffer(opts.infoHash, 'hex')
+  client.scrape({ infoHash: opts.infoHash })
+  return client
 }
 
 /**
@@ -198,9 +208,6 @@ Client.prototype.complete = function (opts) {
   var self = this
   debug('send `complete`')
   if (!opts) opts = {}
-  if (opts.downloaded == null && self.torrentLength != null) {
-    opts.downloaded = self.torrentLength
-  }
   opts = self._defaultAnnounceOpts(opts)
   opts.event = 'completed'
   self._announce(opts)
@@ -276,10 +283,6 @@ Client.prototype._defaultAnnounceOpts = function (opts) {
 
   if (opts.uploaded == null) opts.uploaded = 0
   if (opts.downloaded == null) opts.downloaded = 0
-
-  if (opts.left == null && self.torrentLength != null) {
-    opts.left = self.torrentLength - opts.downloaded
-  }
 
   if (self._getAnnounceOpts) opts = extend(opts, self._getAnnounceOpts())
   return opts

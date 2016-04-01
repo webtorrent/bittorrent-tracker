@@ -1,6 +1,5 @@
 var Client = require('../')
 var common = require('./common')
-var extend = require('xtend')
 var fixtures = require('webtorrent-fixtures')
 var test = require('tape')
 
@@ -9,21 +8,21 @@ var peerId = new Buffer('01234567890123456789')
 function testFilterOption (t, serverType) {
   t.plan(8)
 
-  var parsedAlice = extend(fixtures.alice.parsedTorrent)
-  var parsedLeaves = extend(fixtures.leaves.parsedTorrent)
-
   var opts = { serverType: serverType } // this is test-suite-only option
   opts.filter = function (infoHash, params, cb) {
     process.nextTick(function () {
-      cb(infoHash !== parsedAlice.infoHash)
+      cb(infoHash !== fixtures.alice.parsedTorrent.infoHash)
     })
   }
 
   common.createServer(t, opts, function (server, announceUrl) {
-    parsedAlice.announce = [ announceUrl ]
-    parsedLeaves.announce = [ announceUrl ]
-
-    var client = new Client(peerId, 6881, parsedAlice, { wrtc: {} })
+    var client = new Client({
+      infoHash: fixtures.alice.parsedTorrent.infoHash,
+      announce: announceUrl,
+      peerId: peerId,
+      port: 6881,
+      wrtc: {}
+    })
 
     client.on('error', function (err) { t.error(err) })
     if (serverType === 'ws') common.mockWebsocketTracker(client)
@@ -33,7 +32,13 @@ function testFilterOption (t, serverType) {
 
       client.destroy(function () {
         t.pass('client destroyed')
-        client = new Client(peerId, 6881, parsedLeaves, { wrtc: {} })
+        client = new Client({
+          infoHash: fixtures.leaves.parsedTorrent.infoHash,
+          announce: announceUrl,
+          peerId: peerId,
+          port: 6881,
+          wrtc: {}
+        })
         if (serverType === 'ws') common.mockWebsocketTracker(client)
 
         client.on('error', function (err) { t.error(err) })
@@ -78,22 +83,21 @@ test('ws: filter option blocks tracker from tracking torrent', function (t) {
 function testFilterCustomError (t, serverType) {
   t.plan(8)
 
-  var parsedLeaves = extend(fixtures.leaves.parsedTorrent)
-  var parsedAlice = extend(fixtures.alice.parsedTorrent)
-
   var opts = { serverType: serverType } // this is test-suite-only option
   opts.filter = function (infoHash, params, cb) {
     process.nextTick(function () {
-      if (infoHash === parsedAlice.infoHash) cb(new Error('alice blocked'))
+      if (infoHash === fixtures.alice.parsedTorrent.infoHash) cb(new Error('alice blocked'))
       else cb(true)
     })
   }
 
   common.createServer(t, opts, function (server, announceUrl) {
-    parsedAlice.announce = [ announceUrl ]
-    parsedLeaves.announce = [ announceUrl ]
-
-    var client = new Client(peerId, 6881, parsedAlice, { wrtc: {} })
+    var client = new Client({
+      infoHash: fixtures.alice.parsedTorrent.infoHash,
+      announce: announceUrl,
+      peerId: peerId, port: 6881,
+      wrtc: {}
+    })
 
     client.on('error', function (err) { t.error(err) })
     if (serverType === 'ws') common.mockWebsocketTracker(client)
@@ -103,7 +107,13 @@ function testFilterCustomError (t, serverType) {
 
       client.destroy(function () {
         t.pass('client destroyed')
-        client = new Client(peerId, 6881, parsedLeaves, { wrtc: {} })
+        client = new Client({
+          infoHash: fixtures.leaves.parsedTorrent.infoHash,
+          announce: announceUrl,
+          peerId: peerId,
+          port: 6881,
+          wrtc: {}
+        })
         if (serverType === 'ws') common.mockWebsocketTracker(client)
 
         client.on('error', function (err) { t.error(err) })

@@ -11,7 +11,6 @@ wrtc.electronDaemon.once('ready', function () {
 var infoHash = '4cb67059ed6bd08362da625b3ae77f6f4a075705'
 var peerId = new Buffer('01234567890123456789')
 var peerId2 = new Buffer('12345678901234567890')
-var torrentLength = 50000
 
 function serverTest (t, serverType, serverFamily) {
   t.plan(30)
@@ -27,11 +26,13 @@ function serverTest (t, serverType, serverFamily) {
     var port = server[serverType].address().port
     var announceUrl = serverType + '://' + hostname + ':' + port + '/announce'
 
-    var client1 = new Client(peerId, 6881, {
+    var client1 = new Client({
       infoHash: infoHash,
-      length: torrentLength,
-      announce: [ announceUrl ]
-    }, { wrtc: wrtc })
+      announce: [ announceUrl ],
+      peerId: peerId,
+      port: 6881,
+      wrtc: wrtc
+    })
 
     client1.start()
 
@@ -83,11 +84,13 @@ function serverTest (t, serverType, serverFamily) {
             t.equal(typeof data.incomplete, 'number')
             t.equal(typeof data.downloaded, 'number')
 
-            var client2 = new Client(peerId2, 6882, {
+            var client2 = new Client({
               infoHash: infoHash,
-              length: torrentLength,
-              announce: [ announceUrl ]
-            }, { wrtc: wrtc })
+              announce: [ announceUrl ],
+              peerId: peerId2,
+              port: 6882,
+              wrtc: wrtc
+            })
 
             client2.start()
 

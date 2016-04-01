@@ -1,6 +1,5 @@
 var Client = require('../')
 var common = require('./common')
-var extend = require('xtend')
 var fixtures = require('webtorrent-fixtures')
 var test = require('tape')
 
@@ -9,11 +8,14 @@ var peerId = new Buffer('01234567890123456789')
 function testLargeTorrent (t, serverType) {
   t.plan(9)
 
-  var parsedTorrent = extend(fixtures.sintel.parsedTorrent)
-
   common.createServer(t, serverType, function (server, announceUrl) {
-    parsedTorrent.announce = [ announceUrl ]
-    var client = new Client(peerId, 6881, parsedTorrent, { wrtc: {} })
+    var client = new Client({
+      infoHash: fixtures.sintel.parsedTorrent.infoHash,
+      peerId: peerId,
+      port: 6881,
+      announce: announceUrl,
+      wrtc: {}
+    })
 
     if (serverType === 'ws') common.mockWebsocketTracker(client)
     client.on('error', function (err) { t.error(err) })

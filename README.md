@@ -50,17 +50,15 @@ To connect to a tracker, just do this:
 
 ```js
 var Client = require('bittorrent-tracker')
-var parseTorrent = require('parse-torrent')
-var fs = require('fs')
 
-var torrent = fs.readFileSync(__dirname + '/torrents/name.torrent')
-var parsedTorrent = parseTorrent(torrent) // { infoHash: 'xxx', length: xx, announce: ['xx', 'xx'] }
+var requiredOpts = {
+  infoHash: new Buffer('012345678901234567890'), // hex string or Buffer
+  peerId: new Buffer('01234567890123456789'), // hex string or Buffer
+  announce: [], // list of tracker server urls
+  port: 6881 // torrent client port, (in browser, optional)
+}
 
-var peerId = new Buffer('01234567890123456789')
-var port = 6881
-
-// optional options dictionary
-var opts = {
+var optionalOpts = {
   // RTCPeerConnection config object (only used in browser)
   rtcConfig: {},
   // custom webrtc impl, useful in node to specify [wrtc](https://npmjs.com/package/wrtc)
@@ -77,7 +75,7 @@ var opts = {
   }
 }
 
-var client = new Client(peerId, port, parsedTorrent)
+var client = new Client(requiredOpts)
 
 client.on('error', function (err) {
   // fatal client error!
