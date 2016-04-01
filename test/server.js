@@ -1,12 +1,12 @@
 var Client = require('../')
 var common = require('./common')
 var test = require('tape')
-var wrtc = require('electron-webrtc')()
+// var wrtc = require('electron-webrtc')()
 
-var wrtcReady = false
-wrtc.electronDaemon.once('ready', function () {
-  wrtcReady = true
-})
+// var wrtcReady = false
+// wrtc.electronDaemon.once('ready', function () {
+//   wrtcReady = true
+// })
 
 var infoHash = '4cb67059ed6bd08362da625b3ae77f6f4a075705'
 var peerId = new Buffer('01234567890123456789')
@@ -30,8 +30,8 @@ function serverTest (t, serverType, serverFamily) {
       infoHash: infoHash,
       announce: [ announceUrl ],
       peerId: peerId,
-      port: 6881,
-      wrtc: wrtc
+      port: 6881
+      // wrtc: wrtc
     })
 
     client1.start()
@@ -88,8 +88,8 @@ function serverTest (t, serverType, serverFamily) {
               infoHash: infoHash,
               announce: [ announceUrl ],
               peerId: peerId2,
-              port: 6882,
-              wrtc: wrtc
+              port: 6882
+              // wrtc: wrtc
             })
 
             client2.start()
@@ -116,7 +116,7 @@ function serverTest (t, serverType, serverFamily) {
 
                   client1.destroy(function () {
                     server.close()
-                    if (serverType === 'ws') wrtc.close()
+                    // if (serverType === 'ws') wrtc.close()
                   })
                 })
               })
@@ -128,16 +128,16 @@ function serverTest (t, serverType, serverFamily) {
   })
 }
 
-test('websocket server', function (t) {
-  if (wrtcReady) {
-    runTest()
-  } else {
-    wrtc.electronDaemon.once('ready', runTest)
-  }
-  function runTest () {
-    serverTest(t, 'ws', 'inet')
-  }
-})
+// test('websocket server', function (t) {
+//   if (wrtcReady) {
+//     runTest()
+//   } else {
+//     wrtc.electronDaemon.once('ready', runTest)
+//   }
+//   function runTest () {
+//     serverTest(t, 'ws', 'inet')
+//   }
+// })
 
 test('http ipv4 server', function (t) {
   serverTest(t, 'http', 'inet')
