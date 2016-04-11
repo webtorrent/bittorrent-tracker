@@ -32,7 +32,7 @@ This module is used by [WebTorrent](http://webtorrent.io).
 - Robust and well-tested
   - Comprehensive test suite (runs entirely offline, so it's reliable)
   - Used by popular clients: [WebTorrent](http://webtorrent.io), [peerflix](https://github.com/mafintosh/peerflix), and [playback](https://mafintosh.github.io/playback/)
-- Tracker stats avaialable via web interface at `/stats`
+- Tracker statistics available via web interface at `/stats`
 
 Also see [bittorrent-dht](https://github.com/feross/bittorrent-dht).
 
