@@ -272,7 +272,9 @@ Client.prototype.destroy = function (cb) {
   })
 
   parallel(tasks, cb)
+
   self._trackers = []
+  self._getAnnounceOpts = null
 }
 
 Client.prototype._defaultAnnounceOpts = function (opts) {
