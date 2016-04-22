@@ -713,13 +713,19 @@ Server.prototype._onWebSocketClose = function (socket) {
   socket.peerId = null
   socket.infoHashes = null
 
-  socket.removeListener('message', socket.onMessageBound)
+  if (typeof socket.onMessageBound === 'function') {
+    socket.removeListener('message', socket.onMessageBound)
+  }
   socket.onMessageBound = null
 
-  socket.removeListener('error', socket.onErrorBound)
+  if (typeof socket.onErrorBound === 'function') {
+    socket.removeListener('error', socket.onErrorBound)
+  }
   socket.onErrorBound = null
 
-  socket.removeListener('close', socket.onCloseBound)
+  if (typeof socket.onCloseBound === 'function') {
+    socket.removeListener('close', socket.onCloseBound)
+  }
   socket.onCloseBound = null
 }
 
