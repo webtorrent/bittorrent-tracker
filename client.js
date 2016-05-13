@@ -6,6 +6,7 @@ var extend = require('xtend')
 var inherits = require('inherits')
 var once = require('once')
 var parallel = require('run-parallel')
+var Peer = require('simple-peer')
 var uniq = require('uniq')
 var url = require('url')
 
@@ -64,7 +65,7 @@ function Client (opts) {
 
   debug('new client %s', self.infoHash)
 
-  var webrtcSupport = self._wrtc !== false && (!!self._wrtc || typeof window !== 'undefined')
+  var webrtcSupport = self._wrtc !== false && (!!self._wrtc || Peer.WEBRTC_SUPPORT)
 
   var announce = (typeof opts.announce === 'string')
     ? [ opts.announce ]
