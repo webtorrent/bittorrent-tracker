@@ -64,7 +64,7 @@ function Client (opts) {
 
   debug('new client %s', self.infoHash)
 
-  var webrtcSupport = !!self._wrtc || typeof window !== 'undefined'
+  var webrtcSupport = self._wrtc !== false && (!!self._wrtc || typeof window !== 'undefined')
 
   var announce = (typeof opts.announce === 'string')
     ? [ opts.announce ]
