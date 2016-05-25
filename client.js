@@ -155,8 +155,10 @@ Client.scrape = function (opts, cb) {
   })
 
   opts.infoHash = Array.isArray(opts.infoHash)
-    ? opts.infoHash.map(function (infoHash) { return new Buffer(infoHash, 'hex') })
-    : new Buffer(opts.infoHash, 'hex')
+    ? opts.infoHash.map(function (infoHash) {
+      return new Buffer(String(infoHash), 'hex')
+    })
+    : new Buffer(String(opts.infoHash), 'hex')
   client.scrape({ infoHash: opts.infoHash })
   return client
 }
