@@ -32,6 +32,7 @@
     "random-iterate": "^1.0.1",
     "run-parallel": "^1.1.2",
     "run-series": "^1.0.2",
+    "safe-buffer": "^5.0.0",
     "simple-get": "^2.0.0",
     "simple-peer": "^6.0.0",
     "simple-websocket": "^4.0.0",

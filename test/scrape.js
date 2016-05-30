@@ -1,4 +1,5 @@
 var bencode = require('bencode')
+var Buffer = require('safe-buffer').Buffer
 var Client = require('../')
 var common = require('./common')
 var commonLib = require('../lib/common')
@@ -7,7 +8,7 @@ var fixtures = require('webtorrent-fixtures')
 var get = require('simple-get')
 var test = require('tape')
 
-var peerId = new Buffer('01234567890123456789')
+var peerId = Buffer.from('01234567890123456789')
 
 function testSingle (t, serverType) {
   commonTest.createServer(t, serverType, function (server, announceUrl) {

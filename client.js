@@ -1,5 +1,6 @@
 module.exports = Client
 
+var Buffer = require('safe-buffer').Buffer
 var debug = require('debug')('bittorrent-tracker')
 var EventEmitter = require('events').EventEmitter
 var extend = require('xtend')
@@ -46,13 +47,13 @@ function Client (opts) {
   self.peerId = typeof opts.peerId === 'string'
     ? opts.peerId
     : opts.peerId.toString('hex')
-  self._peerIdBuffer = new Buffer(self.peerId, 'hex')
+  self._peerIdBuffer = Buffer.from(self.peerId, 'hex')
   self._peerIdBinary = self._peerIdBuffer.toString('binary')
 
   self.infoHash = typeof opts.infoHash === 'string'
     ? opts.infoHash
     : opts.infoHash.toString('hex')
-  self._infoHashBuffer = new Buffer(self.infoHash, 'hex')
+  self._infoHashBuffer = Buffer.from(self.infoHash, 'hex')
   self._infoHashBinary = self._infoHashBuffer.toString('binary')
 
   self._port = opts.port
@@ -131,7 +132,7 @@ Client.scrape = function (opts, cb) {
 
   var clientOpts = extend(opts, {
     infoHash: Array.isArray(opts.infoHash) ? opts.infoHash[0] : opts.infoHash,
-    peerId: new Buffer('01234567890123456789'), // dummy value
+    peerId: Buffer.from('01234567890123456789'), // dummy value
     port: 6881 // dummy value
   })
 
@@ -156,9 +157,9 @@ Client.scrape = function (opts, cb) {
 
   opts.infoHash = Array.isArray(opts.infoHash)
     ? opts.infoHash.map(function (infoHash) {
-      return new Buffer(String(infoHash), 'hex')
+      return Buffer.from(infoHash, 'hex')
     })
-    : new Buffer(String(opts.infoHash), 'hex')
+    : Buffer.from(opts.infoHash, 'hex')
   client.scrape({ infoHash: opts.infoHash })
   return client
 }

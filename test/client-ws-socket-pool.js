@@ -1,9 +1,10 @@
+var Buffer = require('safe-buffer').Buffer
 var Client = require('../')
 var common = require('./common')
 var fixtures = require('webtorrent-fixtures')
 var test = require('tape')
 
-var peerId = new Buffer('01234567890123456789')
+var peerId = Buffer.from('01234567890123456789')
 var port = 6681
 
 test('ensure client.destroy() callback is called with re-used websockets in socketPool', function (t) {

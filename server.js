@@ -1,5 +1,6 @@
 module.exports = Server
 
+var Buffer = require('safe-buffer').Buffer
 var bencode = require('bencode')
 var debug = require('debug')('bittorrent-tracker')
 var dgram = require('dgram')
@@ -674,7 +675,7 @@ function makeUdpPacket (params) {
       packet = Buffer.concat([
         common.toUInt32(common.ACTIONS.ERROR),
         common.toUInt32(params.transactionId || 0),
-        new Buffer(params['failure reason'], 'utf8')
+        Buffer.from(String(params['failure reason']))
       ])
       break
     default:
