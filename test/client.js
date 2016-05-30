@@ -1,11 +1,12 @@
+var Buffer = require('safe-buffer').Buffer
 var Client = require('../')
 var common = require('./common')
 var fixtures = require('webtorrent-fixtures')
 var test = require('tape')
 
-var peerId1 = new Buffer('01234567890123456789')
-var peerId2 = new Buffer('12345678901234567890')
-var peerId3 = new Buffer('23456789012345678901')
+var peerId1 = Buffer.from('01234567890123456789')
+var peerId2 = Buffer.from('12345678901234567890')
+var peerId3 = Buffer.from('23456789012345678901')
 var port = 6881
 
 function testClientStart (t, serverType) {

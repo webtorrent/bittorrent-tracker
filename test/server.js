@@ -1,3 +1,4 @@
+var Buffer = require('safe-buffer').Buffer
 var Client = require('../')
 var common = require('./common')
 var test = require('tape')
@@ -9,8 +10,8 @@ var test = require('tape')
 // })
 
 var infoHash = '4cb67059ed6bd08362da625b3ae77f6f4a075705'
-var peerId = new Buffer('01234567890123456789')
-var peerId2 = new Buffer('12345678901234567890')
+var peerId = Buffer.from('01234567890123456789')
+var peerId2 = Buffer.from('12345678901234567890')
 
 function serverTest (t, serverType, serverFamily) {
   t.plan(30)
