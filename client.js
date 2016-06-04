@@ -31,6 +31,7 @@ inherits(Client, EventEmitter)
  * @param {function} opts.getAnnounceOpts        callback to provide data to tracker
  * @param {number} opts.rtcConfig                RTCPeerConnection configuration object
  * @param {number} opts.wrtc                     custom webrtc impl (useful in node.js)
+ * @param {object} opts.httpAgent                HTTP agent impl (used to proxy http requests in node.js)
  */
 function Client (opts) {
   var self = this
@@ -62,6 +63,7 @@ function Client (opts) {
 
   self._rtcConfig = opts.rtcConfig
   self._wrtc = opts.wrtc
+  self._httpAgent = opts.httpAgent
   self._getAnnounceOpts = opts.getAnnounceOpts
 
   debug('new client %s', self.infoHash)

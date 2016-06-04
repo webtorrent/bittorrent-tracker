@@ -2,6 +2,7 @@ var Buffer = require('safe-buffer').Buffer
 var Client = require('../')
 var common = require('./common')
 var fixtures = require('webtorrent-fixtures')
+var http = require('http')
 var test = require('tape')
 
 var peerId1 = Buffer.from('01234567890123456789')
@@ -379,4 +380,55 @@ test('http: client announce with numwant', function (t) {
 
 test('udp: client announce with numwant', function (t) {
   testClientAnnounceWithNumWant(t, 'udp')
+})
+
+function testClientStartHttpAgent (t, serverType) {
+  t.plan(5)
+
+  common.createServer(t, serverType, function (server, announceUrl) {
+    var agent = new http.Agent()
+    var agentUsed = false
+    agent.createSocket = function (req, options) {
+      agentUsed = true
+      return http.Agent.prototype.createSocket.call(this, req, options)
+    }
+    var client = new Client({
+      infoHash: fixtures.leaves.parsedTorrent.infoHash,
+      announce: announceUrl,
+      peerId: peerId1,
+      port: port,
+      wrtc: {},
+      httpAgent: agent
+    })
+
+    if (serverType === 'ws') common.mockWebsocketTracker(client)
+    client.on('error', function (err) { t.error(err) })
+    client.on('warning', function (err) { t.error(err) })
+
+    client.once('update', function (data) {
+      t.equal(data.announce, announceUrl)
+      t.equal(typeof data.complete, 'number')
+      t.equal(typeof data.incomplete, 'number')
+
+      t.ok(agentUsed)
+
+      client.stop()
+
+      client.once('update', function () {
+        t.pass('got response to stop')
+        server.close()
+        client.destroy()
+      })
+    })
+
+    client.start()
+  })
+}
+
+test('http: client.start(httpAgent)', function (t) {
+  testClientStartHttpAgent(t, 'http')
+})
+
+test('ws: client.start(httpAgent)', function (t) {
+  testClientStartHttpAgent(t, 'ws')
 })
