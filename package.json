@@ -14,7 +14,8 @@
     "./lib/common-node.js": false,
     "./lib/client/http-tracker.js": false,
     "./lib/client/udp-tracker.js": false,
-    "./server.js": false
+    "./server.js": false,
+    "socks": false
   },
   "bugs": {
     "url": "https://github.com/feross/bittorrent-tracker/issues"
@@ -38,6 +39,7 @@
     "simple-get": "^2.0.0",
     "simple-peer": "^6.0.0",
     "simple-websocket": "^4.0.0",
+    "socks": "^1.1.9",
     "string2compact": "^1.1.1",
     "uniq": "^1.0.1",
     "ws": "^1.0.0",
