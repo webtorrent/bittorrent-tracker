@@ -192,10 +192,9 @@ test('udp: client.scrape()', function (t) {
   testClientScrape(t, 'udp')
 })
 
-// TODO: uncomment once scrape is supported on WebSocket trackers
-// test('ws: client.scrape()', function (t) {
-//   testClientScrape(t, 'ws')
-// })
+test('ws: client.scrape()', function (t) {
+  testClientScrape(t, 'ws')
+})
 
 function testClientAnnounceWithParams (t, serverType) {
   t.plan(5)
