@@ -3,6 +3,7 @@ var Client = require('../')
 var common = require('./common')
 var fixtures = require('webtorrent-fixtures')
 var http = require('http')
+var net = require('net')
 var test = require('tape')
 
 var peerId1 = Buffer.from('01234567890123456789')
@@ -388,9 +389,9 @@ function testClientStartHttpAgent (t, serverType) {
   common.createServer(t, serverType, function (server, announceUrl) {
     var agent = new http.Agent()
     var agentUsed = false
-    agent.createSocket = function (req, options) {
+    agent.createConnection = function (opts, fn) {
       agentUsed = true
-      return http.Agent.prototype.createSocket.call(this, req, options)
+      return net.createConnection(opts, fn)
     }
     var client = new Client({
       infoHash: fixtures.leaves.parsedTorrent.infoHash,
