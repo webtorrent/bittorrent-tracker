@@ -150,7 +150,7 @@ function Server (opts) {
         return count
       }
 
-      if (req.method === 'GET' && req.url === '/stats') {
+      if (req.method === 'GET' && req.url === '/stats' || 'stats.json') {
         infoHashes.forEach(function (infoHash) {
           var peers = self.torrents[infoHash].peers
           var keys = Object.keys(peers)
@@ -185,13 +185,37 @@ function Server (opts) {
         var isIPv4 = function (peer) { return peer.ipv4 }
         var isIPv6 = function (peer) { return peer.ipv6 }
 
-        res.end('<h1>' + infoHashes.length + ' torrents (' + activeTorrents + ' active)</h1>\n' +
-          '<h2>Connected Peers: ' + Object.keys(allPeers).length + '</h2>\n' +
-          '<h3>Peers Seeding Only: ' + countPeers(isSeederOnly) + '</h3>\n' +
-          '<h3>Peers Leeching Only: ' + countPeers(isLeecherOnly) + '</h3>\n' +
-          '<h3>Peers Seeding & Leeching: ' + countPeers(isSeederAndLeecher) + '</h3>\n' +
-          '<h3>IPv4 Peers: ' + countPeers(isIPv4) + '</h3>\n' +
-          '<h3>IPv6 Peers: ' + countPeers(isIPv6) + '</h3>\n')
+        var torrents = infoHashes.length
+        var peersAll = Object.keys(allPeers).length
+        var peersSeederOnly = countPeers(isSeederOnly)
+        var peersLeecherOnly = countPeers(isLeecherOnly)
+        var peersSeederAndLeecher = countPeers(isSeederAndLeecher)
+        var peersIPv4 = countPeers(isIPv4)
+        var peersIPv6 = countPeers(isIPv6)
+
+        if (req.url === '/stats') {
+          res.end('<h1>' + torrents + ' torrents (' + activeTorrents + ' active)</h1>\n' +
+            '<h2>Connected Peers: ' + peersAll + '</h2>\n' +
+            '<h3>Peers Seeding Only: ' + peersSeederOnly + '</h3>\n' +
+            '<h3>Peers Leeching Only: ' + peersLeecherOnly + '</h3>\n' +
+            '<h3>Peers Seeding & Leeching: ' + peersSeederAndLeecher + '</h3>\n' +
+            '<h3>IPv4 Peers: ' + peersIPv4 + '</h3>\n' +
+            '<h3>IPv6 Peers: ' + peersIPv6 + '</h3>\n')
+        }
+
+        if (req.url === '/stats.json') {
+          res.write(JSON.stringify({
+            torrents: torrents,
+            activeTorrents: activeTorrents,
+            peersAll: peersAll,
+            peersSeederOnly: peersSeederOnly,
+            peersLeecherOnly: peersLeecherOnly,
+            peersSeederAndLeecher: peersSeederAndLeecher,
+            peersIPv4: peersIPv4,
+            peersIPv6: peersIPv6
+          }))
+          res.end()
+        }
       }
     })
   }
