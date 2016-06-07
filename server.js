@@ -150,7 +150,7 @@ function Server (opts) {
         return count
       }
 
-      if (req.method === 'GET' && req.url === '/stats') {
+      if (req.method === 'GET' && (req.url === '/stats' || req.url === '/stats.json')) {
         infoHashes.forEach(function (infoHash) {
           var peers = self.torrents[infoHash].peers
           var keys = Object.keys(peers)
@@ -185,13 +185,29 @@ function Server (opts) {
         var isIPv4 = function (peer) { return peer.ipv4 }
         var isIPv6 = function (peer) { return peer.ipv6 }
 
-        res.end('<h1>' + infoHashes.length + ' torrents (' + activeTorrents + ' active)</h1>\n' +
-          '<h2>Connected Peers: ' + Object.keys(allPeers).length + '</h2>\n' +
-          '<h3>Peers Seeding Only: ' + countPeers(isSeederOnly) + '</h3>\n' +
-          '<h3>Peers Leeching Only: ' + countPeers(isLeecherOnly) + '</h3>\n' +
-          '<h3>Peers Seeding & Leeching: ' + countPeers(isSeederAndLeecher) + '</h3>\n' +
-          '<h3>IPv4 Peers: ' + countPeers(isIPv4) + '</h3>\n' +
-          '<h3>IPv6 Peers: ' + countPeers(isIPv6) + '</h3>\n')
+        var stats = {
+          torrents: infoHashes.length,
+          activeTorrents: activeTorrents,
+          peersAll: Object.keys(allPeers).length,
+          peersSeederOnly: countPeers(isSeederOnly),
+          peersLeecherOnly: countPeers(isLeecherOnly),
+          peersSeederAndLeecher: countPeers(isSeederAndLeecher),
+          peersIPv4: countPeers(isIPv4),
+          peersIPv6: countPeers(isIPv6)
+        }
+
+        if (req.url === '/stats.json' || req.headers['content-type'] === 'application/json') {
+          res.write(JSON.stringify(stats))
+          res.end()
+        } else if (req.url === '/stats') {
+          res.end('<h1>' + stats.torrents + ' torrents (' + stats.activeTorrents + ' active)</h1>\n' +
+            '<h2>Connected Peers: ' + stats.peersAll + '</h2>\n' +
+            '<h3>Peers Seeding Only: ' + stats.peersSeederOnly + '</h3>\n' +
+            '<h3>Peers Leeching Only: ' + stats.peersLeecherOnly + '</h3>\n' +
+            '<h3>Peers Seeding & Leeching: ' + stats.peersSeederAndLeecher + '</h3>\n' +
+            '<h3>IPv4 Peers: ' + stats.peersIPv4 + '</h3>\n' +
+            '<h3>IPv6 Peers: ' + stats.peersIPv6 + '</h3>\n')
+        }
       }
     })
   }
