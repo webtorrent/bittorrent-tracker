@@ -52,22 +52,23 @@ function serverTest (t, serverType, serverFamily) {
         t.equal(Object.keys(server.torrents).length, 1)
         t.equal(swarm.complete, 0)
         t.equal(swarm.incomplete, 1)
-        t.equal(Object.keys(swarm.peers).length, 1)
+        t.equal(Object.keys(swarm.peers.cache).length, 1)
 
         var id = serverType === 'ws'
           ? peerId.toString('hex')
           : hostname + ':6881'
 
-        t.equal(swarm.peers[id].type, serverType)
-        t.equal(swarm.peers[id].ip, clientIp)
-        t.equal(swarm.peers[id].peerId, peerId.toString('hex'))
-        t.equal(swarm.peers[id].complete, false)
+        var peer = swarm.peers.peek(id)
+        t.equal(peer.type, serverType)
+        t.equal(peer.ip, clientIp)
+        t.equal(peer.peerId, peerId.toString('hex'))
+        t.equal(peer.complete, false)
         if (serverType === 'ws') {
-          t.equal(typeof swarm.peers[id].port, 'number')
-          t.ok(swarm.peers[id].socket)
+          t.equal(typeof peer.port, 'number')
+          t.ok(peer.socket)
         } else {
-          t.equal(swarm.peers[id].port, 6881)
-          t.notOk(swarm.peers[id].socket)
+          t.equal(peer.port, 6881)
+          t.notOk(peer.socket)
         }
 
         client1.complete()
