@@ -156,7 +156,7 @@ function Server (opts) {
       if (req.method === 'GET' && (req.url === '/stats' || req.url === '/stats.json')) {
         infoHashes.forEach(function (infoHash) {
           var peers = self.torrents[infoHash].peers
-          var keys = Object.keys(peers.cache)
+          var keys = peers.keys
           if (keys.length > 0) activeTorrents++
 
           keys.forEach(function (peerId) {

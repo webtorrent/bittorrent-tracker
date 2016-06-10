@@ -58,7 +58,7 @@ function serverTest (t, serverType, serverFamily) {
         t.equal(Object.keys(server.torrents).length, 1)
         t.equal(swarm.complete, 0)
         t.equal(swarm.incomplete, 1)
-        t.equal(Object.keys(swarm.peers.cache).length, 1)
+        t.equal(swarm.peers.length, 1)
 
         var id = serverType === 'ws'
           ? peerId.toString('hex')
