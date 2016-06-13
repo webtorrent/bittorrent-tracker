@@ -60,7 +60,7 @@ test('server: get empty stats with json header', function (t) {
     var opts = {
       url: announceUrl.replace('/announce', '/stats'),
       headers: {
-        'content-type': 'json'
+        'accept': 'application/json'
       },
       json: true
     }
@@ -134,7 +134,6 @@ test('server: get leecher stats.json', function (t) {
 
       get.concat(opts, function (err, res, stats) {
         t.error(err)
-        console.log(stats)
 
         t.equal(res.statusCode, 200)
         t.equal(stats.torrents, 1)
