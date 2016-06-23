@@ -7,6 +7,7 @@ var dgram = require('dgram')
 var EventEmitter = require('events').EventEmitter
 var http = require('http')
 var inherits = require('inherits')
+var peerid = require('bittorrent-peerid')
 var series = require('run-series')
 var string2compact = require('string2compact')
 var WebSocketServer = require('ws').Server
@@ -150,6 +151,43 @@ function Server (opts) {
         return count
       }
 
+      function groupByClient () {
+        var clients = {}
+        for (var key in allPeers) {
+          if (allPeers.hasOwnProperty(key)) {
+            var peer = allPeers[key]
+
+            if (!clients[peer.client.client]) {
+              clients[peer.client.client] = {}
+            }
+            var client = clients[peer.client.client]
+            // If the client is not known show 8 chars from peerId as version
+            var version = peer.client.version || new Buffer(peer.peerId, 'hex').toString().substring(0, 8)
+            if (!client[version]) {
+              client[version] = 0
+            }
+            client[version]++
+          }
+        }
+        return clients
+      }
+
+      function printClients (clients) {
+        var html = '<ul>\n'
+        for (var name in clients) {
+          if (clients.hasOwnProperty(name)) {
+            var client = clients[name]
+            for (var version in client) {
+              if (client.hasOwnProperty(version)) {
+                html += '<li><strong>' + name + '</strong> ' + version + ' : ' + client[version] + '</li>\n'
+              }
+            }
+          }
+        }
+        html += '</ul>'
+        return html
+      }
+
       if (req.method === 'GET' && (req.url === '/stats' || req.url === '/stats.json')) {
         infoHashes.forEach(function (infoHash) {
           var peers = self.torrents[infoHash].peers
@@ -176,6 +214,8 @@ function Server (opts) {
             } else {
               allPeers[peerId].leecher = true
             }
+            allPeers[peerId].peerId = peer.peerId
+            allPeers[peerId].client = peerid(peer.peerId)
           })
         })
 
@@ -193,7 +233,8 @@ function Server (opts) {
           peersLeecherOnly: countPeers(isLeecherOnly),
           peersSeederAndLeecher: countPeers(isSeederAndLeecher),
           peersIPv4: countPeers(isIPv4),
-          peersIPv6: countPeers(isIPv6)
+          peersIPv6: countPeers(isIPv6),
+          clients: groupByClient()
         }
 
         if (req.url === '/stats.json' || req.headers['accept'] === 'application/json') {
@@ -206,7 +247,10 @@ function Server (opts) {
             '<h3>Peers Leeching Only: ' + stats.peersLeecherOnly + '</h3>\n' +
             '<h3>Peers Seeding & Leeching: ' + stats.peersSeederAndLeecher + '</h3>\n' +
             '<h3>IPv4 Peers: ' + stats.peersIPv4 + '</h3>\n' +
-            '<h3>IPv6 Peers: ' + stats.peersIPv6 + '</h3>\n')
+            '<h3>IPv6 Peers: ' + stats.peersIPv6 + '</h3>\n' +
+            '<h3>Clients:</h3>\n' +
+            printClients(stats.clients)
+          )
         }
       }
     })

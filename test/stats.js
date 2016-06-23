@@ -5,7 +5,8 @@ var fixtures = require('webtorrent-fixtures')
 var get = require('simple-get')
 var test = require('tape')
 
-var peerId = Buffer.from('01234567890123456789')
+var peerId = Buffer.from('-WW0091-4ea5886ce160')
+var unknownPeerId = Buffer.from('01234567890123456789')
 
 function parseHtml (html) {
   var extractValue = new RegExp('[^v^h](\\d+)')
@@ -13,7 +14,9 @@ function parseHtml (html) {
     return line && line.trim().length > 0
   }).map(function (line) {
     var a = extractValue.exec(line)
-    return parseInt(a[1])
+    if (a) {
+      return parseInt(a[1])
+    }
   })
   var i = 0
   return {
@@ -111,7 +114,7 @@ test('server: get empty stats on stats.json', function (t) {
 })
 
 test('server: get leecher stats.json', function (t) {
-  t.plan(10)
+  t.plan(11)
 
   commonTest.createServer(t, 'http', function (server, announceUrl) {
     // announce a torrent to the tracker
@@ -142,6 +145,48 @@ test('server: get leecher stats.json', function (t) {
         t.equal(stats.peersSeederOnly, 0)
         t.equal(stats.peersLeecherOnly, 1)
         t.equal(stats.peersSeederAndLeecher, 0)
+        t.equal(stats.clients['WebTorrent']['0.0.9.1'], 1)
+
+        client.destroy(function () { t.pass('client destroyed') })
+        server.close(function () { t.pass('server closed') })
+      })
+    })
+  })
+})
+
+test('server: get leecher stats.json (unknown peerId)', function (t) {
+  t.plan(11)
+
+  commonTest.createServer(t, 'http', function (server, announceUrl) {
+    // announce a torrent to the tracker
+    var client = new Client({
+      infoHash: fixtures.leaves.parsedTorrent.infoHash,
+      announce: announceUrl,
+      peerId: unknownPeerId,
+      port: 6881
+    })
+    client.on('error', function (err) { t.error(err) })
+    client.on('warning', function (err) { t.error(err) })
+
+    client.start()
+
+    server.once('start', function () {
+      var opts = {
+        url: announceUrl.replace('/announce', '/stats.json'),
+        json: true
+      }
+
+      get.concat(opts, function (err, res, stats) {
+        t.error(err)
+
+        t.equal(res.statusCode, 200)
+        t.equal(stats.torrents, 1)
+        t.equal(stats.activeTorrents, 1)
+        t.equal(stats.peersAll, 1)
+        t.equal(stats.peersSeederOnly, 0)
+        t.equal(stats.peersLeecherOnly, 1)
+        t.equal(stats.peersSeederAndLeecher, 0)
+        t.equal(stats.clients['unknown']['01234567'], 1)
 
         client.destroy(function () { t.pass('client destroyed') })
         server.close(function () { t.pass('server closed') })
