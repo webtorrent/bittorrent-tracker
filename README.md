@@ -13,7 +13,7 @@
 
 Node.js implementation of a [BitTorrent tracker](https://wiki.theory.org/BitTorrentSpecification#Tracker_HTTP.2FHTTPS_Protocol), client and server.
 
-A **BitTorrent tracker** is an web service which responds to requests from BitTorrent
+A **BitTorrent tracker** is a web service which responds to requests from BitTorrent
 clients. The requests include metrics from clients that help the tracker keep overall
 statistics about the torrent. The response includes a peer list that helps the client
 participate in the torrent swarm.
