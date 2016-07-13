@@ -96,7 +96,8 @@ function testFilterCustomError (t, serverType) {
     var client = new Client({
       infoHash: fixtures.alice.parsedTorrent.infoHash,
       announce: announceUrl,
-      peerId: peerId, port: 6881,
+      peerId: peerId,
+      port: 6881,
       wrtc: {}
     })
 
