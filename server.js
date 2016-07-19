@@ -51,6 +51,9 @@ function Server (opts) {
   self._trustProxy = !!opts.trustProxy
   if (typeof opts.filter === 'function') self._filter = opts.filter
 
+  self.peersCacheLength = opts.peersCacheLength
+  self.peersCacheTtl = opts.peersCacheTtl
+
   self._listenCalled = false
   self.listening = false
   self.destroyed = false
@@ -191,7 +194,7 @@ function Server (opts) {
       if (req.method === 'GET' && (req.url === '/stats' || req.url === '/stats.json')) {
         infoHashes.forEach(function (infoHash) {
           var peers = self.torrents[infoHash].peers
-          var keys = Object.keys(peers)
+          var keys = peers.keys
           if (keys.length > 0) activeTorrents++
 
           keys.forEach(function (peerId) {
@@ -203,7 +206,8 @@ function Server (opts) {
                 leecher: false
               }
             }
-            var peer = peers[peerId]
+            // Don't mark the peer as most recently used for stats
+            var peer = peers.peek(peerId)
             if (peer.ip.indexOf(':') >= 0) {
               allPeers[peerId].ipv6 = true
             } else {
@@ -533,7 +537,8 @@ Server.prototype._onWebSocketRequest = function (socket, opts, params) {
         if (!swarm) {
           return self.emit('warning', new Error('no swarm with that `info_hash`'))
         }
-        var toPeer = swarm.peers[params.to_peer_id]
+        // Mark the destination peer as recently used in cache
+        var toPeer = swarm.peers.get(params.to_peer_id)
         if (!toPeer) {
           return self.emit('warning', new Error('no peer with that `to_peer_id`'))
         }

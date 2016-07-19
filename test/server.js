@@ -12,9 +12,10 @@ var test = require('tape')
 var infoHash = '4cb67059ed6bd08362da625b3ae77f6f4a075705'
 var peerId = Buffer.from('01234567890123456789')
 var peerId2 = Buffer.from('12345678901234567890')
+var peerId3 = Buffer.from('23456789012345678901')
 
 function serverTest (t, serverType, serverFamily) {
-  t.plan(30)
+  t.plan(32)
 
   var hostname = serverFamily === 'inet6'
     ? '[::1]'
@@ -23,7 +24,12 @@ function serverTest (t, serverType, serverFamily) {
     ? '::1'
     : '127.0.0.1'
 
-  common.createServer(t, serverType, function (server) {
+  var opts = {
+    serverType: serverType,
+    peersCacheLength: 2
+  }
+
+  common.createServer(t, opts, function (server) {
     var port = server[serverType].address().port
     var announceUrl = serverType + '://' + hostname + ':' + port + '/announce'
 
@@ -52,22 +58,23 @@ function serverTest (t, serverType, serverFamily) {
         t.equal(Object.keys(server.torrents).length, 1)
         t.equal(swarm.complete, 0)
         t.equal(swarm.incomplete, 1)
-        t.equal(Object.keys(swarm.peers).length, 1)
+        t.equal(swarm.peers.length, 1)
 
         var id = serverType === 'ws'
           ? peerId.toString('hex')
           : hostname + ':6881'
 
-        t.equal(swarm.peers[id].type, serverType)
-        t.equal(swarm.peers[id].ip, clientIp)
-        t.equal(swarm.peers[id].peerId, peerId.toString('hex'))
-        t.equal(swarm.peers[id].complete, false)
+        var peer = swarm.peers.peek(id)
+        t.equal(peer.type, serverType)
+        t.equal(peer.ip, clientIp)
+        t.equal(peer.peerId, peerId.toString('hex'))
+        t.equal(peer.complete, false)
         if (serverType === 'ws') {
-          t.equal(typeof swarm.peers[id].port, 'number')
-          t.ok(swarm.peers[id].socket)
+          t.equal(typeof peer.port, 'number')
+          t.ok(peer.socket)
         } else {
-          t.equal(swarm.peers[id].port, 6881)
-          t.notOk(swarm.peers[id].socket)
+          t.equal(peer.port, 6881)
+          t.notOk(peer.socket)
         }
 
         client1.complete()
@@ -102,22 +109,42 @@ function serverTest (t, serverType, serverFamily) {
             client2.once('peer', function (addr) {
               t.ok(addr === hostname + ':6881' || addr === hostname + ':6882' || addr.id === peerId.toString('hex'))
 
-              client2.stop()
-              client2.once('update', function (data) {
-                t.equal(data.announce, announceUrl)
-                t.equal(data.complete, 1)
-                t.equal(data.incomplete, 0)
-                client2.destroy()
+              swarm.peers.once('evict', function (evicted) {
+                t.equals(evicted.value.peerId, peerId.toString('hex'))
+              })
+              var client3 = new Client({
+                infoHash: infoHash,
+                announce: [ announceUrl ],
+                peerId: peerId3,
+                port: 6880
+                // wrtc: wrtc
+              })
+              client3.start()
 
-                client1.stop()
-                client1.once('update', function (data) {
+              server.once('start', function () {
+                t.pass('got start message from client3')
+              })
+
+              client3.once('update', function () {
+                client2.stop()
+                client2.once('update', function (data) {
                   t.equal(data.announce, announceUrl)
-                  t.equal(data.complete, 0)
-                  t.equal(data.incomplete, 0)
+                  t.equal(data.complete, 1)
+                  t.equal(data.incomplete, 1)
+                  client2.destroy()
 
-                  client1.destroy(function () {
-                    server.close()
-                    // if (serverType === 'ws') wrtc.close()
+                  client3.stop()
+                  client3.once('update', function (data) {
+                    t.equal(data.announce, announceUrl)
+                    t.equal(data.complete, 1)
+                    t.equal(data.incomplete, 0)
+
+                    client3.destroy(function () {
+                      client1.destroy(function () {
+                        server.close()
+                      })
+                      // if (serverType === 'ws') wrtc.close()
+                    })
                   })
                 })
               })
