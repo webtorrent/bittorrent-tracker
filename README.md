@@ -72,6 +72,27 @@ var optionalOpts = {
       left: 0,
       customParam: 'blah' // custom parameters supported
     }
+  },
+  // NodeJS HTTP agent implementation (used to proxy HTTP and Websocket requests in node)
+  httpAgent: {},
+  // Socks proxy options (used to proxy UDP requests in node)
+  socksProxyOpts: {
+      // Configuration from socks module (https://github.com/JoshGlazebrook/socks)
+      proxy: {
+          // IP Address of Proxy (Required)
+          ipaddress: "1.2.3.4",
+          // TCP Port of Proxy (Required)
+          port: 1080,
+          // Proxy Type 5 (Required)
+          // Type 4 does not support UDP association relay 
+          type: 5,
+  
+          // Authentication used for SOCKS 5 (when it's required) (Optional)
+          authentication: {
+              username: "Josh",
+              password: "somepassword"
+          }
+      }
   }
 }
 
