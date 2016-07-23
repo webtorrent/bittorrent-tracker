@@ -73,26 +73,43 @@ var optionalOpts = {
       customParam: 'blah' // custom parameters supported
     }
   },
-  // NodeJS HTTP agent implementation (used to proxy HTTP and Websocket requests in node)
-  httpAgent: {},
-  // Socks proxy options (used to proxy UDP requests in node)
-  socksProxyOpts: {
-      // Configuration from socks module (https://github.com/JoshGlazebrook/socks)
-      proxy: {
-          // IP Address of Proxy (Required)
-          ipaddress: "1.2.3.4",
-          // TCP Port of Proxy (Required)
-          port: 1080,
-          // Proxy Type 5 (Required)
-          // Type 4 does not support UDP association relay 
-          type: 5,
   
-          // Authentication used for SOCKS 5 (when it's required) (Optional)
-          authentication: {
-              username: "Josh",
-              password: "somepassword"
-          }
-      }
+  proxyOpts: {
+      // Socks proxy options (used to proxy requests in node)
+      socksProxyOpts: {
+          // Configuration from socks module (https://github.com/JoshGlazebrook/socks)
+          proxy: {
+              // IP Address of Proxy (Required)
+              ipaddress: "1.2.3.4",
+              // TCP Port of Proxy (Required)
+              port: 1080,
+              // Proxy Type [4, 5] (Required)
+              // Note: 4 works for both 4 and 4a.
+              // Type 4 does not support UDP association relay 
+              type: 5,
+              
+              // SOCKS 4 Specific:
+              
+              // UserId used when making a SOCKS 4/4a request. (Optional)
+              userid: "someuserid",
+
+              // SOCKS 5 Specific:
+      
+              // Authentication used for SOCKS 5 (when it's required) (Optional)
+              authentication: {
+                  username: "Josh",
+                  password: "somepassword"
+              }
+          },
+          
+          // Amount of time to wait for a connection to be established. (Optional)
+          // - defaults to 10000ms (10 seconds)
+          timeout: 10000
+      },
+      // NodeJS HTTP agents (used to proxy HTTP and Websocket requests in node)
+      // Populated with Socks.Agent if socksProxyOpts is provided
+      httpAgent: {},
+      httpsAgent: {}
   }
 }
 

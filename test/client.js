@@ -399,7 +399,9 @@ function testClientStartHttpAgent (t, serverType) {
       peerId: peerId1,
       port: port,
       wrtc: {},
-      httpAgent: agent
+      proxyOpts: {
+        httpAgent: agent
+      }
     })
 
     if (serverType === 'ws') common.mockWebsocketTracker(client)

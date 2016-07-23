@@ -8,6 +8,7 @@ var inherits = require('inherits')
 var once = require('once')
 var parallel = require('run-parallel')
 var Peer = require('simple-peer')
+var Socks = require('socks')
 var uniq = require('uniq')
 var url = require('url')
 
@@ -31,8 +32,7 @@ inherits(Client, EventEmitter)
  * @param {function} opts.getAnnounceOpts        callback to provide data to tracker
  * @param {number} opts.rtcConfig                RTCPeerConnection configuration object
  * @param {number} opts.wrtc                     custom webrtc impl (useful in node.js)
- * @param {object} opts.httpAgent                HTTP agent impl (used to proxy http requests in node.js)
- * @param {object} opts.socksProxyOpts           socks proxy options (used to proxy UDP requests in node.js)
+ * @param {object} opts.proxyOpts                proxy options (useful in node.js)
  */
 function Client (opts) {
   var self = this
@@ -64,9 +64,16 @@ function Client (opts) {
 
   self._rtcConfig = opts.rtcConfig
   self._wrtc = opts.wrtc
-  self._httpAgent = opts.httpAgent
-  self._socksProxyOpts = opts.socksProxyOpts
   self._getAnnounceOpts = opts.getAnnounceOpts
+  self._proxyOpts = opts.proxyOpts
+
+  // Create HTTP agents from socks proxy if needed
+  if (self._proxyOpts && self._proxyOpts.socksProxy && !self._proxyOpts.httpAgent) {
+    self._proxyOpts.httpAgent = new Socks.Agent(self._proxyOpts.socksProxy, false)
+  }
+  if (self._proxyOpts && self._proxyOpts.socksProxy && !self._proxyOpts.httpsAgent) {
+    self._proxyOpts.httpsAgent = new Socks.Agent(self._proxyOpts.socksProxy, true)
+  }
 
   debug('new client %s', self.infoHash)
 
