@@ -76,7 +76,7 @@ var optionalOpts = {
   
   proxyOpts: {
       // Socks proxy options (used to proxy requests in node)
-      socksProxyOpts: {
+      socksProxy: {
           // Configuration from socks module (https://github.com/JoshGlazebrook/socks)
           proxy: {
               // IP Address of Proxy (Required)
@@ -107,7 +107,7 @@ var optionalOpts = {
           timeout: 10000
       },
       // NodeJS HTTP agents (used to proxy HTTP and Websocket requests in node)
-      // Populated with Socks.Agent if socksProxyOpts is provided
+      // Populated with Socks.Agent if socksProxy is provided
       httpAgent: {},
       httpsAgent: {}
   }
