@@ -85,6 +85,34 @@ test('ws: scrape using Client.scrape static method', function (t) {
   clientScrapeStatic(t, 'ws')
 })
 
+// Ensure the callback function gets called when an invalid url is passed
+function clientScrapeStaticInvalid (t, serverType) {
+  var announceUrl = serverType + '://invalid.lol'
+  if (serverType === 'http') announceUrl += '/announce'
+
+  var client = Client.scrape({
+    announce: announceUrl,
+    infoHash: fixtures.leaves.parsedTorrent.infoHash,
+    wrtc: {}
+  }, function (err, data) {
+    t.ok(err instanceof Error)
+    t.end()
+  })
+  if (serverType === 'ws') common.mockWebsocketTracker(client)
+}
+
+test.only('http: scrape using Client.scrape static method (invalid url)', function (t) {
+  clientScrapeStaticInvalid(t, 'http')
+})
+
+test('udp: scrape using Client.scrape static method (invalid url)', function (t) {
+  clientScrapeStaticInvalid(t, 'udp')
+})
+
+test('ws: scrape using Client.scrape static method (invalid url)', function (t) {
+  clientScrapeStaticInvalid(t, 'ws')
+})
+
 function clientScrapeMulti (t, serverType) {
   var infoHash1 = fixtures.leaves.parsedTorrent.infoHash
   var infoHash2 = fixtures.alice.parsedTorrent.infoHash

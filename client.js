@@ -138,6 +138,7 @@ Client.scrape = function (opts, cb) {
 
   var client = new Client(clientOpts)
   client.once('error', cb)
+  client.once('warning', cb)
 
   var len = Array.isArray(opts.infoHash) ? opts.infoHash.length : 1
   var results = {}
