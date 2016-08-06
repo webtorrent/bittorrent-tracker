@@ -101,7 +101,7 @@ function clientScrapeStaticInvalid (t, serverType) {
   if (serverType === 'ws') common.mockWebsocketTracker(client)
 }
 
-test.only('http: scrape using Client.scrape static method (invalid url)', function (t) {
+test('http: scrape using Client.scrape static method (invalid url)', function (t) {
   clientScrapeStaticInvalid(t, 'http')
 })
 
