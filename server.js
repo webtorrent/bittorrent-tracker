@@ -200,31 +200,31 @@ function Server (opts) {
           keys.forEach(function (peerId) {
             // Don't mark the peer as most recently used for stats
             var peer = peers.peek(peerId)
+            if (peer == null) return // peers.peek() can evict the peer
 
-            // The peer could be evicted at this point
-            if (typeof peer !== 'undefined') {
-              if (!allPeers.hasOwnProperty(peerId)) {
-                allPeers[peerId] = {
-                  ipv4: false,
-                  ipv6: false,
-                  seeder: false,
-                  leecher: false
-                }
+            if (!allPeers.hasOwnProperty(peerId)) {
+              allPeers[peerId] = {
+                ipv4: false,
+                ipv6: false,
+                seeder: false,
+                leecher: false
               }
-
-              if (peer.ip.indexOf(':') >= 0) {
-                allPeers[peerId].ipv6 = true
-              } else {
-                allPeers[peerId].ipv4 = true
-              }
-              if (peer.complete) {
-                allPeers[peerId].seeder = true
-              } else {
-                allPeers[peerId].leecher = true
-              }
-              allPeers[peerId].peerId = peer.peerId
-              allPeers[peerId].client = peerid(peer.peerId)
             }
+
+            if (peer.ip.indexOf(':') >= 0) {
+              allPeers[peerId].ipv6 = true
+            } else {
+              allPeers[peerId].ipv4 = true
+            }
+
+            if (peer.complete) {
+              allPeers[peerId].seeder = true
+            } else {
+              allPeers[peerId].leecher = true
+            }
+
+            allPeers[peerId].peerId = peer.peerId
+            allPeers[peerId].client = peerid(peer.peerId)
           })
         })
 
