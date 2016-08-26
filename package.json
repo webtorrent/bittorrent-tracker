@@ -46,7 +46,7 @@
   "devDependencies": {
     "electron-webrtc": "^0.2.0",
     "magnet-uri": "^5.1.3",
-    "standard": "^7.0.0",
+    "standard": "*",
     "tape": "^4.0.0",
     "webtorrent-fixtures": "^1.3.0"
   },
