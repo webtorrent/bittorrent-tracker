@@ -67,14 +67,6 @@ function Client (opts) {
   self._getAnnounceOpts = opts.getAnnounceOpts
   self._proxyOpts = opts.proxyOpts
 
-  // Create HTTP agents from socks proxy if needed
-  if (self._proxyOpts && self._proxyOpts.socksProxy && !self._proxyOpts.httpAgent) {
-    self._proxyOpts.httpAgent = new Socks.Agent(self._proxyOpts.socksProxy, false)
-  }
-  if (self._proxyOpts && self._proxyOpts.socksProxy && !self._proxyOpts.httpsAgent) {
-    self._proxyOpts.httpsAgent = new Socks.Agent(self._proxyOpts.socksProxy, true)
-  }
-
   debug('new client %s', self.infoHash)
 
   var webrtcSupport = self._wrtc !== false && (!!self._wrtc || Peer.WEBRTC_SUPPORT)
