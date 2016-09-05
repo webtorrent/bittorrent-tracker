@@ -8,7 +8,6 @@ var inherits = require('inherits')
 var once = require('once')
 var parallel = require('run-parallel')
 var Peer = require('simple-peer')
-var Socks = require('socks')
 var uniq = require('uniq')
 var url = require('url')
 
