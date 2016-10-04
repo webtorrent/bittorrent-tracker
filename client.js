@@ -61,8 +61,12 @@ function Client (opts) {
   self.destroyed = false
 
   self._rtcConfig = opts.rtcConfig
-  self._wrtc = opts.wrtc
   self._getAnnounceOpts = opts.getAnnounceOpts
+  self._wrtc = opts.wrtc
+
+  // Support lazy 'wrtc' module initialization
+  // See: https://github.com/feross/webtorrent-hybrid/issues/46
+  if (typeof self._wrtc === 'function') self._wrtc = self._wrtc()
 
   debug('new client %s', self.infoHash)
 
