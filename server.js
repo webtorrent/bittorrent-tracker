@@ -10,7 +10,7 @@ var inherits = require('inherits')
 var peerid = require('bittorrent-peerid')
 var series = require('run-series')
 var string2compact = require('string2compact')
-var WebSocketServer = require('ws').Server
+var WebSocketServer = require('uws').Server
 
 var common = require('./lib/common')
 var Swarm = require('./lib/server/swarm')
