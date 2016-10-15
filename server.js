@@ -445,7 +445,7 @@ Server.prototype.onWebSocketConnection = function (socket, opts) {
   var self = this
   if (!opts) opts = {}
   opts.trustProxy = opts.trustProxy || self._trustProxy
-  
+
   socket.headers = socket.upgradeReq.headers
   socket.realIPAddress = opts.trustProxy
       ? socket.headers['x-forwarded-for'] || socket.headers['x-real-ip'] || socket._socket.remoteAddress
