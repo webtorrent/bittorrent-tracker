@@ -29,6 +29,7 @@ inherits(Server, EventEmitter)
  *
  * @param {Object}  opts            options object
  * @param {Number}  opts.interval   tell clients to announce on this interval (ms)
+ * @param {Number}  opts.trustIp    trust 'ip' parameter in GET requests
  * @param {Number}  opts.trustProxy trust 'x-forwarded-for' header from reverse proxy
  * @param {boolean} opts.http       start an http server? (default: true)
  * @param {boolean} opts.udp        start a udp server? (default: true)
@@ -49,6 +50,7 @@ function Server (opts) {
     : 10 * 60 * 1000 // 10 min
 
   self._trustProxy = !!opts.trustProxy
+  self._trustIp = !!opts.trustIp
   if (typeof opts.filter === 'function') self._filter = opts.filter
 
   self.peersCacheLength = opts.peersCacheLength
@@ -366,6 +368,7 @@ Server.prototype.onHttpRequest = function (req, res, opts) {
   var self = this
   if (!opts) opts = {}
   opts.trustProxy = opts.trustProxy || self._trustProxy
+  opts.trustIp = opts.trustIp || self._trustIp
 
   var params
   try {
@@ -445,6 +448,7 @@ Server.prototype.onWebSocketConnection = function (socket, opts) {
   var self = this
   if (!opts) opts = {}
   opts.trustProxy = opts.trustProxy || self._trustProxy
+  opts.trustIp = opts.trustIp || self._trustIp
 
   socket.peerId = null // as hex
   socket.infoHashes = [] // swarms that this socket is participating in

@@ -70,6 +70,7 @@ var optionalOpts = {
       uploaded: 0,
       downloaded: 0,
       left: 0,
+      ip: 'custom.ip.address.or.hostname',
       customParam: 'blah' // custom parameters supported
     }
   }
@@ -252,6 +253,7 @@ $ bittorrent-tracker --help
 
   Options:
     -p, --port [number]  change the port [default: 8000]
+        --trust-ip       trust 'ip' parameter in GET requests
         --trust-proxy    trust 'x-forwarded-for' header from reverse proxy
         --interval       client announce interval (ms) [default: 600000]
         --http           enable http server

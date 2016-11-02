@@ -16,6 +16,7 @@ var argv = minimist(process.argv.slice(2), {
     'http',
     'quiet',
     'silent',
+    'trust-ip',
     'trust-proxy',
     'udp',
     'version',
@@ -53,6 +54,7 @@ if (argv.help) {
         --http-hostname [string]  change the http server hostname [default: '::']
         --udp-hostname [string]   change the udp hostname [default: '0.0.0.0']
         --udp6-hostname [string]  change the udp6 hostname [default: '::']
+        --trust-ip                trust 'ip' parameter in GET requests
         --trust-proxy             trust 'x-forwarded-for' header from reverse proxy
         --interval                client announce interval (ms) [default: 600000]
         --http                    enable http server
@@ -82,6 +84,7 @@ var server = new Server({
   http: argv.http,
   interval: argv.interval,
   stats: argv.stats,
+  trustIp: argv['trust-ip'],
   trustProxy: argv['trust-proxy'],
   udp: argv.udp,
   ws: argv.ws
