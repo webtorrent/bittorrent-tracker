@@ -1,5 +1,5 @@
 var Buffer = require('safe-buffer').Buffer
-var Client = require('../')
+var Client = require('bittorrent-tracker')
 var common = require('./common')
 var fixtures = require('webtorrent-fixtures')
 var test = require('tape')

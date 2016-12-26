@@ -1,5 +1,5 @@
 var Buffer = require('safe-buffer').Buffer
-var Client = require('../')
+var Client = require('bittorrent-tracker')
 var common = require('./common')
 var fixtures = require('webtorrent-fixtures')
 var magnet = require('magnet-uri')
@@ -53,14 +53,6 @@ function testMagnet (t, serverType) {
     client.start()
   })
 }
-
-test('http: magnet: client.start/update/stop()', function (t) {
-  testMagnet(t, 'http')
-})
-
-test('udp: magnet: client.start/update/stop()', function (t) {
-  testMagnet(t, 'udp')
-})
 
 test('ws: magnet: client.start/update/stop()', function (t) {
   testMagnet(t, 'ws')

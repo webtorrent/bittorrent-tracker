@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 var minimist = require('minimist')
-var Server = require('../').Server
+var Server = require('../')
 
 var argv = minimist(process.argv.slice(2), {
   alias: {
@@ -41,23 +41,17 @@ if (argv.version) {
 if (argv.help) {
   console.log(function () {
   /*
-  bittorrent-tracker - Start a bittorrent tracker server
+  webtorrent-tracker - Start a webtorrent tracker server
 
   Usage:
-    bittorrent-tracker [OPTIONS]
+    webtorrent-tracker [OPTIONS]
 
   If no --http, --udp, or --ws option is supplied, all tracker types will be started.
 
   Options:
     -p, --port [number]           change the port [default: 8000]
-        --http-hostname [string]  change the http server hostname [default: '::']
-        --udp-hostname [string]   change the udp hostname [default: '0.0.0.0']
-        --udp6-hostname [string]  change the udp6 hostname [default: '::']
         --trust-proxy             trust 'x-forwarded-for' header from reverse proxy
         --interval                client announce interval (ms) [default: 600000]
-        --http                    enable http server
-        --udp                     enable udp server
-        --ws                      enable websocket server
         --stats                   enable web-based statistics (default: true)
     -q, --quiet                   only show error output
     -s, --silent                  show no output
@@ -113,24 +107,6 @@ var hostname = {
 }
 
 server.listen(argv.port, hostname, function () {
-  if (server.http && argv.http && !argv.quiet) {
-    var httpAddr = server.http.address()
-    var httpHost = httpAddr.address !== '::' ? httpAddr.address : 'localhost'
-    var httpPort = httpAddr.port
-    console.log('HTTP tracker: http://' + httpHost + ':' + httpPort + '/announce')
-  }
-  if (server.udp && !argv.quiet) {
-    var udpAddr = server.udp.address()
-    var udpHost = udpAddr.address
-    var udpPort = udpAddr.port
-    console.log('UDP tracker: udp://' + udpHost + ':' + udpPort)
-  }
-  if (server.udp6 && !argv.quiet) {
-    var udp6Addr = server.udp6.address()
-    var udp6Host = udp6Addr.address !== '::' ? udp6Addr.address : 'localhost'
-    var udp6Port = udp6Addr.port
-    console.log('UDP6 tracker: udp://' + udp6Host + ':' + udp6Port)
-  }
   if (server.ws && !argv.quiet) {
     var wsAddr = server.http.address()
     var wsHost = wsAddr.address !== '::' ? wsAddr.address : 'localhost'

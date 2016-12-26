@@ -1,5 +1,5 @@
 var Buffer = require('safe-buffer').Buffer
-var Client = require('../')
+var Client = require('bittorrent-tracker')
 var common = require('./common')
 var fixtures = require('webtorrent-fixtures')
 var test = require('tape')
@@ -69,14 +69,6 @@ function testFilterOption (t, serverType) {
   })
 }
 
-test('http: filter option blocks tracker from tracking torrent', function (t) {
-  testFilterOption(t, 'http')
-})
-
-test('udp: filter option blocks tracker from tracking torrent', function (t) {
-  testFilterOption(t, 'udp')
-})
-
 test('ws: filter option blocks tracker from tracking torrent', function (t) {
   testFilterOption(t, 'ws')
 })
@@ -144,14 +136,6 @@ function testFilterCustomError (t, serverType) {
     client.start()
   })
 }
-
-test('http: filter option with custom error', function (t) {
-  testFilterCustomError(t, 'http')
-})
-
-test('udp: filter option filter option with custom error', function (t) {
-  testFilterCustomError(t, 'udp')
-})
 
 test('ws: filter option filter option with custom error', function (t) {
   testFilterCustomError(t, 'ws')

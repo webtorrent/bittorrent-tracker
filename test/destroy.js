@@ -1,5 +1,5 @@
 var Buffer = require('safe-buffer').Buffer
-var Client = require('../')
+var Client = require('bittorrent-tracker')
 var common = require('./common')
 var fixtures = require('webtorrent-fixtures')
 var test = require('tape')
@@ -37,14 +37,6 @@ function testNoEventsAfterDestroy (t, serverType) {
     }, 1000)
   })
 }
-
-test('http: no "update" events after destroy()', function (t) {
-  testNoEventsAfterDestroy(t, 'http')
-})
-
-test('udp: no "update" events after destroy()', function (t) {
-  testNoEventsAfterDestroy(t, 'udp')
-})
 
 test('ws: no "update" events after destroy()', function (t) {
   testNoEventsAfterDestroy(t, 'ws')

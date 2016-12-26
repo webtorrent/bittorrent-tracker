@@ -1,15 +1,17 @@
 var Buffer = require('safe-buffer').Buffer
-var Client = require('../')
+var Client = require('bittorrent-tracker')
 var common = require('./common')
 var fixtures = require('webtorrent-fixtures')
 var test = require('tape')
 
 var peerId = Buffer.from('01234567890123456789')
 
-function testLargeTorrent (t, serverType) {
+test('large torrent: client.start()', function (t) {
   t.plan(9)
 
-  common.createServer(t, serverType, function (server, announceUrl) {
+  common.createServer(t, {}, function (server, announceUrl) {
+    console.log(announceUrl)
+
     var client = new Client({
       infoHash: fixtures.sintel.parsedTorrent.infoHash,
       peerId: peerId,
@@ -18,7 +20,7 @@ function testLargeTorrent (t, serverType) {
       wrtc: {}
     })
 
-    if (serverType === 'ws') common.mockWebsocketTracker(client)
+    common.mockWebsocketTracker(client)
     client.on('error', function (err) { t.error(err) })
     client.on('warning', function (err) { t.error(err) })
 
@@ -49,16 +51,4 @@ function testLargeTorrent (t, serverType) {
 
     client.start()
   })
-}
-
-test('http: large torrent: client.start()', function (t) {
-  testLargeTorrent(t, 'http')
-})
-
-test('udp: large torrent: client.start()', function (t) {
-  testLargeTorrent(t, 'udp')
-})
-
-test('ws: large torrent: client.start()', function (t) {
-  testLargeTorrent(t, 'ws')
 })
