@@ -8,7 +8,7 @@ var inherits = require('inherits')
 var peerid = require('bittorrent-peerid')
 var series = require('run-series')
 var string2compact = require('string2compact')
-var WebSocketServer = require('ws').Server
+var WebSocketServer = require('uws').Server
 
 var common = require('./lib/common')
 var Swarm = require('./lib/server/swarm')
@@ -288,6 +288,10 @@ Server.prototype.onWebSocketConnection = function (socket, opts) {
   var self = this
   if (!opts) opts = {}
   opts.trustProxy = opts.trustProxy || self._trustProxy
+
+  socket.headers = socket.upgradeReq.headers
+  socket.realIPAddress = opts.trustProxy ? socket.headers['x-forwarded-for'] || socket.headers['x-real-ip'] || socket._socket.remoteAddress : socket._socket.remoteAddress.replace(common.REMOVE_IPV4_MAPPED_IPV6_RE, '') // force ipv4
+  socket.port = socket._socket.remotePort
 
   socket.peerId = null // as hex
   socket.infoHashes = [] // swarms that this socket is participating in

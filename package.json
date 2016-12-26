@@ -9,12 +9,12 @@
   },
   "bin": {
     "webtorrent-tracker": "./bin/cmd.js"
-  },  
+  },
   "bugs": {
     "url": "https://github.com/feross/bittorrent-tracker/issues"
   },
   "dependencies": {
-    "bencode": "^0.10.0",
+    "bencode": "^0.11.0",
     "bittorrent-peerid": "^1.0.2",
     "bn.js": "^4.4.0",
     "compact2string": "^1.2.0",
@@ -34,7 +34,7 @@
     "simple-websocket": "^4.0.0",
     "string2compact": "^1.1.1",
     "uniq": "^1.0.1",
-    "ws": "^1.0.0",
+    "uws": "^0.12.0",
     "xtend": "^4.0.0"
   },
   "devDependencies": {

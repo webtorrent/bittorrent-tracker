@@ -10,8 +10,6 @@ test('large torrent: client.start()', function (t) {
   t.plan(9)
 
   common.createServer(t, {}, function (server, announceUrl) {
-    console.log(announceUrl)
-
     var client = new Client({
       infoHash: fixtures.sintel.parsedTorrent.infoHash,
       peerId: peerId,
