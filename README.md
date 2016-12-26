@@ -142,4 +142,8 @@ $ webtorrent-tracker --help
 
 ## License
 
-MIT. Copyright (c) [Feross Aboukhadijeh](http://feross.org).
+MIT
+
+Copyright (c) [Diego Rodríguez Baquero](https://diegorbaquero.com) (uwt)
+
+Copyright (c) [Feross Aboukhadijeh](http://feross.org) (bittorrent-tracker)
