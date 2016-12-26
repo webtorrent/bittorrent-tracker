@@ -562,7 +562,6 @@ Server.prototype._onWebSocketClose = function (socket) {
       var swarm = self.torrents[infoHash]
       if (swarm) {
         swarm.announce({
-          type: 'ws',
           event: 'stopped',
           numwant: 0,
           peer_id: socket.peerId
@@ -574,9 +573,6 @@ Server.prototype._onWebSocketClose = function (socket) {
   // ignore all future errors
   socket.onSend = noop
   socket.on('error', noop)
-
-  socket.peerId = null
-  socket.infoHashes = null
 
   if (typeof socket.onMessageBound === 'function') {
     socket.removeListener('message', socket.onMessageBound)
@@ -592,6 +588,11 @@ Server.prototype._onWebSocketClose = function (socket) {
     socket.removeListener('close', socket.onCloseBound)
   }
   socket.onCloseBound = null
+
+  process.nextTick(function () {
+    socket.peerId = null
+    socket.infoHashes = null
+  })
 }
 
 Server.prototype._onWebSocketError = function (socket, err) {
