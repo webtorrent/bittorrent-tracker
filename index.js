@@ -1,7 +1,7 @@
 module.exports = Server
 
 var Buffer = require('safe-buffer').Buffer
-var debug = require('debug')('bittorrent-tracker')
+var debug = require('debug')('uwt')
 var EventEmitter = require('events').EventEmitter
 var http = require('http')
 var inherits = require('inherits')
@@ -25,7 +25,7 @@ inherits(Server, EventEmitter)
  *
  * @param {Object}  opts            options object
  * @param {Number}  opts.interval   tell clients to announce on this interval (ms)
- * @param {Number}  opts.trustProxy trust 'x-forwarded-for' header from reverse proxy
+ * @param {Number}  opts.trustProxy trust 'x-forwarded-for' and 'x-real-ip' headers from reverse proxy
  * @param {boolean} opts.stats      enable web-based statistics? (default: true)
  * @param {function} opts.filter    black/whitelist fn for disallowing/allowing torrents
  */
@@ -220,7 +220,7 @@ Server.prototype._onError = function (err) {
   self.emit('error', err)
 }
 
-Server.prototype.listen = function (/* port, hostname, onlistening */) {
+Server.prototype.listen = function (/* port, onlistening */) {
   var self = this
 
   if (self._listenCalled || self.listening) throw new Error('server already listening')
@@ -230,9 +230,8 @@ Server.prototype.listen = function (/* port, hostname, onlistening */) {
   if (typeof lastArg === 'function') self.once('listening', lastArg)
 
   var port = toNumber(arguments[0]) || arguments[0] || 0
-  var hostname = typeof arguments[1] !== 'function' ? arguments[1] : undefined
 
-  debug('listen (port: %o hostname: %o)', port, hostname)
+  debug('listen (port: %o)', port)
 
   function isObject (obj) {
     return typeof obj === 'object' && obj !== null
@@ -240,11 +239,7 @@ Server.prototype.listen = function (/* port, hostname, onlistening */) {
 
   var httpPort = isObject(port) ? (port.http || 0) : port
 
-  // binding to :: only receives IPv4 connections if the bindv6only sysctl is set 0,
-  // which is the default on many operating systems
-  var httpHostname = isObject(hostname) ? hostname.http : hostname
-
-  if (self.http) self.http.listen(httpPort, httpHostname)
+  if (self.http) self.http.listen(httpPort)
 }
 
 Server.prototype.close = function (cb) {

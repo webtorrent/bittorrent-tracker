@@ -11,7 +11,7 @@
     "webtorrent-tracker": "./bin/cmd.js"
   },
   "bugs": {
-    "url": "https://github.com/feross/bittorrent-tracker/issues"
+    "url": "https://github.com/DiegoRBaquero/uwt/issues"
   },
   "dependencies": {
     "bencode": "^0.11.0",
@@ -63,7 +63,6 @@
     "url": "git://github.com/DiegoRBaquero/uwt.git"
   },
   "scripts": {
-    "update-authors": "./bin/update-authors.sh",
     "test": "standard && tape test/*.js"
   }
 }

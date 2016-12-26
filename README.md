@@ -80,12 +80,12 @@ server.on('warning', function (err) {
 })
 
 server.on('listening', function () {
-  // fired when all requested servers are listening
+  // fired when server is listening
   console.log('listening on http port:' + server.http.address().port)
 })
 
 // start tracker server listening! Use 0 to listen on a random free port.
-server.listen(port, hostname, onlistening)
+server.listen(port, onlistening)
 
 // listen for individual tracker messages from peers:
 
@@ -116,7 +116,8 @@ Easily start a tracker server:
 
 ```sh
 $ webtorrent-tracker
-server listening on 8000
+Tracker: ws://localhost:8000
+Tracker stats: http://localhost:8000/stats
 ```
 
 Lots of options:
@@ -130,14 +131,13 @@ $ webtorrent-tracker --help
 
   Options:
     -p, --port [number]  change the port [default: 8000]
-        --trust-proxy    trust 'x-forwarded-for' header from reverse proxy
+        --trust-proxy    trust 'x-forwarded-for' and 'x-real-ip' headers from reverse proxy
         --interval       client announce interval (ms) [default: 600000]
-        --ws             enable websocket server
     -q, --quiet          only show error output
     -s, --silent         show no output
     -v, --version        print the current version
 
-  Please report bugs!  https://github.com/feross/bittorrent-tracker/issues
+  Please report bugs!  https://github.com/DiegoRBaquero/uwt/issues
 ```
 
 ## License
