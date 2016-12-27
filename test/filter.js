@@ -6,12 +6,6 @@ var test = require('tape')
 
 var peerId = Buffer.from('01234567890123456789')
 
-function onClientUpdate (t, client, server) {
-  t.pass('got announce')
-  client.destroy(function () { t.pass('client destroyed') })
-  server.close(function () { t.pass('server closed') })
-}
-
 function clientDestroy (t, client, server, announceUrl) {
   t.pass('client destroyed')
   client = new Client({
@@ -27,7 +21,11 @@ function clientDestroy (t, client, server, announceUrl) {
   client.on('error', function (err) { t.error(err) })
   client.on('warning', function (err) { t.error(err) })
 
-  client.on('update', onClientUpdate(t, client, server))
+  client.on('update', function () {
+    t.pass('got announce')
+    client.destroy(function () { t.pass('client destroyed') })
+    server.close(function () { t.pass('server closed') })
+  })
 
   server.on('start', function () {
     t.equal(Object.keys(server.torrents).length, 1)
