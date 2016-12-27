@@ -7,10 +7,10 @@ var test = require('tape')
 var peerId1 = Buffer.from('01234567890123456789')
 var port = 6881
 
-function testClientStart (t, serverType) {
+test('client.start()', function (t) {
   t.plan(4)
 
-  common.createServer(t, serverType, function (server, announceUrl) {
+  common.createServer(t, {}, function (server, announceUrl) {
     var client = new Client({
       infoHash: fixtures.leaves.parsedTorrent.infoHash,
       announce: announceUrl,
@@ -39,16 +39,12 @@ function testClientStart (t, serverType) {
 
     client.start()
   })
-}
-
-test('ws: client.start()', function (t) {
-  testClientStart(t, 'ws')
 })
 
-function testClientStop (t, serverType) {
+test('client.stop()', function (t) {
   t.plan(3)
 
-  common.createServer(t, serverType, function (server, announceUrl) {
+  common.createServer(t, {}, function (server, announceUrl) {
     var client = new Client({
       infoHash: fixtures.leaves.parsedTorrent.infoHash,
       announce: announceUrl,
@@ -77,16 +73,12 @@ function testClientStop (t, serverType) {
       })
     }, 1000)
   })
-}
-
-test('ws: client.stop()', function (t) {
-  testClientStop(t, 'ws')
 })
 
-function testClientUpdate (t, serverType) {
+test('client.update()', function (t) {
   t.plan(4)
 
-  common.createServer(t, serverType, function (server, announceUrl) {
+  common.createServer(t, {}, function (server, announceUrl) {
     var client = new Client({
       infoHash: fixtures.leaves.parsedTorrent.infoHash,
       announce: announceUrl,
@@ -95,7 +87,7 @@ function testClientUpdate (t, serverType) {
       wrtc: {}
     })
 
-    if (serverType === 'ws') common.mockWebsocketTracker(client)
+    common.mockWebsocketTracker(client)
     client.on('error', function (err) { t.error(err) })
     client.on('warning', function (err) { t.error(err) })
 
@@ -122,16 +114,12 @@ function testClientUpdate (t, serverType) {
       })
     })
   })
-}
-
-test('ws: client.update()', function (t) {
-  testClientUpdate(t, 'ws')
 })
 
-function testClientScrape (t, serverType) {
+test('client.scrape()', function (t) {
   t.plan(4)
 
-  common.createServer(t, serverType, function (server, announceUrl) {
+  common.createServer(t, {}, function (server, announceUrl) {
     var client = new Client({
       infoHash: fixtures.leaves.parsedTorrent.infoHash,
       announce: announceUrl,
@@ -140,7 +128,7 @@ function testClientScrape (t, serverType) {
       wrtc: {}
     })
 
-    if (serverType === 'ws') common.mockWebsocketTracker(client)
+    common.mockWebsocketTracker(client)
     client.on('error', function (err) { t.error(err) })
     client.on('warning', function (err) { t.error(err) })
 
@@ -156,10 +144,6 @@ function testClientScrape (t, serverType) {
 
     client.scrape()
   })
-}
-
-test('ws: client.scrape()', function (t) {
-  testClientScrape(t, 'ws')
 })
 
 function testClientAnnounceWithParams (t, serverType) {
