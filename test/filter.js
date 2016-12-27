@@ -1,19 +1,48 @@
 var Buffer = require('safe-buffer').Buffer
-var Client = require('../')
+var Client = require('bittorrent-tracker')
 var common = require('./common')
 var fixtures = require('webtorrent-fixtures')
 var test = require('tape')
 
 var peerId = Buffer.from('01234567890123456789')
 
-function testFilterOption (t, serverType) {
+function clientDestroy (t, client, server, announceUrl) {
+  t.pass('client destroyed')
+  client = new Client({
+    infoHash: fixtures.leaves.parsedTorrent.infoHash,
+    announce: announceUrl,
+    peerId: peerId,
+    port: 6881,
+    wrtc: {}
+  })
+
+  common.mockWebsocketTracker(client)
+
+  client.on('error', function (err) { t.error(err) })
+  client.on('warning', function (err) { t.error(err) })
+
+  client.on('update', function () {
+    t.pass('got announce')
+    client.destroy(function () { t.pass('client destroyed') })
+    server.close(function () { t.pass('server closed') })
+  })
+
+  server.on('start', function () {
+    t.equal(Object.keys(server.torrents).length, 1)
+  })
+
+  client.start()
+}
+
+test('filter option blocks tracker from tracking torrent', function (t) {
   t.plan(8)
 
-  var opts = { serverType: serverType } // this is test-suite-only option
-  opts.filter = function (infoHash, params, cb) {
-    process.nextTick(function () {
-      cb(infoHash !== fixtures.alice.parsedTorrent.infoHash)
-    })
+  var opts = {
+    filter: function (infoHash, params, cb) {
+      process.nextTick(function () {
+        cb(infoHash !== fixtures.alice.parsedTorrent.infoHash)
+      })
+    }
   }
 
   common.createServer(t, opts, function (server, announceUrl) {
@@ -25,38 +54,13 @@ function testFilterOption (t, serverType) {
       wrtc: {}
     })
 
-    client.on('error', function (err) { t.error(err) })
-    if (serverType === 'ws') common.mockWebsocketTracker(client)
+    common.mockWebsocketTracker(client)
 
+    client.on('error', function (err) { t.error(err) })
     client.once('warning', function (err) {
       t.ok(/disallowed info_hash/.test(err.message), 'got client warning')
 
-      client.destroy(function () {
-        t.pass('client destroyed')
-        client = new Client({
-          infoHash: fixtures.leaves.parsedTorrent.infoHash,
-          announce: announceUrl,
-          peerId: peerId,
-          port: 6881,
-          wrtc: {}
-        })
-        if (serverType === 'ws') common.mockWebsocketTracker(client)
-
-        client.on('error', function (err) { t.error(err) })
-        client.on('warning', function (err) { t.error(err) })
-
-        client.on('update', function () {
-          t.pass('got announce')
-          client.destroy(function () { t.pass('client destroyed') })
-          server.close(function () { t.pass('server closed') })
-        })
-
-        server.on('start', function () {
-          t.equal(Object.keys(server.torrents).length, 1)
-        })
-
-        client.start()
-      })
+      client.destroy(clientDestroy(t, client, server, announceUrl))
     })
 
     server.removeAllListeners('warning')
@@ -67,29 +71,18 @@ function testFilterOption (t, serverType) {
 
     client.start()
   })
-}
-
-test('http: filter option blocks tracker from tracking torrent', function (t) {
-  testFilterOption(t, 'http')
 })
 
-test('udp: filter option blocks tracker from tracking torrent', function (t) {
-  testFilterOption(t, 'udp')
-})
-
-test('ws: filter option blocks tracker from tracking torrent', function (t) {
-  testFilterOption(t, 'ws')
-})
-
-function testFilterCustomError (t, serverType) {
+test('filter option filter option with custom error', function (t) {
   t.plan(8)
 
-  var opts = { serverType: serverType } // this is test-suite-only option
-  opts.filter = function (infoHash, params, cb) {
-    process.nextTick(function () {
-      if (infoHash === fixtures.alice.parsedTorrent.infoHash) cb(new Error('alice blocked'))
-      else cb(true)
-    })
+  var opts = {
+    filter: function (infoHash, params, cb) {
+      process.nextTick(function () {
+        if (infoHash === fixtures.alice.parsedTorrent.infoHash) cb(new Error('alice blocked'))
+        else cb(true)
+      })
+    }
   }
 
   common.createServer(t, opts, function (server, announceUrl) {
@@ -101,38 +94,13 @@ function testFilterCustomError (t, serverType) {
       wrtc: {}
     })
 
-    client.on('error', function (err) { t.error(err) })
-    if (serverType === 'ws') common.mockWebsocketTracker(client)
+    common.mockWebsocketTracker(client)
 
+    client.on('error', function (err) { t.error(err) })
     client.once('warning', function (err) {
       t.ok(/alice blocked/.test(err.message), 'got client warning')
 
-      client.destroy(function () {
-        t.pass('client destroyed')
-        client = new Client({
-          infoHash: fixtures.leaves.parsedTorrent.infoHash,
-          announce: announceUrl,
-          peerId: peerId,
-          port: 6881,
-          wrtc: {}
-        })
-        if (serverType === 'ws') common.mockWebsocketTracker(client)
-
-        client.on('error', function (err) { t.error(err) })
-        client.on('warning', function (err) { t.error(err) })
-
-        client.on('update', function () {
-          t.pass('got announce')
-          client.destroy(function () { t.pass('client destroyed') })
-          server.close(function () { t.pass('server closed') })
-        })
-
-        server.on('start', function () {
-          t.equal(Object.keys(server.torrents).length, 1)
-        })
-
-        client.start()
-      })
+      client.destroy(clientDestroy(t, client, server, announceUrl))
     })
 
     server.removeAllListeners('warning')
@@ -143,16 +111,4 @@ function testFilterCustomError (t, serverType) {
 
     client.start()
   })
-}
-
-test('http: filter option with custom error', function (t) {
-  testFilterCustomError(t, 'http')
-})
-
-test('udp: filter option filter option with custom error', function (t) {
-  testFilterCustomError(t, 'udp')
-})
-
-test('ws: filter option filter option with custom error', function (t) {
-  testFilterCustomError(t, 'ws')
 })

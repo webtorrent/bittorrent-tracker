@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 var minimist = require('minimist')
-var Server = require('../').Server
+var Server = require('../')
 
 var argv = minimist(process.argv.slice(2), {
   alias: {
@@ -13,19 +13,11 @@ var argv = minimist(process.argv.slice(2), {
   },
   boolean: [
     'help',
-    'http',
     'quiet',
     'silent',
     'trust-proxy',
-    'udp',
     'version',
-    'ws',
     'stats'
-  ],
-  string: [
-    'http-hostname',
-    'udp-hostname',
-    'udp6-hostname'
   ],
   default: {
     port: 8000,
@@ -41,29 +33,21 @@ if (argv.version) {
 if (argv.help) {
   console.log(function () {
   /*
-  bittorrent-tracker - Start a bittorrent tracker server
+  webtorrent-tracker - Start a webtorrent tracker server
 
   Usage:
-    bittorrent-tracker [OPTIONS]
-
-  If no --http, --udp, or --ws option is supplied, all tracker types will be started.
+    webtorrent-tracker [OPTIONS]
 
   Options:
     -p, --port [number]           change the port [default: 8000]
-        --http-hostname [string]  change the http server hostname [default: '::']
-        --udp-hostname [string]   change the udp hostname [default: '0.0.0.0']
-        --udp6-hostname [string]  change the udp6 hostname [default: '::']
         --trust-proxy             trust 'x-forwarded-for' header from reverse proxy
         --interval                client announce interval (ms) [default: 600000]
-        --http                    enable http server
-        --udp                     enable udp server
-        --ws                      enable websocket server
         --stats                   enable web-based statistics (default: true)
     -q, --quiet                   only show error output
     -s, --silent                  show no output
     -v, --version                 print the current version
 
-  Please report bugs!  https://github.com/feross/bittorrent-tracker/issues
+  Please report bugs!  https://github.com/DiegoRBaquero/uwt/issues
 
   */
   }.toString().split(/\n/).slice(2, -2).join('\n'))
@@ -72,19 +56,10 @@ if (argv.help) {
 
 if (argv.silent) argv.quiet = true
 
-var allFalsy = !argv.http && !argv.udp && !argv.ws
-
-argv.http = allFalsy || argv.http
-argv.udp = allFalsy || argv.udp
-argv.ws = allFalsy || argv.ws
-
 var server = new Server({
-  http: argv.http,
   interval: argv.interval,
   stats: argv.stats,
-  trustProxy: argv['trust-proxy'],
-  udp: argv.udp,
-  ws: argv.ws
+  trustProxy: argv['trust-proxy']
 })
 
 server.on('error', function (err) {
@@ -106,36 +81,12 @@ server.on('stop', function (addr) {
   if (!argv.quiet) console.log('stop: ' + addr)
 })
 
-var hostname = {
-  http: argv['http-hostname'],
-  udp4: argv['udp-hostname'],
-  udp6: argv['upd6-hostname']
-}
-
-server.listen(argv.port, hostname, function () {
-  if (server.http && argv.http && !argv.quiet) {
-    var httpAddr = server.http.address()
-    var httpHost = httpAddr.address !== '::' ? httpAddr.address : 'localhost'
-    var httpPort = httpAddr.port
-    console.log('HTTP tracker: http://' + httpHost + ':' + httpPort + '/announce')
-  }
-  if (server.udp && !argv.quiet) {
-    var udpAddr = server.udp.address()
-    var udpHost = udpAddr.address
-    var udpPort = udpAddr.port
-    console.log('UDP tracker: udp://' + udpHost + ':' + udpPort)
-  }
-  if (server.udp6 && !argv.quiet) {
-    var udp6Addr = server.udp6.address()
-    var udp6Host = udp6Addr.address !== '::' ? udp6Addr.address : 'localhost'
-    var udp6Port = udp6Addr.port
-    console.log('UDP6 tracker: udp://' + udp6Host + ':' + udp6Port)
-  }
+server.listen(argv.port, function () {
   if (server.ws && !argv.quiet) {
     var wsAddr = server.http.address()
     var wsHost = wsAddr.address !== '::' ? wsAddr.address : 'localhost'
     var wsPort = wsAddr.port
-    console.log('WebSocket tracker: ws://' + wsHost + ':' + wsPort)
+    console.log('Tracker: ws://' + wsHost + ':' + wsPort)
   }
   if (server.http && argv.stats && !argv.quiet) {
     var statsAddr = server.http.address()

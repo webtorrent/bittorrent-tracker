@@ -1,5 +1,5 @@
 var Buffer = require('safe-buffer').Buffer
-var Client = require('../')
+var Client = require('bittorrent-tracker')
 var commonTest = require('./common')
 var fixtures = require('webtorrent-fixtures')
 var get = require('simple-get')
@@ -15,7 +15,7 @@ function parseHtml (html) {
   }).map(function (line) {
     var a = extractValue.exec(line)
     if (a) {
-      return parseInt(a[1])
+      return parseInt(a[1], 10)
     }
   })
   var i = 0
@@ -31,99 +31,80 @@ function parseHtml (html) {
   }
 }
 
+function getEmptyStats (t, server, opts) {
+  get.concat(opts, function (err, res, data) {
+    t.error(err)
+
+    var stats = typeof data.torrents !== 'undefined' ? data : parseHtml(data.toString())
+    t.equal(res.statusCode, 200)
+    t.equal(stats.torrents, 0)
+    t.equal(stats.activeTorrents, 0)
+    t.equal(stats.peersAll, 0)
+    t.equal(stats.peersSeederOnly, 0)
+    t.equal(stats.peersLeecherOnly, 0)
+    t.equal(stats.peersSeederAndLeecher, 0)
+    t.equal(stats.peersIPv4, 0)
+    t.equal(stats.peersIPv6, 0)
+
+    server.close(function () { t.pass('server closed') })
+  })
+}
+
 test('server: get empty stats', function (t) {
   t.plan(11)
 
-  commonTest.createServer(t, 'http', function (server, announceUrl) {
-    var url = announceUrl.replace('/announce', '/stats')
+  commonTest.createServer(t, {}, function (server, announceUrl) {
+    var opts = {
+      url: announceUrl.replace('ws', 'http') + '/stats'
+    }
 
-    get.concat(url, function (err, res, data) {
-      t.error(err)
-
-      var stats = parseHtml(data.toString())
-      t.equal(res.statusCode, 200)
-      t.equal(stats.torrents, 0)
-      t.equal(stats.activeTorrents, 0)
-      t.equal(stats.peersAll, 0)
-      t.equal(stats.peersSeederOnly, 0)
-      t.equal(stats.peersLeecherOnly, 0)
-      t.equal(stats.peersSeederAndLeecher, 0)
-      t.equal(stats.peersIPv4, 0)
-      t.equal(stats.peersIPv6, 0)
-
-      server.close(function () { t.pass('server closed') })
-    })
+    getEmptyStats(t, server, opts)
   })
 })
 
 test('server: get empty stats with json header', function (t) {
   t.plan(11)
 
-  commonTest.createServer(t, 'http', function (server, announceUrl) {
+  commonTest.createServer(t, {}, function (server, announceUrl) {
     var opts = {
-      url: announceUrl.replace('/announce', '/stats'),
+      url: announceUrl.replace('ws', 'http') + '/stats',
       headers: {
         'accept': 'application/json'
       },
       json: true
     }
 
-    get.concat(opts, function (err, res, stats) {
-      t.error(err)
-
-      t.equal(res.statusCode, 200)
-      t.equal(stats.torrents, 0)
-      t.equal(stats.activeTorrents, 0)
-      t.equal(stats.peersAll, 0)
-      t.equal(stats.peersSeederOnly, 0)
-      t.equal(stats.peersLeecherOnly, 0)
-      t.equal(stats.peersSeederAndLeecher, 0)
-      t.equal(stats.peersIPv4, 0)
-      t.equal(stats.peersIPv6, 0)
-
-      server.close(function () { t.pass('server closed') })
-    })
+    getEmptyStats(t, server, opts)
   })
 })
 
 test('server: get empty stats on stats.json', function (t) {
   t.plan(11)
 
-  commonTest.createServer(t, 'http', function (server, announceUrl) {
+  commonTest.createServer(t, {}, function (server, announceUrl) {
     var opts = {
-      url: announceUrl.replace('/announce', '/stats.json'),
+      url: announceUrl.replace('ws', 'http') + '/stats.json',
       json: true
     }
 
-    get.concat(opts, function (err, res, stats) {
-      t.error(err)
-
-      t.equal(res.statusCode, 200)
-      t.equal(stats.torrents, 0)
-      t.equal(stats.activeTorrents, 0)
-      t.equal(stats.peersAll, 0)
-      t.equal(stats.peersSeederOnly, 0)
-      t.equal(stats.peersLeecherOnly, 0)
-      t.equal(stats.peersSeederAndLeecher, 0)
-      t.equal(stats.peersIPv4, 0)
-      t.equal(stats.peersIPv6, 0)
-
-      server.close(function () { t.pass('server closed') })
-    })
+    getEmptyStats(t, server, opts)
   })
 })
 
 test('server: get leecher stats.json', function (t) {
   t.plan(11)
 
-  commonTest.createServer(t, 'http', function (server, announceUrl) {
+  commonTest.createServer(t, {}, function (server, announceUrl) {
     // announce a torrent to the tracker
     var client = new Client({
       infoHash: fixtures.leaves.parsedTorrent.infoHash,
       announce: announceUrl,
       peerId: peerId,
-      port: 6881
+      port: 6881,
+      wrtc: {}
     })
+
+    commonTest.mockWebsocketTracker(client)
     client.on('error', function (err) { t.error(err) })
     client.on('warning', function (err) { t.error(err) })
 
@@ -131,7 +112,7 @@ test('server: get leecher stats.json', function (t) {
 
     server.once('start', function () {
       var opts = {
-        url: announceUrl.replace('/announce', '/stats.json'),
+        url: announceUrl.replace('ws', 'http') + '/stats.json',
         json: true
       }
 
@@ -157,14 +138,17 @@ test('server: get leecher stats.json', function (t) {
 test('server: get leecher stats.json (unknown peerId)', function (t) {
   t.plan(11)
 
-  commonTest.createServer(t, 'http', function (server, announceUrl) {
+  commonTest.createServer(t, {}, function (server, announceUrl) {
     // announce a torrent to the tracker
     var client = new Client({
       infoHash: fixtures.leaves.parsedTorrent.infoHash,
       announce: announceUrl,
       peerId: unknownPeerId,
-      port: 6881
+      port: 6881,
+      wrtc: {}
     })
+
+    commonTest.mockWebsocketTracker(client)
     client.on('error', function (err) { t.error(err) })
     client.on('warning', function (err) { t.error(err) })
 
@@ -172,7 +156,7 @@ test('server: get leecher stats.json (unknown peerId)', function (t) {
 
     server.once('start', function () {
       var opts = {
-        url: announceUrl.replace('/announce', '/stats.json'),
+        url: announceUrl.replace('ws', 'http') + '/stats.json',
         json: true
       }
 
