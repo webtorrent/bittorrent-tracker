@@ -435,11 +435,18 @@ Server.prototype._onAnnounce = function (params, cb) {
     if (swarm) {
       announce(swarm)
     } else {
-      createSwarm()
+      createSwarmFilter()
     }
   })
 
   function createSwarm () {
+    self.createSwarm(params.info_hash, function (err, swarm) {
+      if (err) return cb(err)
+      announce(swarm)
+    })
+  }
+
+  function createSwarmFilter () {
     if (self._filter) {
       self._filter(params.info_hash, params, function (allowed) {
         if (allowed instanceof Error) {
@@ -447,17 +454,11 @@ Server.prototype._onAnnounce = function (params, cb) {
         } else if (!allowed) {
           cb(new Error('disallowed info_hash'))
         } else {
-          self.createSwarm(params.info_hash, function (err, swarm) {
-            if (err) return cb(err)
-            announce(swarm)
-          })
+          createSwarm()
         }
       })
     } else {
-      self.createSwarm(params.info_hash, function (err, swarm) {
-        if (err) return cb(err)
-        announce(swarm)
-      })
+      createSwarm()
     }
   }
 
@@ -505,7 +506,6 @@ Server.prototype._onScrape = function (params, cb) {
 
   if (params.info_hash == null) {
     // if info_hash param is omitted, stats for all torrents are returned
-    // TODO: make this configurable!
     params.info_hash = Object.keys(self.torrents)
   }
 
@@ -540,7 +540,7 @@ Server.prototype._onScrape = function (params, cb) {
       response.files[common.hexToBinary(result.infoHash)] = {
         complete: result.complete || 0,
         incomplete: result.incomplete || 0,
-        downloaded: result.complete || 0 // TODO: this only provides a lower-bound
+        downloaded: result.complete || 0
       }
     })
 
