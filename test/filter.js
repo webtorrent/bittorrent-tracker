@@ -6,14 +6,15 @@ var test = require('tape')
 
 var peerId = Buffer.from('01234567890123456789')
 
-function testFilterOption (t, serverType) {
+test('filter option blocks tracker from tracking torrent', function (t) {
   t.plan(8)
 
-  var opts = { serverType: serverType } // this is test-suite-only option
-  opts.filter = function (infoHash, params, cb) {
-    process.nextTick(function () {
-      cb(infoHash !== fixtures.alice.parsedTorrent.infoHash)
-    })
+  var opts = {
+    filter: function (infoHash, params, cb) {
+      process.nextTick(function () {
+        cb(infoHash !== fixtures.alice.parsedTorrent.infoHash)
+      })
+    }
   }
 
   common.createServer(t, opts, function (server, announceUrl) {
@@ -25,9 +26,9 @@ function testFilterOption (t, serverType) {
       wrtc: {}
     })
 
-    client.on('error', function (err) { t.error(err) })
-    if (serverType === 'ws') common.mockWebsocketTracker(client)
+    common.mockWebsocketTracker(client)
 
+    client.on('error', function (err) { t.error(err) })
     client.once('warning', function (err) {
       t.ok(/disallowed info_hash/.test(err.message), 'got client warning')
 
@@ -40,7 +41,8 @@ function testFilterOption (t, serverType) {
           port: 6881,
           wrtc: {}
         })
-        if (serverType === 'ws') common.mockWebsocketTracker(client)
+
+        common.mockWebsocketTracker(client)
 
         client.on('error', function (err) { t.error(err) })
         client.on('warning', function (err) { t.error(err) })
@@ -67,21 +69,18 @@ function testFilterOption (t, serverType) {
 
     client.start()
   })
-}
-
-test('ws: filter option blocks tracker from tracking torrent', function (t) {
-  testFilterOption(t, 'ws')
 })
 
-function testFilterCustomError (t, serverType) {
+test('filter option filter option with custom error', function (t) {
   t.plan(8)
 
-  var opts = { serverType: serverType } // this is test-suite-only option
-  opts.filter = function (infoHash, params, cb) {
-    process.nextTick(function () {
-      if (infoHash === fixtures.alice.parsedTorrent.infoHash) cb(new Error('alice blocked'))
-      else cb(true)
-    })
+  var opts = {
+    filter: function (infoHash, params, cb) {
+      process.nextTick(function () {
+        if (infoHash === fixtures.alice.parsedTorrent.infoHash) cb(new Error('alice blocked'))
+        else cb(true)
+      })
+    }
   }
 
   common.createServer(t, opts, function (server, announceUrl) {
@@ -93,9 +92,9 @@ function testFilterCustomError (t, serverType) {
       wrtc: {}
     })
 
-    client.on('error', function (err) { t.error(err) })
-    if (serverType === 'ws') common.mockWebsocketTracker(client)
+    common.mockWebsocketTracker(client)
 
+    client.on('error', function (err) { t.error(err) })
     client.once('warning', function (err) {
       t.ok(/alice blocked/.test(err.message), 'got client warning')
 
@@ -108,7 +107,8 @@ function testFilterCustomError (t, serverType) {
           port: 6881,
           wrtc: {}
         })
-        if (serverType === 'ws') common.mockWebsocketTracker(client)
+
+        common.mockWebsocketTracker(client)
 
         client.on('error', function (err) { t.error(err) })
         client.on('warning', function (err) { t.error(err) })
@@ -135,8 +135,4 @@ function testFilterCustomError (t, serverType) {
 
     client.start()
   })
-}
-
-test('ws: filter option filter option with custom error', function (t) {
-  testFilterCustomError(t, 'ws')
 })
