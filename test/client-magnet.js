@@ -7,7 +7,7 @@ var test = require('tape')
 
 var peerId = Buffer.from('01234567890123456789')
 
-test('ws: magnet: client.start/update/stop()', function (t) {
+test('magnet: client.start/update/stop()', function (t) {
   t.plan(9)
 
   var parsedTorrent = magnet(fixtures.leaves.magnetURI)
