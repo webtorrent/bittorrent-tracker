@@ -15,7 +15,7 @@ function parseHtml (html) {
   }).map(function (line) {
     var a = extractValue.exec(line)
     if (a) {
-      return parseInt(a[1])
+      return parseInt(a[1], 10)
     }
   })
   var i = 0
@@ -31,28 +31,34 @@ function parseHtml (html) {
   }
 }
 
+function getEmptyStats (t, server, opts) {
+  get.concat(opts, function (err, res, data) {
+    t.error(err)
+
+    var stats = typeof data.torrents !== 'undefined' ? data : parseHtml(data.toString())
+    t.equal(res.statusCode, 200)
+    t.equal(stats.torrents, 0)
+    t.equal(stats.activeTorrents, 0)
+    t.equal(stats.peersAll, 0)
+    t.equal(stats.peersSeederOnly, 0)
+    t.equal(stats.peersLeecherOnly, 0)
+    t.equal(stats.peersSeederAndLeecher, 0)
+    t.equal(stats.peersIPv4, 0)
+    t.equal(stats.peersIPv6, 0)
+
+    server.close(function () { t.pass('server closed') })
+  })
+}
+
 test('server: get empty stats', function (t) {
   t.plan(11)
 
   commonTest.createServer(t, {}, function (server, announceUrl) {
-    var url = announceUrl.replace('ws', 'http') + '/stats'
+    var opts = {
+      url: announceUrl.replace('ws', 'http') + '/stats'
+    }
 
-    get.concat(url, function (err, res, data) {
-      t.error(err)
-
-      var stats = parseHtml(data.toString())
-      t.equal(res.statusCode, 200)
-      t.equal(stats.torrents, 0)
-      t.equal(stats.activeTorrents, 0)
-      t.equal(stats.peersAll, 0)
-      t.equal(stats.peersSeederOnly, 0)
-      t.equal(stats.peersLeecherOnly, 0)
-      t.equal(stats.peersSeederAndLeecher, 0)
-      t.equal(stats.peersIPv4, 0)
-      t.equal(stats.peersIPv6, 0)
-
-      server.close(function () { t.pass('server closed') })
-    })
+    getEmptyStats(t, server, opts)
   })
 })
 
@@ -68,21 +74,7 @@ test('server: get empty stats with json header', function (t) {
       json: true
     }
 
-    get.concat(opts, function (err, res, stats) {
-      t.error(err)
-
-      t.equal(res.statusCode, 200)
-      t.equal(stats.torrents, 0)
-      t.equal(stats.activeTorrents, 0)
-      t.equal(stats.peersAll, 0)
-      t.equal(stats.peersSeederOnly, 0)
-      t.equal(stats.peersLeecherOnly, 0)
-      t.equal(stats.peersSeederAndLeecher, 0)
-      t.equal(stats.peersIPv4, 0)
-      t.equal(stats.peersIPv6, 0)
-
-      server.close(function () { t.pass('server closed') })
-    })
+    getEmptyStats(t, server, opts)
   })
 })
 
@@ -95,21 +87,7 @@ test('server: get empty stats on stats.json', function (t) {
       json: true
     }
 
-    get.concat(opts, function (err, res, stats) {
-      t.error(err)
-
-      t.equal(res.statusCode, 200)
-      t.equal(stats.torrents, 0)
-      t.equal(stats.activeTorrents, 0)
-      t.equal(stats.peersAll, 0)
-      t.equal(stats.peersSeederOnly, 0)
-      t.equal(stats.peersLeecherOnly, 0)
-      t.equal(stats.peersSeederAndLeecher, 0)
-      t.equal(stats.peersIPv4, 0)
-      t.equal(stats.peersIPv6, 0)
-
-      server.close(function () { t.pass('server closed') })
-    })
+    getEmptyStats(t, server, opts)
   })
 })
 

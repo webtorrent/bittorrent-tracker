@@ -7,12 +7,12 @@ var test = require('tape')
 
 var peerId = Buffer.from('01234567890123456789')
 
-function testMagnet (t, serverType) {
+test('ws: magnet: client.start/update/stop()', function (t) {
   t.plan(9)
 
   var parsedTorrent = magnet(fixtures.leaves.magnetURI)
 
-  common.createServer(t, serverType, function (server, announceUrl) {
+  common.createServer(t, {}, function (server, announceUrl) {
     var client = new Client({
       infoHash: parsedTorrent.infoHash,
       announce: announceUrl,
@@ -21,7 +21,8 @@ function testMagnet (t, serverType) {
       wrtc: {}
     })
 
-    if (serverType === 'ws') common.mockWebsocketTracker(client)
+    common.mockWebsocketTracker(client)
+
     client.on('error', function (err) { t.error(err) })
     client.on('warning', function (err) { t.error(err) })
 
@@ -52,8 +53,4 @@ function testMagnet (t, serverType) {
 
     client.start()
   })
-}
-
-test('ws: magnet: client.start/update/stop()', function (t) {
-  testMagnet(t, 'ws')
 })
