@@ -10,7 +10,7 @@ apps:
     plugs: [network, network-bind]
 
 grade: devel
-confinement: devmode
+confinement: strict
 
 parts:
   tracker:
