@@ -59,12 +59,8 @@ var requiredOpts = {
 }
 
 var optionalOpts = {
-  // RTCPeerConnection config object (only used in browser)
-  rtcConfig: {},
-  // custom webrtc impl, useful in node to specify [wrtc](https://npmjs.com/package/wrtc)
-  wrtc: {},
   getAnnounceOpts: function () {
-    // provide a callback that will be called whenever announce() is called
+    // Provide a callback that will be called whenever announce() is called
     // internally (on timer), or by the user
     return {
       uploaded: 0,
@@ -73,6 +69,12 @@ var optionalOpts = {
       customParam: 'blah' // custom parameters supported
     }
   }
+  // RTCPeerConnection config object (only used in browser)
+  rtcConfig: {},
+  // User-Agent header for http requests
+  userAgent: '',
+  // Custom webrtc impl, useful in node to specify [wrtc](https://npmjs.com/package/wrtc)
+  wrtc: {},
 }
 
 var client = new Client(requiredOpts)

@@ -30,6 +30,7 @@ inherits(Client, EventEmitter)
  * @param {number} opts.port                     torrent client listening port
  * @param {function} opts.getAnnounceOpts        callback to provide data to tracker
  * @param {number} opts.rtcConfig                RTCPeerConnection configuration object
+ * @param {number} opts.userAgent                User-Agent header for http requests
  * @param {number} opts.wrtc                     custom webrtc impl (useful in node.js)
  */
 function Client (opts) {
@@ -43,7 +44,6 @@ function Client (opts) {
   if (!opts.announce) throw new Error('Option `announce` is required')
   if (!process.browser && !opts.port) throw new Error('Option `port` is required')
 
-  // required
   self.peerId = typeof opts.peerId === 'string'
     ? opts.peerId
     : opts.peerId.toString('hex')
@@ -56,38 +56,34 @@ function Client (opts) {
   self._infoHashBuffer = Buffer.from(self.infoHash, 'hex')
   self._infoHashBinary = self._infoHashBuffer.toString('binary')
 
-  self._port = opts.port
+  debug('new client %s', self.infoHash)
 
   self.destroyed = false
 
-  self._rtcConfig = opts.rtcConfig
+  self._port = opts.port
   self._getAnnounceOpts = opts.getAnnounceOpts
-  self._wrtc = opts.wrtc
+  self._rtcConfig = opts.rtcConfig
+  self._userAgent = opts.userAgent
 
   // Support lazy 'wrtc' module initialization
   // See: https://github.com/feross/webtorrent-hybrid/issues/46
-  if (typeof self._wrtc === 'function') self._wrtc = self._wrtc()
+  self._wrtc = typeof opts.wrtc === 'function' ? opts.wrtc() : opts.wrtc
 
-  debug('new client %s', self.infoHash)
-
-  var webrtcSupport = self._wrtc !== false && (!!self._wrtc || Peer.WEBRTC_SUPPORT)
-
-  var announce = (typeof opts.announce === 'string')
+  var announce = typeof opts.announce === 'string'
     ? [ opts.announce ]
-    : opts.announce == null
-      ? []
-      : opts.announce
+    : opts.announce == null ? [] : opts.announce
 
+  // Remove trailing slash from trackers to catch duplicates
   announce = announce.map(function (announceUrl) {
     announceUrl = announceUrl.toString()
     if (announceUrl[announceUrl.length - 1] === '/') {
-      // remove trailing slash from trackers to catch duplicates
       announceUrl = announceUrl.substring(0, announceUrl.length - 1)
     }
     return announceUrl
   })
-
   announce = uniq(announce)
+
+  var webrtcSupport = self._wrtc !== false && (!!self._wrtc || Peer.WEBRTC_SUPPORT)
 
   self._trackers = announce
     .map(function (announceUrl) {

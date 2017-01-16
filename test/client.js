@@ -380,3 +380,35 @@ test('http: client announce with numwant', function (t) {
 test('udp: client announce with numwant', function (t) {
   testClientAnnounceWithNumWant(t, 'udp')
 })
+
+test('http: userAgent', function (t) {
+  t.plan(2)
+
+  common.createServer(t, 'http', function (server, announceUrl) {
+    // Confirm that user-agent header is set
+    server.http.on('request', function (req, res) {
+      t.ok(req.headers['user-agent'].indexOf('WebTorrent') !== -1)
+    })
+
+    var client = new Client({
+      infoHash: fixtures.leaves.parsedTorrent.infoHash,
+      announce: announceUrl,
+      peerId: peerId1,
+      port: port,
+      userAgent: 'WebTorrent/0.98.0 (https://webtorrent.io)',
+      wrtc: {}
+    })
+
+    client.on('error', function (err) { t.error(err) })
+    client.on('warning', function (err) { t.error(err) })
+
+    client.once('update', function (data) {
+      t.equal(data.announce, announceUrl)
+
+      server.close()
+      client.destroy()
+    })
+
+    client.start()
+  })
+})
