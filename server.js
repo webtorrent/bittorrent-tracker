@@ -2,7 +2,7 @@ module.exports = Server
 
 var Buffer = require('safe-buffer').Buffer
 var bencode = require('bencode')
-var debug = require('debug')('bittorrent-tracker')
+var debug = require('debug')('bittorrent-tracker:server')
 var dgram = require('dgram')
 var EventEmitter = require('events').EventEmitter
 var http = require('http')
