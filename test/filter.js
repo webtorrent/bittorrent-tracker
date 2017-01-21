@@ -17,7 +17,7 @@ function testFilterOption (t, serverType) {
   }
 
   common.createServer(t, opts, function (server, announceUrl) {
-    var client = new Client({
+    var client1 = new Client({
       infoHash: fixtures.alice.parsedTorrent.infoHash,
       announce: announceUrl,
       peerId: peerId,
@@ -25,29 +25,30 @@ function testFilterOption (t, serverType) {
       wrtc: {}
     })
 
-    client.on('error', function (err) { t.error(err) })
-    if (serverType === 'ws') common.mockWebsocketTracker(client)
+    client1.on('error', function (err) { t.error(err) })
+    if (serverType === 'ws') common.mockWebsocketTracker(client1)
 
-    client.once('warning', function (err) {
+    client1.once('warning', function (err) {
       t.ok(/disallowed info_hash/.test(err.message), 'got client warning')
 
-      client.destroy(function () {
-        t.pass('client destroyed')
-        client = new Client({
+      client1.destroy(function () {
+        t.pass('client1 destroyed')
+
+        var client2 = new Client({
           infoHash: fixtures.leaves.parsedTorrent.infoHash,
           announce: announceUrl,
           peerId: peerId,
           port: 6881,
           wrtc: {}
         })
-        if (serverType === 'ws') common.mockWebsocketTracker(client)
+        if (serverType === 'ws') common.mockWebsocketTracker(client2)
 
-        client.on('error', function (err) { t.error(err) })
-        client.on('warning', function (err) { t.error(err) })
+        client2.on('error', function (err) { t.error(err) })
+        client2.on('warning', function (err) { t.error(err) })
 
-        client.on('update', function () {
+        client2.on('update', function () {
           t.pass('got announce')
-          client.destroy(function () { t.pass('client destroyed') })
+          client2.destroy(function () { t.pass('client2 destroyed') })
           server.close(function () { t.pass('server closed') })
         })
 
@@ -55,7 +56,7 @@ function testFilterOption (t, serverType) {
           t.equal(Object.keys(server.torrents).length, 1)
         })
 
-        client.start()
+        client2.start()
       })
     })
 
@@ -65,7 +66,7 @@ function testFilterOption (t, serverType) {
       t.equal(Object.keys(server.torrents).length, 0)
     })
 
-    client.start()
+    client1.start()
   })
 }
 
@@ -93,7 +94,7 @@ function testFilterCustomError (t, serverType) {
   }
 
   common.createServer(t, opts, function (server, announceUrl) {
-    var client = new Client({
+    var client1 = new Client({
       infoHash: fixtures.alice.parsedTorrent.infoHash,
       announce: announceUrl,
       peerId: peerId,
@@ -101,29 +102,29 @@ function testFilterCustomError (t, serverType) {
       wrtc: {}
     })
 
-    client.on('error', function (err) { t.error(err) })
-    if (serverType === 'ws') common.mockWebsocketTracker(client)
+    client1.on('error', function (err) { t.error(err) })
+    if (serverType === 'ws') common.mockWebsocketTracker(client1)
 
-    client.once('warning', function (err) {
+    client1.once('warning', function (err) {
       t.ok(/alice blocked/.test(err.message), 'got client warning')
 
-      client.destroy(function () {
-        t.pass('client destroyed')
-        client = new Client({
+      client1.destroy(function () {
+        t.pass('client1 destroyed')
+        var client2 = new Client({
           infoHash: fixtures.leaves.parsedTorrent.infoHash,
           announce: announceUrl,
           peerId: peerId,
           port: 6881,
           wrtc: {}
         })
-        if (serverType === 'ws') common.mockWebsocketTracker(client)
+        if (serverType === 'ws') common.mockWebsocketTracker(client2)
 
-        client.on('error', function (err) { t.error(err) })
-        client.on('warning', function (err) { t.error(err) })
+        client2.on('error', function (err) { t.error(err) })
+        client2.on('warning', function (err) { t.error(err) })
 
-        client.on('update', function () {
+        client2.on('update', function () {
           t.pass('got announce')
-          client.destroy(function () { t.pass('client destroyed') })
+          client2.destroy(function () { t.pass('client2 destroyed') })
           server.close(function () { t.pass('server closed') })
         })
 
@@ -131,7 +132,7 @@ function testFilterCustomError (t, serverType) {
           t.equal(Object.keys(server.torrents).length, 1)
         })
 
-        client.start()
+        client2.start()
       })
     })
 
@@ -141,7 +142,7 @@ function testFilterCustomError (t, serverType) {
       t.equal(Object.keys(server.torrents).length, 0)
     })
 
-    client.start()
+    client1.start()
   })
 }
 
