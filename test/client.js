@@ -119,14 +119,14 @@ function testClientUpdate (t, serverType) {
     client.on('error', function (err) { t.error(err) })
     client.on('warning', function (err) { t.error(err) })
 
-    client.setInterval(2000)
+    client.setInterval(500)
 
     client.start()
 
     client.once('update', function () {
-      client.setInterval(2000)
+      client.setInterval(500)
 
-      // after interval (2s), we should get another update
+      // after interval, we should get another update
       client.once('update', function (data) {
         // received an update!
         t.equal(data.announce, announceUrl)
