@@ -103,6 +103,60 @@ test('ws: client.stop()', function (t) {
   testClientStop(t, 'ws')
 })
 
+function testClientStopDestroy (t, serverType) {
+  t.plan(2)
+
+  common.createServer(t, serverType, function (server, announceUrl) {
+    var client = new Client({
+      infoHash: fixtures.leaves.parsedTorrent.infoHash,
+      announce: announceUrl,
+      peerId: peerId1,
+      port: port,
+      wrtc: {}
+    })
+
+    if (serverType === 'ws') common.mockWebsocketTracker(client)
+    client.on('error', function (err) { t.error(err) })
+    client.on('warning', function (err) { t.error(err) })
+
+    client.start()
+
+    client.once('update', function () {
+      t.pass('client received response to "start" message')
+
+      client.stop()
+
+      client.on('update', function () { t.fail('client should not receive update after destroy is called') })
+
+      // Call destroy() in the same tick as stop(), but the message should still
+      // be received by the server, though obviously the client won't receive the
+      // response.
+      client.destroy()
+
+      server.once('stop', function (peer, params) {
+        t.pass('server received "stop" message')
+        setTimeout(function () {
+          // give the websocket server time to finish in progress (stream) messages
+          // to peers
+          server.close()
+        }, 100)
+      })
+    })
+  })
+}
+
+test('http: client.stop(); client.destroy()', function (t) {
+  testClientStopDestroy(t, 'http')
+})
+
+test('udp: client.stop(); client.destroy()', function (t) {
+  testClientStopDestroy(t, 'udp')
+})
+
+test('ws: client.stop(); client.destroy()', function (t) {
+  testClientStopDestroy(t, 'ws')
+})
+
 function testClientUpdate (t, serverType) {
   t.plan(4)
 
