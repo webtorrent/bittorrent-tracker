@@ -56,7 +56,7 @@ test('ws: client.start()', function (t) {
 })
 
 function testClientStop (t, serverType) {
-  t.plan(3)
+  t.plan(4)
 
   common.createServer(t, serverType, function (server, announceUrl) {
     var client = new Client({
@@ -73,7 +73,9 @@ function testClientStop (t, serverType) {
 
     client.start()
 
-    setTimeout(function () {
+    client.once('update', function () {
+      t.pass('client received response to "start" message')
+
       client.stop()
 
       client.once('update', function (data) {
@@ -85,7 +87,7 @@ function testClientStop (t, serverType) {
         server.close()
         client.destroy()
       })
-    }, 1000)
+    })
   })
 }
 
