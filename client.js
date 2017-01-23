@@ -1,7 +1,7 @@
 module.exports = Client
 
 var Buffer = require('safe-buffer').Buffer
-var debug = require('debug')('bittorrent-tracker')
+var debug = require('debug')('bittorrent-tracker:client')
 var EventEmitter = require('events').EventEmitter
 var extend = require('xtend')
 var inherits = require('inherits')
