@@ -311,7 +311,8 @@ function testClientGetAnnounceOpts (t, serverType) {
       port: port,
       getAnnounceOpts: function () {
         return {
-          testParam: 'this is a test'
+          testParam: 'this is a test',
+          ip: 'test.bittorrenttest.xyz'
         }
       },
       wrtc: {}

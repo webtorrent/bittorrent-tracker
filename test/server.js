@@ -178,3 +178,160 @@ test('http ipv6 server', function (t) {
 test('udp server', function (t) {
   serverTest(t, 'udp', 'inet')
 })
+
+function serverTestTrustIP (t, serverType, serverFamily) {
+  t.plan(32)
+
+  var hostname = serverFamily === 'inet6'
+    ? '[::1]'
+    : '127.0.0.1'
+  var customIp = 'custom.ip.address.or.hostname'
+
+  var opts = {
+    serverType: serverType,
+    peersCacheLength: 2,
+    trustIp: true
+  }
+
+  common.createServer(t, opts, function (server) {
+    var port = server[serverType].address().port
+    var announceUrl = serverType + '://' + hostname + ':' + port + '/announce'
+
+    var client1 = new Client({
+      infoHash: infoHash,
+      announce: [ announceUrl ],
+      peerId: peerId,
+      port: 6881,
+      getAnnounceOpts: function () {
+        // provide a callback that will be called whenever announce() is called
+        // internally (on timer), or by the user
+        return {
+          uploaded: 0,
+          downloaded: 0,
+          left: 0,
+          ip: customIp,
+          customParam: 'blah' // custom parameters supported
+        }
+      }
+      // wrtc: wrtc
+    })
+
+    client1.start()
+
+    server.once('start', function () {
+      t.pass('got start message from client1')
+    })
+
+    client1.once('update', function (data) {
+      t.equal(data.announce, announceUrl)
+      t.equal(data.complete, 0)
+      t.equal(data.incomplete, 1)
+
+      server.getSwarm(infoHash, function (err, swarm) {
+        t.error(err)
+
+        t.equal(Object.keys(server.torrents).length, 1)
+        t.equal(swarm.complete, 0)
+        t.equal(swarm.incomplete, 1)
+        t.equal(swarm.peers.length, 1)
+
+        var id = serverType === 'ws'
+          ? peerId.toString('hex')
+          : customIp + ':6881'
+
+        var peer = swarm.peers.peek(id)
+
+        t.equal(peer.type, serverType)
+        t.equal(peer.ip, customIp)
+        t.equal(peer.peerId, peerId.toString('hex'))
+        t.equal(peer.complete, false)
+        if (serverType === 'ws') {
+          t.equal(typeof peer.port, 'number')
+          t.ok(peer.socket)
+        } else {
+          t.equal(peer.port, 6881)
+          t.notOk(peer.socket)
+        }
+
+        client1.complete()
+
+        client1.once('update', function (data) {
+          t.equal(data.announce, announceUrl)
+          t.equal(data.complete, 1)
+          t.equal(data.incomplete, 0)
+
+          client1.scrape()
+
+          client1.once('scrape', function (data) {
+            t.equal(data.announce, announceUrl)
+            t.equal(typeof data.complete, 'number')
+            t.equal(typeof data.incomplete, 'number')
+            t.equal(typeof data.downloaded, 'number')
+
+            var client2 = new Client({
+              infoHash: infoHash,
+              announce: [ announceUrl ],
+              peerId: peerId2,
+              port: 6882
+              // wrtc: wrtc
+            })
+
+            client2.start()
+
+            server.once('start', function () {
+              t.pass('got start message from client2')
+            })
+
+            client2.once('peer', function (addr) {
+              t.ok(addr === hostname + ':6881' || addr === hostname + ':6882' || addr.id === peerId.toString('hex'))
+
+              swarm.peers.once('evict', function (evicted) {
+                t.equals(evicted.value.peerId, peerId.toString('hex'))
+              })
+              var client3 = new Client({
+                infoHash: infoHash,
+                announce: [ announceUrl ],
+                peerId: peerId3,
+                port: 6880
+                // wrtc: wrtc
+              })
+              client3.start()
+
+              server.once('start', function () {
+                t.pass('got start message from client3')
+              })
+
+              client3.once('update', function () {
+                client2.stop()
+                client2.once('update', function (data) {
+                  t.equal(data.announce, announceUrl)
+                  t.equal(data.complete, 1)
+                  t.equal(data.incomplete, 1)
+                  client2.destroy()
+
+                  client3.stop()
+                  client3.once('update', function (data) {
+                    t.equal(data.announce, announceUrl)
+                    t.equal(data.complete, 1)
+                    t.equal(data.incomplete, 0)
+
+                    client3.destroy(function () {
+                      client1.destroy(function () {
+                        server.close()
+                      })
+                      // if (serverType === 'ws') wrtc.close()
+                    })
+                  })
+                })
+              })
+            })
+          })
+        })
+      })
+    })
+  })
+}
+
+test('http ipv4 server', function (t) {
+  serverTestTrustIP(t, 'http', 'inet')
+})
