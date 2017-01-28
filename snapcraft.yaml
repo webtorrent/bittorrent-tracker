@@ -13,6 +13,6 @@ grade: devel
 confinement: strict
 
 parts:
-  tracker:
+  bittorrent-tracker:
     source: .
     plugin: nodejs
