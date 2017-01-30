@@ -2,12 +2,12 @@ var Buffer = require('safe-buffer').Buffer
 var Client = require('../')
 var common = require('./common')
 var test = require('tape')
-// var wrtc = require('electron-webrtc')()
+var wrtc = require('electron-webrtc')()
 
-// var wrtcReady = false
-// wrtc.electronDaemon.once('ready', function () {
-//   wrtcReady = true
-// })
+var wrtcReady = false
+wrtc.electronDaemon.once('ready', function () {
+  wrtcReady = true
+})
 
 var infoHash = '4cb67059ed6bd08362da625b3ae77f6f4a075705'
 var peerId = Buffer.from('01234567890123456789')
@@ -15,7 +15,7 @@ var peerId2 = Buffer.from('12345678901234567890')
 var peerId3 = Buffer.from('23456789012345678901')
 
 function serverTest (t, serverType, serverFamily) {
-  t.plan(32)
+  t.plan(36)
 
   var hostname = serverFamily === 'inet6'
     ? '[::1]'
@@ -30,6 +30,8 @@ function serverTest (t, serverType, serverFamily) {
   }
 
   common.createServer(t, opts, function (server) {
+    // Not using announceUrl param from `common.createServer()` since we
+    // want to control IPv4 vs IPv6.
     var port = server[serverType].address().port
     var announceUrl = serverType + '://' + hostname + ':' + port + '/announce'
 
@@ -37,9 +39,10 @@ function serverTest (t, serverType, serverFamily) {
       infoHash: infoHash,
       announce: [ announceUrl ],
       peerId: peerId,
-      port: 6881
-      // wrtc: wrtc
+      port: 6881,
+      wrtc: wrtc
     })
+    if (serverType === 'ws') common.mockWebsocketTracker(client1)
 
     client1.start()
 
@@ -88,17 +91,18 @@ function serverTest (t, serverType, serverFamily) {
 
           client1.once('scrape', function (data) {
             t.equal(data.announce, announceUrl)
-            t.equal(typeof data.complete, 'number')
-            t.equal(typeof data.incomplete, 'number')
+            t.equal(data.complete, 1)
+            t.equal(data.incomplete, 0)
             t.equal(typeof data.downloaded, 'number')
 
             var client2 = new Client({
               infoHash: infoHash,
               announce: [ announceUrl ],
               peerId: peerId2,
-              port: 6882
-              // wrtc: wrtc
+              port: 6882,
+              wrtc: wrtc
             })
+            if (serverType === 'ws') common.mockWebsocketTracker(client2)
 
             client2.start()
 
@@ -106,44 +110,49 @@ function serverTest (t, serverType, serverFamily) {
               t.pass('got start message from client2')
             })
 
-            client2.once('peer', function (addr) {
-              t.ok(addr === hostname + ':6881' || addr === hostname + ':6882' || addr.id === peerId.toString('hex'))
+            client2.once('update', function (data) {
+              t.equal(data.announce, announceUrl)
+              t.equal(data.complete, 1)
+              t.equal(data.incomplete, 1)
 
-              swarm.peers.once('evict', function (evicted) {
-                t.equals(evicted.value.peerId, peerId.toString('hex'))
-              })
               var client3 = new Client({
                 infoHash: infoHash,
                 announce: [ announceUrl ],
                 peerId: peerId3,
-                port: 6880
-                // wrtc: wrtc
+                port: 6880,
+                wrtc: wrtc
               })
+              if (serverType === 'ws') common.mockWebsocketTracker(client3)
+
               client3.start()
 
               server.once('start', function () {
                 t.pass('got start message from client3')
               })
 
-              client3.once('update', function () {
+              client3.once('update', function (data) {
+                t.equal(data.announce, announceUrl)
+                t.equal(data.complete, 1)
+                t.equal(data.incomplete, 2)
+
                 client2.stop()
                 client2.once('update', function (data) {
                   t.equal(data.announce, announceUrl)
                   t.equal(data.complete, 1)
                   t.equal(data.incomplete, 1)
-                  client2.destroy()
 
-                  client3.stop()
-                  client3.once('update', function (data) {
-                    t.equal(data.announce, announceUrl)
-                    t.equal(data.complete, 1)
-                    t.equal(data.incomplete, 0)
+                  client2.destroy(function () {
+                    client3.stop()
+                    client3.once('update', function (data) {
+                      t.equal(data.announce, announceUrl)
+                      t.equal(data.complete, 1)
+                      t.equal(data.incomplete, 0)
 
-                    client3.destroy(function () {
-                      client1.destroy(function () {
-                        server.close()
+                      client3.destroy(function () {
+                        client1.destroy(function () {
+                          server.close()
+                        })
                       })
-                      // if (serverType === 'ws') wrtc.close()
                     })
                   })
                 })
@@ -156,17 +165,6 @@ function serverTest (t, serverType, serverFamily) {
   })
 }
 
-// test('websocket server', function (t) {
-//   if (wrtcReady) {
-//     runTest()
-//   } else {
-//     wrtc.electronDaemon.once('ready', runTest)
-//   }
-//   function runTest () {
-//     serverTest(t, 'ws', 'inet')
-//   }
-// })
-
 test('http ipv4 server', function (t) {
   serverTest(t, 'http', 'inet')
 })
@@ -177,4 +175,18 @@ test('http ipv6 server', function (t) {
 
 test('udp server', function (t) {
   serverTest(t, 'udp', 'inet')
+})
+
+test('ws server', function (t) {
+  if (wrtcReady) {
+    runTest()
+  } else {
+    wrtc.electronDaemon.once('ready', runTest)
+  }
+  function runTest () {
+    t.once('end', function () {
+      wrtc.close()
+    })
+    serverTest(t, 'ws', 'inet')
+  }
 })
