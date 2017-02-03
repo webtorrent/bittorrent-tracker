@@ -575,6 +575,59 @@ Server.prototype._onWebSocketRequest = function (socket, opts, params) {
   })
 }
 
+Server.prototype._onWebSocketSend = function (socket, err) {
+  var self = this
+  if (err) self._onWebSocketError(socket, err)
+}
+
+Server.prototype._onWebSocketClose = function (socket) {
+  var self = this
+  debug('websocket close %s', socket.peerId)
+
+  if (socket.peerId) {
+    socket.infoHashes.forEach(function (infoHash) {
+      var swarm = self.torrents[infoHash]
+      if (swarm) {
+        swarm.announce({
+          type: 'ws',
+          event: 'stopped',
+          numwant: 0,
+          peer_id: socket.peerId
+        }, noop)
+      }
+    })
+  }
+
+  // ignore all future errors
+  socket.onSend = noop
+  socket.on('error', noop)
+
+  socket.peerId = null
+  socket.infoHashes = null
+
+  if (typeof socket.onMessageBound === 'function') {
+    socket.removeListener('message', socket.onMessageBound)
+  }
+  socket.onMessageBound = null
+
+  if (typeof socket.onErrorBound === 'function') {
+    socket.removeListener('error', socket.onErrorBound)
+  }
+  socket.onErrorBound = null
+
+  if (typeof socket.onCloseBound === 'function') {
+    socket.removeListener('close', socket.onCloseBound)
+  }
+  socket.onCloseBound = null
+}
+
+Server.prototype._onWebSocketError = function (socket, err) {
+  var self = this
+  debug('websocket error %s', err.message || err)
+  self.emit('warning', err)
+  self._onWebSocketClose(socket)
+}
+
 Server.prototype._onRequest = function (params, cb) {
   var self = this
   if (params && params.action === common.ACTIONS.CONNECT) {
@@ -755,59 +808,6 @@ function makeUdpPacket (params) {
       throw new Error('Action not implemented: ' + params.action)
   }
   return packet
-}
-
-Server.prototype._onWebSocketSend = function (socket, err) {
-  var self = this
-  if (err) self._onWebSocketError(socket, err)
-}
-
-Server.prototype._onWebSocketClose = function (socket) {
-  var self = this
-  debug('websocket close %s', socket.peerId)
-
-  if (socket.peerId) {
-    socket.infoHashes.forEach(function (infoHash) {
-      var swarm = self.torrents[infoHash]
-      if (swarm) {
-        swarm.announce({
-          type: 'ws',
-          event: 'stopped',
-          numwant: 0,
-          peer_id: socket.peerId
-        }, noop)
-      }
-    })
-  }
-
-  // ignore all future errors
-  socket.onSend = noop
-  socket.on('error', noop)
-
-  socket.peerId = null
-  socket.infoHashes = null
-
-  if (typeof socket.onMessageBound === 'function') {
-    socket.removeListener('message', socket.onMessageBound)
-  }
-  socket.onMessageBound = null
-
-  if (typeof socket.onErrorBound === 'function') {
-    socket.removeListener('error', socket.onErrorBound)
-  }
-  socket.onErrorBound = null
-
-  if (typeof socket.onCloseBound === 'function') {
-    socket.removeListener('close', socket.onCloseBound)
-  }
-  socket.onCloseBound = null
-}
-
-Server.prototype._onWebSocketError = function (socket, err) {
-  var self = this
-  debug('websocket error %s', err.message || err)
-  self.emit('warning', err)
-  self._onWebSocketClose(socket)
 }
 
 function toNumber (x) {
