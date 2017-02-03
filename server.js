@@ -585,7 +585,7 @@ Server.prototype._onWebSocketClose = function (socket) {
   debug('websocket close %s', socket.peerId)
 
   if (socket.peerId) {
-    socket.infoHashes.forEach(function (infoHash) {
+    socket.infoHashes.slice(0).forEach(function (infoHash) {
       var swarm = self.torrents[infoHash]
       if (swarm) {
         swarm.announce({
