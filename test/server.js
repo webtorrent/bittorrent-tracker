@@ -25,8 +25,7 @@ function serverTest (t, serverType, serverFamily) {
     : '127.0.0.1'
 
   var opts = {
-    serverType: serverType,
-    peersCacheLength: 2
+    serverType: serverType
   }
 
   common.createServer(t, opts, function (server) {
