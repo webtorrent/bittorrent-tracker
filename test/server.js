@@ -12,7 +12,7 @@ var peerId2 = Buffer.from('12345678901234567890')
 var peerId3 = Buffer.from('23456789012345678901')
 
 function serverTest (t, serverType, serverFamily) {
-  t.plan(36)
+  t.plan(40)
 
   var hostname = serverFamily === 'inet6'
     ? '[::1]'
@@ -138,16 +138,23 @@ function serverTest (t, serverType, serverFamily) {
                   t.equal(data.incomplete, 1)
 
                   client2.destroy(function () {
+                    t.pass('client2 destroyed')
                     client3.stop()
                     client3.once('update', function (data) {
                       t.equal(data.announce, announceUrl)
                       t.equal(data.complete, 1)
                       t.equal(data.incomplete, 0)
 
+                      client1.destroy(function () {
+                        t.pass('client1 destroyed')
+                      })
+
                       client3.destroy(function () {
-                        client1.destroy(function () {
-                          server.close()
-                        })
+                        t.pass('client3 destroyed')
+                      })
+
+                      server.close(function () {
+                        t.pass('server destroyed')
                       })
                     })
                   })
