@@ -2,12 +2,9 @@ var Buffer = require('safe-buffer').Buffer
 var Client = require('../')
 var common = require('./common')
 var test = require('tape')
-var wrtc = require('electron-webrtc')()
+var electronWebrtc = require('electron-webrtc')
 
-var wrtcReady = false
-wrtc.electronDaemon.once('ready', function () {
-  wrtcReady = true
-})
+var wrtc
 
 var infoHash = '4cb67059ed6bd08362da625b3ae77f6f4a075705'
 var peerId = Buffer.from('01234567890123456789')
@@ -177,15 +174,11 @@ test('udp server', function (t) {
 })
 
 test('ws server', function (t) {
-  if (wrtcReady) {
-    runTest()
-  } else {
-    wrtc.electronDaemon.once('ready', runTest)
-  }
-  function runTest () {
-    t.once('end', function () {
-      wrtc.close()
-    })
+  wrtc = electronWebrtc()
+  wrtc.electronDaemon.once('ready', function () {
     serverTest(t, 'ws', 'inet')
-  }
+  })
+  t.once('end', function () {
+    wrtc.close()
+  })
 })
