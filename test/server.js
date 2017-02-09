@@ -2,12 +2,9 @@ var Buffer = require('safe-buffer').Buffer
 var Client = require('../')
 var common = require('./common')
 var test = require('tape')
-var wrtc = require('electron-webrtc')()
+var electronWebrtc = require('electron-webrtc')
 
-var wrtcReady = false
-wrtc.electronDaemon.once('ready', function () {
-  wrtcReady = true
-})
+var wrtc
 
 var infoHash = '4cb67059ed6bd08362da625b3ae77f6f4a075705'
 var peerId = Buffer.from('01234567890123456789')
@@ -15,7 +12,7 @@ var peerId2 = Buffer.from('12345678901234567890')
 var peerId3 = Buffer.from('23456789012345678901')
 
 function serverTest (t, serverType, serverFamily) {
-  t.plan(36)
+  t.plan(40)
 
   var hostname = serverFamily === 'inet6'
     ? '[::1]'
@@ -25,8 +22,7 @@ function serverTest (t, serverType, serverFamily) {
     : '127.0.0.1'
 
   var opts = {
-    serverType: serverType,
-    peersCacheLength: 2
+    serverType: serverType
   }
 
   common.createServer(t, opts, function (server) {
@@ -142,16 +138,23 @@ function serverTest (t, serverType, serverFamily) {
                   t.equal(data.incomplete, 1)
 
                   client2.destroy(function () {
+                    t.pass('client2 destroyed')
                     client3.stop()
                     client3.once('update', function (data) {
                       t.equal(data.announce, announceUrl)
                       t.equal(data.complete, 1)
                       t.equal(data.incomplete, 0)
 
+                      client1.destroy(function () {
+                        t.pass('client1 destroyed')
+                      })
+
                       client3.destroy(function () {
-                        client1.destroy(function () {
-                          server.close()
-                        })
+                        t.pass('client3 destroyed')
+                      })
+
+                      server.close(function () {
+                        t.pass('server destroyed')
                       })
                     })
                   })
@@ -178,15 +181,11 @@ test('udp server', function (t) {
 })
 
 test('ws server', function (t) {
-  if (wrtcReady) {
-    runTest()
-  } else {
-    wrtc.electronDaemon.once('ready', runTest)
-  }
-  function runTest () {
-    t.once('end', function () {
-      wrtc.close()
-    })
+  wrtc = electronWebrtc()
+  wrtc.electronDaemon.once('ready', function () {
     serverTest(t, 'ws', 'inet')
-  }
+  })
+  t.once('end', function () {
+    wrtc.close()
+  })
 })
