@@ -118,7 +118,11 @@ function Server (opts) {
         })
       })
     }
-    self.ws = new WebSocketServer({ server: self.http, perMessageDeflate: false })
+    self.ws = new WebSocketServer({
+      server: self.http,
+      perMessageDeflate: false,
+      clientTracking: false
+    })
     self.ws.address = function () {
       return self.http.address()
     }
