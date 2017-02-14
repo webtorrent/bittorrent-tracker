@@ -40,6 +40,7 @@
     "simple-websocket": "^4.0.0",
     "string2compact": "^1.1.1",
     "uniq": "^1.0.1",
+    "unordered-array-remove": "^1.0.2",
     "ws": "^1.0.0",
     "xtend": "^4.0.0"
   },
