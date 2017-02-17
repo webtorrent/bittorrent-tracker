@@ -301,7 +301,7 @@ test('ws: client.announce() with params', function (t) {
 })
 
 function testClientGetAnnounceOpts (t, serverType) {
-  t.plan(5)
+  t.plan(7)
 
   common.createServer(t, serverType, function (server, announceUrl) {
     var client = new Client({
@@ -309,8 +309,10 @@ function testClientGetAnnounceOpts (t, serverType) {
       announce: announceUrl,
       peerId: peerId1,
       port: port,
-      getAnnounceOpts: function () {
+      getAnnounceOpts: function (opts) {
         return {
+          infoHash: this.infoHash,
+          optsDL: opts.downloaded,
           testParam: 'this is a test'
         }
       },
@@ -319,6 +321,8 @@ function testClientGetAnnounceOpts (t, serverType) {
 
     server.on('start', function (peer, params) {
       t.equal(params.testParam, 'this is a test')
+      t.equal(params.infoHash, fixtures.leaves.parsedTorrent.infoHash)
+      t.equal(params.optsDL, params.downloaded)
     })
 
     if (serverType === 'ws') common.mockWebsocketTracker(client)
