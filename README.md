@@ -59,9 +59,10 @@ var requiredOpts = {
 }
 
 var optionalOpts = {
-  getAnnounceOpts: function () {
+  getAnnounceOpts: function (opts) {
     // Provide a callback that will be called whenever announce() is called
-    // internally (on timer), or by the user
+    // internally (on timer), or by the user.
+    // this refers to the tracker and opts to the current announce options.
     return {
       uploaded: 0,
       downloaded: 0,
