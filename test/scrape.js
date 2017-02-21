@@ -1,4 +1,4 @@
-var bencode = require('bencode')
+var btparse = require('btparse')
 var Buffer = require('safe-buffer').Buffer
 var Client = require('../')
 var common = require('./common')
@@ -169,7 +169,7 @@ test('server: multiple info_hash scrape (manual http request)', function (t) {
 
       t.equal(res.statusCode, 200)
 
-      data = bencode.decode(data)
+      data = btparse(data)
       t.ok(data.files)
       t.equal(Object.keys(data.files).length, 2)
 
@@ -214,7 +214,7 @@ test('server: all info_hash scrape (manual http request)', function (t) {
         t.error(err)
 
         t.equal(res.statusCode, 200)
-        data = bencode.decode(data)
+        data = btparse(data)
         t.ok(data.files)
         t.equal(Object.keys(data.files).length, 1)
 
