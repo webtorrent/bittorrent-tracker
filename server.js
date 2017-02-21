@@ -491,7 +491,7 @@ Server.prototype._onWebSocketRequest = function (socket, opts, params) {
   if (!socket.peerId) socket.peerId = params.peer_id // as hex
 
   self._onRequest(params, function (err, response) {
-    if (self.destroyed) return
+    if (self.destroyed || socket.destroyed) return
     if (err) {
       socket.send(JSON.stringify({
         action: params.action === common.ACTIONS.ANNOUNCE ? 'announce' : 'scrape',
@@ -587,6 +587,7 @@ Server.prototype._onWebSocketSend = function (socket, err) {
 Server.prototype._onWebSocketClose = function (socket) {
   var self = this
   debug('websocket close %s', socket.peerId)
+  socket.destroyed = true
 
   if (socket.peerId) {
     socket.infoHashes.slice(0).forEach(function (infoHash) {
