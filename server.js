@@ -545,6 +545,7 @@ Server.prototype._onWebSocketRequest = function (socket, opts, params) {
       debug('got answer %s from %s', JSON.stringify(params.answer), params.peer_id)
 
       self.getSwarm(params.info_hash, function (err, swarm) {
+        if (self.destroyed) return
         if (err) return self.emit('warning', err)
         if (!swarm) {
           return self.emit('warning', new Error('no swarm with that `info_hash`'))
