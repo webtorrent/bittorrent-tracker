@@ -40,8 +40,6 @@ function testRequestHandler (t, serverType) {
     })
 
     client1.once('update', function (data) {
-      console.log(data)
-
       t.equal(data.complete, 246)
 
       client1.destroy(function () {
