@@ -69,11 +69,6 @@ function Client (opts) {
   // See: https://github.com/feross/webtorrent-hybrid/issues/46
   self._wrtc = typeof opts.wrtc === 'function' ? opts.wrtc() : opts.wrtc
 
-  // Use a socket pool, so WebSocket tracker clients share WebSocket objects for
-  // the same server. In practice, WebSockets are pretty slow to establish, so this
-  // gives a nice performance boost, and saves browser resources.
-  self._socketPool = {}
-
   var announce = typeof opts.announce === 'string'
     ? [ opts.announce ]
     : opts.announce == null ? [] : opts.announce
