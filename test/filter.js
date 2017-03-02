@@ -12,7 +12,11 @@ function testFilterOption (t, serverType) {
   var opts = { serverType: serverType } // this is test-suite-only option
   opts.filter = function (infoHash, params, cb) {
     process.nextTick(function () {
-      cb(infoHash !== fixtures.alice.parsedTorrent.infoHash)
+      if (infoHash === fixtures.alice.parsedTorrent.infoHash) {
+        cb(new Error('disallowed info_hash (Alice)'))
+      } else {
+        cb(null)
+      }
     })
   }
 
@@ -29,7 +33,7 @@ function testFilterOption (t, serverType) {
     if (serverType === 'ws') common.mockWebsocketTracker(client1)
 
     client1.once('warning', function (err) {
-      t.ok(/disallowed info_hash/.test(err.message), 'got client warning')
+      t.ok(err.message.includes('disallowed info_hash (Alice)'), 'got client warning')
 
       client1.destroy(function () {
         t.pass('client1 destroyed')
@@ -62,7 +66,7 @@ function testFilterOption (t, serverType) {
 
     server.removeAllListeners('warning')
     server.once('warning', function (err) {
-      t.ok(/disallowed info_hash/.test(err.message), 'got server warning')
+      t.ok(err.message.includes('disallowed info_hash (Alice)'), 'got server warning')
       t.equal(Object.keys(server.torrents).length, 0)
     })
 
@@ -88,8 +92,11 @@ function testFilterCustomError (t, serverType) {
   var opts = { serverType: serverType } // this is test-suite-only option
   opts.filter = function (infoHash, params, cb) {
     process.nextTick(function () {
-      if (infoHash === fixtures.alice.parsedTorrent.infoHash) cb(new Error('alice blocked'))
-      else cb(true)
+      if (infoHash === fixtures.alice.parsedTorrent.infoHash) {
+        cb(new Error('alice blocked'))
+      } else {
+        cb(null)
+      }
     })
   }
 
