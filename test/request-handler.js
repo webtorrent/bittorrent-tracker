@@ -59,10 +59,8 @@ test('http: request handler option intercepts announce requests and responses', 
   testRequestHandler(t, 'http')
 })
 
-test('udp: request handler option intercepts announce requests and responses', function (t) {
-  testRequestHandler(t, 'udp')
-})
-
 test('ws: request handler option intercepts announce requests and responses', function (t) {
   testRequestHandler(t, 'ws')
 })
+
+// NOTE: it's not possible to include extra data in a UDP response, because it's compact and accepts only params that are in the spec!
