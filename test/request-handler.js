@@ -3,25 +3,32 @@ var Client = require('../')
 var common = require('./common')
 var fixtures = require('webtorrent-fixtures')
 var test = require('tape')
+var Server = require('../server')
 
 var peerId = Buffer.from('01234567890123456789')
 
 function testRequestHandler (t, serverType) {
-  t.plan(4)
+  t.plan(5)
 
   var opts = { serverType: serverType } // this is test-suite-only option
-  opts.requestHandler = {
-    getParams: function (params) {
-      params.extra = 123
-      return params
-    },
-    getResponse: function (params, cb) {
-      return function (err, response) {
-        response.complete = params.extra * 2
-        cb(err, response)
-      }
+
+  class Swarm extends Server.Swarm {
+    announce (params, cb) {
+      super.announce(params, function (err, response) {
+        if (err) return cb(response)
+        response.complete = 246
+        response.extraData = 'hi'
+        cb(null, response)
+      })
     }
   }
+
+  // Use a custom Swarm implementation for this test only
+  var OldSwarm = Server.Swarm
+  Server.Swarm = Swarm
+  t.on('end', function () {
+    Server.Swarm = OldSwarm
+  })
 
   common.createServer(t, opts, function (server, announceUrl) {
     var client1 = new Client({
@@ -41,6 +48,7 @@ function testRequestHandler (t, serverType) {
 
     client1.once('update', function (data) {
       t.equal(data.complete, 246)
+      t.equal(data.extraData.toString(), 'hi')
 
       client1.destroy(function () {
         t.pass('client1 destroyed')
