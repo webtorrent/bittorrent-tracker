@@ -280,6 +280,8 @@ function Server (opts) {
   }
 }
 
+Server.Swarm = Swarm
+
 Server.prototype._onError = function (err) {
   var self = this
   self.emit('error', err)
@@ -352,7 +354,7 @@ Server.prototype.createSwarm = function (infoHash, cb) {
   if (Buffer.isBuffer(infoHash)) infoHash = infoHash.toString('hex')
 
   process.nextTick(function () {
-    var swarm = self.torrents[infoHash] = new Swarm(infoHash, self)
+    var swarm = self.torrents[infoHash] = new Server.Swarm(infoHash, self)
     cb(null, swarm)
   })
 }
