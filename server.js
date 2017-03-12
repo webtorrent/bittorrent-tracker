@@ -27,15 +27,14 @@ inherits(Server, EventEmitter)
  * metrics from clients that help the tracker keep overall statistics about the torrent.
  * Responses include a peer list that helps the client participate in the torrent.
  *
- * @param {Object}  opts                  options object
- * @param {Number}  opts.interval         tell clients to announce on this interval (ms)
- * @param {Number}  opts.trustProxy       trust 'x-forwarded-for' header from reverse proxy
- * @param {boolean} opts.http             start an http server? (default: true)
- * @param {boolean} opts.udp              start a udp server? (default: true)
- * @param {boolean} opts.ws               start a websocket server? (default: true)
- * @param {boolean} opts.stats            enable web-based statistics? (default: true)
- * @param {function} opts.filter          black/whitelist fn for disallowing/allowing torrents
- * @param {function} opts.requestHandler  functions to handle params / response
+ * @param {Object}  opts            options object
+ * @param {Number}  opts.interval   tell clients to announce on this interval (ms)
+ * @param {Number}  opts.trustProxy trust 'x-forwarded-for' header from reverse proxy
+ * @param {boolean} opts.http       start an http server? (default: true)
+ * @param {boolean} opts.udp        start a udp server? (default: true)
+ * @param {boolean} opts.ws         start a websocket server? (default: true)
+ * @param {boolean} opts.stats      enable web-based statistics? (default: true)
+ * @param {function} opts.filter    black/whitelist fn for disallowing/allowing torrents
  */
 function Server (opts) {
   var self = this
@@ -64,18 +63,6 @@ function Server (opts) {
   self.udp4 = null
   self.udp6 = null
   self.ws = null
-
-  self._reqHandler = opts.requestHandler || {}
-  if (!self._reqHandler.getParams) {
-    self._reqHandler.getParams = function (params) {
-      return params
-    }
-  }
-  if (!self._reqHandler.getResponse) {
-    self._reqHandler.getResponse = function (params, cb) {
-      return cb
-    }
-  }
 
   // start an http tracker unless the user explictly says no
   if (opts.http !== false) {
@@ -293,6 +280,8 @@ function Server (opts) {
   }
 }
 
+Server.Swarm = Swarm
+
 Server.prototype._onError = function (err) {
   var self = this
   self.emit('error', err)
@@ -365,7 +354,7 @@ Server.prototype.createSwarm = function (infoHash, cb) {
   if (Buffer.isBuffer(infoHash)) infoHash = infoHash.toString('hex')
 
   process.nextTick(function () {
-    var swarm = self.torrents[infoHash] = new Swarm(infoHash, self)
+    var swarm = self.torrents[infoHash] = new Server.Swarm(infoHash, self)
     cb(null, swarm)
   })
 }
@@ -649,8 +638,6 @@ Server.prototype._onWebSocketError = function (socket, err) {
 
 Server.prototype._onRequest = function (params, cb) {
   var self = this
-  params = self._reqHandler.getParams(params)
-  cb = self._reqHandler.getResponse(params, cb)
   if (params && params.action === common.ACTIONS.CONNECT) {
     cb(null, { action: common.ACTIONS.CONNECT })
   } else if (params && params.action === common.ACTIONS.ANNOUNCE) {
