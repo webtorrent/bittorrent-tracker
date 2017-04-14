@@ -66,7 +66,7 @@ function Client (opts) {
   self._userAgent = opts.userAgent
 
   // Support lazy 'wrtc' module initialization
-  // See: https://github.com/feross/webtorrent-hybrid/issues/46
+  // See: https://github.com/webtorrent/webtorrent-hybrid/issues/46
   self._wrtc = typeof opts.wrtc === 'function' ? opts.wrtc() : opts.wrtc
 
   var announce = typeof opts.announce === 'string'

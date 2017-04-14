@@ -63,8 +63,6 @@ if (argv.help) {
     -s, --silent                  show no output
     -v, --version                 print the current version
 
-  Please report bugs!  https://github.com/feross/bittorrent-tracker/issues
-
   */
   }.toString().split(/\n/).slice(2, -2).join('\n'))
   process.exit(0)

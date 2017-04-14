@@ -1,7 +1,7 @@
 # bittorrent-tracker [![travis][travis-image]][travis-url] [![npm][npm-image]][npm-url] [![downloads][downloads-image]][downloads-url] [![javascript style guide][standard-image]][standard-url]
 
-[travis-image]: https://img.shields.io/travis/feross/bittorrent-tracker/master.svg
-[travis-url]: https://travis-ci.org/feross/bittorrent-tracker
+[travis-image]: https://img.shields.io/travis/webtorrent/bittorrent-tracker/master.svg
+[travis-url]: https://travis-ci.org/webtorrent/bittorrent-tracker
 [npm-image]: https://img.shields.io/npm/v/bittorrent-tracker.svg
 [npm-url]: https://npmjs.org/package/bittorrent-tracker
 [downloads-image]: https://img.shields.io/npm/dm/bittorrent-tracker.svg
@@ -11,7 +11,7 @@
 
 #### Simple, robust, BitTorrent tracker (client & server) implementation
 
-![tracker](https://raw.githubusercontent.com/feross/bittorrent-tracker/master/img.png)
+![tracker](https://raw.githubusercontent.com/webtorrent/bittorrent-tracker/master/img.png)
 
 Node.js implementation of a [BitTorrent tracker](https://wiki.theory.org/BitTorrentSpecification#Tracker_HTTP.2FHTTPS_Protocol), client and server.
 
@@ -33,10 +33,10 @@ This module is used by [WebTorrent](http://webtorrent.io).
 - Supports tracker "scrape" extension
 - Robust and well-tested
   - Comprehensive test suite (runs entirely offline, so it's reliable)
-  - Used by popular clients: [WebTorrent](http://webtorrent.io), [peerflix](https://github.com/mafintosh/peerflix), and [playback](https://mafintosh.github.io/playback/)
+  - Used by popular clients: [WebTorrent](http://webtorrent.io), [peerflix](https://www.npmjs.com/package/peerflix), and [playback](https://mafintosh.github.io/playback/)
 - Tracker statistics available via web interface at `/stats` or JSON data at `/stats.json`
 
-Also see [bittorrent-dht](https://github.com/feross/bittorrent-dht).
+Also see [bittorrent-dht](https://www.npmjs.com/package/bittorrent-dht).
 
 ## install
 
@@ -268,10 +268,8 @@ $ bittorrent-tracker --help
     -q, --quiet          only show error output
     -s, --silent         show no output
     -v, --version        print the current version
-
-  Please report bugs!  https://github.com/feross/bittorrent-tracker/issues
 ```
 
 ## license
 
-MIT. Copyright (c) [Feross Aboukhadijeh](http://feross.org).
+MIT. Copyright (c) [Feross Aboukhadijeh](https://feross.org) and [WebTorrent, LLC](https://webtorrent.io).

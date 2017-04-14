@@ -3,9 +3,9 @@
   "description": "Simple, robust, BitTorrent tracker (client & server) implementation",
   "version": "9.2.1",
   "author": {
-    "name": "Feross Aboukhadijeh",
-    "email": "feross@feross.org",
-    "url": "http://feross.org/"
+    "name": "WebTorrent, LLC",
+    "email": "feross@webtorrent.io",
+    "url": "https://webtorrent.io"
   },
   "bin": {
     "bittorrent-tracker": "./bin/cmd.js"
@@ -17,7 +17,7 @@
     "./server.js": false
   },
   "bugs": {
-    "url": "https://github.com/feross/bittorrent-tracker/issues"
+    "url": "https://github.com/webtorrent/bittorrent-tracker/issues"
   },
   "dependencies": {
     "bencode": "^0.11.0",
@@ -68,7 +68,7 @@
   "main": "index.js",
   "repository": {
     "type": "git",
-    "url": "git://github.com/feross/bittorrent-tracker.git"
+    "url": "git://github.com/webtorrent/bittorrent-tracker.git"
   },
   "scripts": {
     "update-authors": "./bin/update-authors.sh",

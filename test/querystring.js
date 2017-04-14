@@ -2,7 +2,7 @@ var Buffer = require('safe-buffer').Buffer
 var common = require('../lib/common')
 var test = require('tape')
 
-// https://github.com/feross/webtorrent/issues/196
+// https://github.com/webtorrent/webtorrent/issues/196
 test('encode special chars +* in http tracker urls', function (t) {
   var q = {
     info_hash: Buffer.from('a2a15537542b22925ad10486bf7a8b2a9c42f0d1', 'hex').toString('binary')
