@@ -46,7 +46,7 @@ function Server (opts) {
 
   self.intervalMs = opts.interval
     ? opts.interval
-    : 10 * 60 * 1000 // 10 min
+    : 10 * 60 // 10 min
 
   self._trustProxy = !!opts.trustProxy
   if (typeof opts.filter === 'function') self._filter = opts.filter
