@@ -520,6 +520,8 @@ Server.prototype._onWebSocketRequest = function (socket, opts, params) {
 
       // WebSocket tracker should have a shorter interval – default: 2 minutes
       response.interval = Math.ceil(self.intervalMs / 1000 / 5)
+
+      response.custom = params.custom
     }
 
     // Skip sending update back for 'answer' announce messages – not needed
@@ -537,7 +539,8 @@ Server.prototype._onWebSocketRequest = function (socket, opts, params) {
           offer: params.offers[i].offer,
           offer_id: params.offers[i].offer_id,
           peer_id: common.hexToBinary(params.peer_id),
-          info_hash: common.hexToBinary(params.info_hash)
+          info_hash: common.hexToBinary(params.info_hash),
+          custom: params.custom,
         }), peer.socket.onSend)
         debug('sent offer to %s from %s', peer.peerId, params.peer_id)
       })
@@ -563,7 +566,8 @@ Server.prototype._onWebSocketRequest = function (socket, opts, params) {
           answer: params.answer,
           offer_id: params.offer_id,
           peer_id: common.hexToBinary(params.peer_id),
-          info_hash: common.hexToBinary(params.info_hash)
+          info_hash: common.hexToBinary(params.info_hash),
+          custom: params.custom,
         }), toPeer.socket.onSend)
         debug('sent answer to %s from %s', toPeer.peerId, params.peer_id)
 
