@@ -1,5 +1,5 @@
 name: bittorrent-tracker
-version: master
+version: git
 summary: Simple, robust, BitTorrent tracker
 description: |
   Node.js implementation of a BitTorrent tracker, client and server.
@@ -16,3 +16,4 @@ parts:
   bittorrent-tracker:
     source: .
     plugin: nodejs
+    build-packages: [g++, make, python]
