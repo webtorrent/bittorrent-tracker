@@ -127,7 +127,7 @@ function Server (opts) {
       return self.http.address()
     }
     self.ws.on('error', function (err) { self._onError(err) })
-    self.ws.on('connection', function (socket) { self.onWebSocketConnection(socket) })
+    self.ws.on('connection', function (socket, req) { self.onWebSocketConnection(socket, undefined, req) })
   }
 
   if (opts.stats !== false) {
@@ -447,10 +447,20 @@ Server.prototype.onUdpRequest = function (msg, rinfo) {
   })
 }
 
-Server.prototype.onWebSocketConnection = function (socket, opts) {
+Server.prototype.onWebSocketConnection = function (socket, opts, req) {
   var self = this
   if (!opts) opts = {}
   opts.trustProxy = opts.trustProxy || self._trustProxy
+
+  // Save important data from `req`.
+  socket.ip = opts.trustProxy
+      ? req.headers['x-forwarded-for'] || req.connection.remoteAddress
+      : req.connection.remoteAddress.replace(common.REMOVE_IPV4_MAPPED_IPV6_RE, '') // force ipv4
+  socket.port = req.connection.remotePort
+  if (socket.port) {
+    socket.addr = (common.IPV6_RE.test(socket.ip) ? '[' + socket.ip + ']' : socket.ip) + ':' + socket.port
+  }
+  socket.headers = req.headers
 
   socket.peerId = null // as hex
   socket.infoHashes = [] // swarms that this socket is participating in
