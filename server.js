@@ -127,7 +127,12 @@ function Server (opts) {
       return self.http.address()
     }
     self.ws.on('error', function (err) { self._onError(err) })
-    self.ws.on('connection', function (socket) { self.onWebSocketConnection(socket) })
+    self.ws.on('connection', function (socket, req) {
+      // Note: socket.upgradeReq was removed in ws@3.0.0, so re-add it.
+      // https://github.com/websockets/ws/pull/1099
+      socket.upgradeReq = req
+      self.onWebSocketConnection(socket)
+    })
   }
 
   if (opts.stats !== false) {
