@@ -238,6 +238,12 @@ Client.scrape({ announce: announceUrl, infoHash: [ infoHash1, infoHash2 ]}, func
 
 ## command line
 
+Install `bittorrent-tracker` globally:
+
+```sh
+$ npm install -g bittorrent-tracker
+```
+
 Easily start a tracker server:
 
 ```sh
