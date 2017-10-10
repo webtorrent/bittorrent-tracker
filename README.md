@@ -40,6 +40,8 @@ This module is used by [WebTorrent](http://webtorrent.io).
 
 Also see [bittorrent-dht](https://www.npmjs.com/package/bittorrent-dht).
 
+![tracker](https://raw.githubusercontent.com/hrafnkellos/bittorrent-tracker/master/trackerStats.png)
+
 ## install
 
 ```
