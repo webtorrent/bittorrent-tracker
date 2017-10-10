@@ -42,7 +42,7 @@ Also see [bittorrent-dht](https://www.npmjs.com/package/bittorrent-dht).
 
 ### Tracker stats
 
-![tracker](https://raw.githubusercontent.com/hrafnkellos/bittorrent-tracker/master/trackerStats.png)
+![tracker](https://raw.githubusercontent.com/hrafnkellos/bittorrent-tracker/master/trackerStats.PNG)
 
 ## install
 
