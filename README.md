@@ -11,7 +11,7 @@
 
 #### Simple, robust, BitTorrent tracker (client & server) implementation
 
-![tracker](https://raw.githubusercontent.com/webtorrent/bittorrent-tracker/master/img.png)
+![tracker visualization](img/img.png)
 
 Node.js implementation of a [BitTorrent tracker](https://wiki.theory.org/BitTorrentSpecification#Tracker_HTTP.2FHTTPS_Protocol), client and server.
 
@@ -40,7 +40,7 @@ Also see [bittorrent-dht](https://www.npmjs.com/package/bittorrent-dht).
 
 ### Tracker stats
 
-![Screenshot](trackerStats.png)
+![Screenshot](img/trackerStats.png)
 
 ## install
 
