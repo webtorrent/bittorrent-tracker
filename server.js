@@ -403,7 +403,7 @@ Server.prototype.onHttpRequest = function (req, res, opts) {
     }
     if (self.destroyed) return res.end()
 
-    delete response.action  // only needed for UDP encoding
+    delete response.action // only needed for UDP encoding
     res.end(bencode.encode(response))
 
     if (params.action === common.ACTIONS.ANNOUNCE) {
