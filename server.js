@@ -174,7 +174,7 @@ function Server (opts) {
             }
             var client = clients[peer.client.client]
             // If the client is not known show 8 chars from peerId as version
-            var version = peer.client.version || new Buffer(peer.peerId, 'hex').toString().substring(0, 8)
+            var version = peer.client.version || Buffer.from(peer.peerId, 'hex').toString().substring(0, 8)
             if (!client[version]) {
               client[version] = 0
             }
