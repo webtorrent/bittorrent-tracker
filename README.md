@@ -74,7 +74,7 @@ var optionalOpts = {
       left: 0,
       customParam: 'blah' // custom parameters supported
     }
-  }
+  },
   // RTCPeerConnection config object (only used in browser)
   rtcConfig: {},
   // User-Agent header for http requests
