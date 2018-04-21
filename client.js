@@ -51,7 +51,7 @@ function Client (opts) {
   self._peerIdBinary = self._peerIdBuffer.toString('binary')
 
   self.infoHash = typeof opts.infoHash === 'string'
-    ? opts.infoHash
+    ? opts.infoHash.toLowerCase()
     : opts.infoHash.toString('hex')
   self._infoHashBuffer = Buffer.from(self.infoHash, 'hex')
   self._infoHashBinary = self._infoHashBuffer.toString('binary')
