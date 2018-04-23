@@ -659,32 +659,27 @@ Server.prototype._onAnnounce = function (params, cb) {
 
   self.getSwarm(params.info_hash, function (err, swarm) {
     if (err) return cb(err)
-    if (swarm) {
-      announce(swarm)
-    } else {
-      createSwarm()
-    }
-  })
 
-  function createSwarm () {
     if (self._filter) {
       self._filter(params.info_hash, params, function (err) {
-        // Precense of err means that this info_hash is disallowed
-        if (err) {
-          cb(err)
-        } else {
-          self.createSwarm(params.info_hash, function (err, swarm) {
-            if (err) return cb(err)
-            announce(swarm)
-          })
+        // Precense of err means that this torrent or user is disallowd
+        if (err) cb(err)
+        else {
+          if (swarm) announce(swarm)
+          else createSwarm()
         }
       })
     } else {
-      self.createSwarm(params.info_hash, function (err, swarm) {
-        if (err) return cb(err)
-        announce(swarm)
-      })
+      if (swarm) announce(swarm)
+      else createSwarm()
     }
+  })
+
+  function createSwarm() {
+    self.createSwarm(params.info_hash, function (err, swarm) {
+      if (err) return cb(err)
+      announce(swarm)
+    })
   }
 
   function announce (swarm) {
