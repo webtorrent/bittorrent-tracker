@@ -675,7 +675,7 @@ Server.prototype._onAnnounce = function (params, cb) {
     }
   })
 
-  function createSwarm() {
+  function createSwarm () {
     self.createSwarm(params.info_hash, function (err, swarm) {
       if (err) return cb(err)
       announce(swarm)
