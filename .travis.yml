@@ -1,7 +1,7 @@
 language: node_js
 sudo: false
 node_js:
-  - "node"
+  - lts/*
 before_script:
   # Add an IPv6 config - see the corresponding Travis issue
   # https://github.com/travis-ci/travis-ci/issues/8361
