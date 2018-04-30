@@ -656,7 +656,7 @@ Server.prototype._onRequest = function (params, cb) {
 
 Server.prototype._onAnnounce = function (params, cb) {
   var self = this
-  
+
   if (self._filter) {
     self._filter(params.info_hash, params, function (err) {
       // Presence of `err` means that this announce request is disallowed
@@ -673,7 +673,7 @@ Server.prototype._onAnnounce = function (params, cb) {
       announce(swarm)
     })
   }
-  
+
   // Get existing swarm, or create one if one does not exist
   function getOrCreateSwarm (cb) {
     self.getSwarm(params.info_hash, function (err, swarm) {
