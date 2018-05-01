@@ -657,28 +657,32 @@ Server.prototype._onRequest = function (params, cb) {
 Server.prototype._onAnnounce = function (params, cb) {
   var self = this
 
-  self.getSwarm(params.info_hash, function (err, swarm) {
-    if (err) return cb(err)
+  if (self._filter) {
+    self._filter(params.info_hash, params, function (err) {
+      // Presence of `err` means that this announce request is disallowed
+      if (err) return cb(err)
 
-    if (self._filter) {
-      self._filter(params.info_hash, params, function (err) {
-        // Precense of err means that this torrent or user is disallowd
-        if (err) cb(err)
-        else {
-          if (swarm) announce(swarm)
-          else createSwarm()
-        }
+      getOrCreateSwarm(function (err, swarm) {
+        if (err) return cb(err)
+        announce(swarm)
       })
-    } else {
-      if (swarm) announce(swarm)
-      else createSwarm()
-    }
-  })
-
-  function createSwarm () {
-    self.createSwarm(params.info_hash, function (err, swarm) {
+    })
+  } else {
+    getOrCreateSwarm(function (err, swarm) {
       if (err) return cb(err)
       announce(swarm)
+    })
+  }
+
+  // Get existing swarm, or create one if one does not exist
+  function getOrCreateSwarm (cb) {
+    self.getSwarm(params.info_hash, function (err, swarm) {
+      if (err) return cb(err)
+      if (swarm) return cb(null, swarm)
+      self.createSwarm(params.info_hash, function (err, swarm) {
+        if (err) return cb(err)
+        cb(null, swarm)
+      })
     })
   }
 
