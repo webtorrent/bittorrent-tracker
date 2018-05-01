@@ -1,5 +1,6 @@
 .travis.yml
 CONTRIBUTING.md
-test/
-img/
 examples/
+img/
+test/
+tools/
