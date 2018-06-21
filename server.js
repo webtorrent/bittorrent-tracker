@@ -49,6 +49,7 @@ function Server (opts) {
     : 10 * 60 * 1000 // 10 min
 
   self._trustProxy = !!opts.trustProxy
+  self._maxAnnouncePeers = opts.maxAnnouncePeers
   if (typeof opts.filter === 'function') self._filter = opts.filter
 
   self.peersCacheLength = opts.peersCacheLength
@@ -87,14 +88,14 @@ function Server (opts) {
     self.udp4 = self.udp = dgram.createSocket(
       isNode10 ? 'udp4' : { type: 'udp4', reuseAddr: true }
     )
-    self.udp4.on('message', function (msg, rinfo) { self.onUdpRequest(msg, rinfo) })
+    self.udp4.on('message', function (msg, rinfo) { self.onUdpRequest(msg, rinfo, { maxAnnouncePeers: self._maxAnnouncePeers }) })
     self.udp4.on('error', function (err) { self._onError(err) })
     self.udp4.on('listening', onListening)
 
     self.udp6 = dgram.createSocket(
       isNode10 ? 'udp6' : { type: 'udp6', reuseAddr: true }
     )
-    self.udp6.on('message', function (msg, rinfo) { self.onUdpRequest(msg, rinfo) })
+    self.udp6.on('message', function (msg, rinfo) { self.onUdpRequest(msg, rinfo, { maxAnnouncePeers: self._maxAnnouncePeers }) })
     self.udp6.on('error', function (err) { self._onError(err) })
     self.udp6.on('listening', onListening)
   }
@@ -377,6 +378,7 @@ Server.prototype.onHttpRequest = function (req, res, opts) {
   var self = this
   if (!opts) opts = {}
   opts.trustProxy = opts.trustProxy || self._trustProxy
+  opts.maxAnnouncePeers = opts.maxAnnouncePeers || self._maxAnnouncePeers
 
   var params
   try {
@@ -412,12 +414,15 @@ Server.prototype.onHttpRequest = function (req, res, opts) {
   })
 }
 
-Server.prototype.onUdpRequest = function (msg, rinfo) {
+Server.prototype.onUdpRequest = function (msg, rinfo, opts) {
   var self = this
+
+  if (!opts) opts = {}
+  opts.maxAnnouncePeers = opts.maxAnnouncePeers || self._maxAnnouncePeers
 
   var params
   try {
-    params = parseUdpRequest(msg, rinfo)
+    params = parseUdpRequest(msg, rinfo, opts)
   } catch (err) {
     self.emit('warning', err)
     // Do not reply for parsing errors
@@ -481,6 +486,9 @@ Server.prototype.onWebSocketConnection = function (socket, opts) {
 
 Server.prototype._onWebSocketRequest = function (socket, opts, params) {
   var self = this
+
+  if (!opts) opts = {}
+  opts.maxAnnouncePeers = opts.maxAnnouncePeers || self._maxAnnouncePeers
 
   try {
     params = parseWebSocketRequest(socket, opts, params)

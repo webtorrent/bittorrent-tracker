@@ -151,6 +151,7 @@ var server = new Server({
   http: true, // enable http server? [default=true]
   ws: true, // enable websocket server? [default=true]
   stats: true, // enable web-based statistics? [default=true]
+  maxAnnouncePeers: 50, // max number of peers an annouce can return (hard limit of 82 for UDP)
   filter: function (infoHash, params, cb) {
     // Blacklist/whitelist function for allowing/disallowing torrents. If this option is
     // omitted, all torrents are allowed. It is possible to interface with a database or
