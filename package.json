@@ -41,7 +41,7 @@
     "string2compact": "^1.1.1",
     "uniq": "^1.0.1",
     "unordered-array-remove": "^1.0.2",
-    "ws": "^5.0.0",
+    "ws": "^6.0.0",
     "xtend": "^4.0.0"
   },
   "devDependencies": {
