@@ -107,7 +107,7 @@ server.on('stop', function (addr) {
 var hostname = {
   http: argv['http-hostname'],
   udp4: argv['udp-hostname'],
-  udp6: argv['upd6-hostname']
+  udp6: argv['udp6-hostname']
 }
 
 server.listen(argv.port, hostname, function () {
