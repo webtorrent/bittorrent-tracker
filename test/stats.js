@@ -194,3 +194,39 @@ test('server: get leecher stats.json (unknown peerId)', function (t) {
     })
   })
 })
+
+test('server: get client ip', function (t) {
+  t.plan(6)
+
+  commonTest.createServer(t, 'http', function (server, announceUrl) {
+    // announce a torrent to the tracker
+    var client = new Client({
+      infoHash: fixtures.leaves.parsedTorrent.infoHash,
+      announce: announceUrl,
+      peerId: peerId,
+      port: 6881
+    })
+    client.on('error', function (err) { t.error(err) })
+    client.on('warning', function (err) { t.error(err) })
+
+    client.start()
+
+    server.once('start', function () {
+      var opts = {
+        url: announceUrl.replace('/announce', '/stats.json'),
+        json: true
+      }
+
+      get.concat(opts, function (err, res, stats) {
+        t.error(err)
+
+        t.equal(res.statusCode, 200)
+        t.equal(stats.clientsIP.length, 1)
+        t.equal(stats.clientsIP[0], '127.0.0.1')
+
+        client.destroy(function () { t.pass('client destroyed') })
+        server.close(function () { t.pass('server closed') })
+      })
+    })
+  })
+})

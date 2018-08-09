@@ -200,6 +200,16 @@ function Server (opts) {
         return html
       }
 
+      function printClientsIp (clientsIP) {
+        var html = '<strong>No client connected</strong>'
+        if (clientsIP.length > 0) {
+          html = '<ul>\n'
+          html += '<li>' + clientsIP.join('</li><li>') + '</li>'
+          html += '</ul>'
+        }
+        return html
+      }
+
       if (req.method === 'GET' && (req.url === '/stats' || req.url === '/stats.json')) {
         infoHashes.forEach(function (infoHash) {
           var peers = self.torrents[infoHash].peers
@@ -234,6 +244,7 @@ function Server (opts) {
 
             allPeers[peerId].peerId = peer.peerId
             allPeers[peerId].client = peerid(peer.peerId)
+            allPeers[peerId].ip = peer.ip
           })
         })
 
@@ -252,7 +263,8 @@ function Server (opts) {
           peersSeederAndLeecher: countPeers(isSeederAndLeecher),
           peersIPv4: countPeers(isIPv4),
           peersIPv6: countPeers(isIPv6),
-          clients: groupByClient()
+          clients: groupByClient(),
+          clientsIP: Object.keys(allPeers).filter(function (item) { return allPeers.hasOwnProperty(item) }).map(function (item) { return allPeers[item].ip })
         }
 
         if (req.url === '/stats.json' || req.headers['accept'] === 'application/json') {
@@ -267,7 +279,9 @@ function Server (opts) {
             '<h3>IPv4 Peers: ' + stats.peersIPv4 + '</h3>\n' +
             '<h3>IPv6 Peers: ' + stats.peersIPv6 + '</h3>\n' +
             '<h3>Clients:</h3>\n' +
-            printClients(stats.clients)
+            printClients(stats.clients) +
+            '<h3>Clients IP:</h3>\n' +
+            printClientsIp(stats.clientsIP)
           )
         }
       }
