@@ -61,7 +61,7 @@ function Client (opts) {
   self.destroyed = false
 
   self._port = opts.port
-  self._getAnnounceOpts = opts.getAnnounceOpts
+  self._getAnnounceOpts = opts.getAnnounceOpts && opts.getAnnounceOpts.bind(self)
   self._rtcConfig = opts.rtcConfig
   self._userAgent = opts.userAgent
 
@@ -291,6 +291,6 @@ Client.prototype._defaultAnnounceOpts = function (opts) {
   if (opts.uploaded == null) opts.uploaded = 0
   if (opts.downloaded == null) opts.downloaded = 0
 
-  if (self._getAnnounceOpts) opts = extend(opts, self._getAnnounceOpts())
+  if (self._getAnnounceOpts) opts = extend(opts, self._getAnnounceOpts(opts))
   return opts
 }
