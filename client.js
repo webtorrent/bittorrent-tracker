@@ -3,7 +3,6 @@ module.exports = Client
 var Buffer = require('safe-buffer').Buffer
 var debug = require('debug')('bittorrent-tracker:client')
 var EventEmitter = require('events').EventEmitter
-var extend = require('xtend')
 var inherits = require('inherits')
 var once = require('once')
 var parallel = require('run-parallel')
@@ -130,7 +129,7 @@ Client.scrape = function (opts, cb) {
   if (!opts.infoHash) throw new Error('Option `infoHash` is required')
   if (!opts.announce) throw new Error('Option `announce` is required')
 
-  var clientOpts = extend(opts, {
+  var clientOpts = Object.assign({}, opts, {
     infoHash: Array.isArray(opts.infoHash) ? opts.infoHash[0] : opts.infoHash,
     peerId: Buffer.from('01234567890123456789'), // dummy value
     port: 6881 // dummy value
@@ -291,6 +290,6 @@ Client.prototype._defaultAnnounceOpts = function (opts) {
   if (opts.uploaded == null) opts.uploaded = 0
   if (opts.downloaded == null) opts.downloaded = 0
 
-  if (self._getAnnounceOpts) opts = extend(opts, self._getAnnounceOpts())
+  if (self._getAnnounceOpts) opts = Object.assign({}, opts, self._getAnnounceOpts())
   return opts
 }
