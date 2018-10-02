@@ -1,4 +1,4 @@
-const Buffer = require('safe-buffer').Buffer
+const { Buffer } = require('safe-buffer')
 const bencode = require('bencode')
 const debug = require('debug')('bittorrent-tracker:server')
 const dgram = require('dgram')
@@ -272,8 +272,7 @@ class Server extends EventEmitter {
   }
 
   _onError (err) {
-    const self = this
-    self.emit('error', err)
+    this.emit('error', err)
   }
 
   listen (...args) /* port, hostname, onlistening */{
@@ -426,8 +425,7 @@ class Server extends EventEmitter {
     })
   }
 
-  onWebSocketConnection (socket, opts) {
-    if (!opts) opts = {}
+  onWebSocketConnection (socket, opts = {}) {
     opts.trustProxy = opts.trustProxy || this._trustProxy
 
     socket.peerId = null // as hex
