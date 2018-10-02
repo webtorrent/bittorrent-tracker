@@ -277,13 +277,11 @@ class Server extends EventEmitter {
   }
 
   listen (...args) /* port, hostname, onlistening */{
-    const self = this
-
-    if (self._listenCalled || self.listening) throw new Error('server already listening')
-    self._listenCalled = true
+    if (this._listenCalled || this.listening) throw new Error('server already listening')
+    this._listenCalled = true
 
     const lastArg = args[args.length - 1]
-    if (typeof lastArg === 'function') self.once('listening', lastArg)
+    if (typeof lastArg === 'function') this.once('listening', lastArg)
 
     const port = toNumber(args[0]) || args[0] || 0
     const hostname = typeof args[1] !== 'function' ? args[1] : undefined
@@ -303,9 +301,9 @@ class Server extends EventEmitter {
     const udp4Hostname = isObject(hostname) ? hostname.udp : hostname
     const udp6Hostname = isObject(hostname) ? hostname.udp6 : hostname
 
-    if (self.http) self.http.listen(httpPort, httpHostname)
-    if (self.udp4) self.udp4.bind(udpPort, udp4Hostname)
-    if (self.udp6) self.udp6.bind(udpPort, udp6Hostname)
+    if (this.http) this.http.listen(httpPort, httpHostname)
+    if (this.udp4) this.udp4.bind(udpPort, udp4Hostname)
+    if (this.udp6) this.udp6.bind(udpPort, udp6Hostname)
   }
 
   close (cb = noop) {
@@ -429,28 +427,27 @@ class Server extends EventEmitter {
   }
 
   onWebSocketConnection (socket, opts) {
-    const self = this
     if (!opts) opts = {}
-    opts.trustProxy = opts.trustProxy || self._trustProxy
+    opts.trustProxy = opts.trustProxy || this._trustProxy
 
     socket.peerId = null // as hex
     socket.infoHashes = [] // swarms that this socket is participating in
     socket.onSend = err => {
-      self._onWebSocketSend(socket, err)
+      this._onWebSocketSend(socket, err)
     }
 
     socket.onMessageBound = params => {
-      self._onWebSocketRequest(socket, opts, params)
+      this._onWebSocketRequest(socket, opts, params)
     }
     socket.on('message', socket.onMessageBound)
 
     socket.onErrorBound = err => {
-      self._onWebSocketError(socket, err)
+      this._onWebSocketError(socket, err)
     }
     socket.on('error', socket.onErrorBound)
 
     socket.onCloseBound = () => {
-      self._onWebSocketClose(socket)
+      this._onWebSocketClose(socket)
     }
     socket.on('close', socket.onCloseBound)
   }
@@ -564,18 +561,16 @@ class Server extends EventEmitter {
   }
 
   _onWebSocketSend (socket, err) {
-    const self = this
-    if (err) self._onWebSocketError(socket, err)
+    if (err) this._onWebSocketError(socket, err)
   }
 
   _onWebSocketClose (socket) {
-    const self = this
     debug('websocket close %s', socket.peerId)
     socket.destroyed = true
 
     if (socket.peerId) {
       socket.infoHashes.slice(0).forEach(infoHash => {
-        const swarm = self.torrents[infoHash]
+        const swarm = this.torrents[infoHash]
         if (swarm) {
           swarm.announce({
             type: 'ws',
@@ -611,20 +606,18 @@ class Server extends EventEmitter {
   }
 
   _onWebSocketError (socket, err) {
-    const self = this
     debug('websocket error %s', err.message || err)
-    self.emit('warning', err)
-    self._onWebSocketClose(socket)
+    this.emit('warning', err)
+    this._onWebSocketClose(socket)
   }
 
   _onRequest (params, cb) {
-    const self = this
     if (params && params.action === common.ACTIONS.CONNECT) {
       cb(null, { action: common.ACTIONS.CONNECT })
     } else if (params && params.action === common.ACTIONS.ANNOUNCE) {
-      self._onAnnounce(params, cb)
+      this._onAnnounce(params, cb)
     } else if (params && params.action === common.ACTIONS.SCRAPE) {
-      self._onScrape(params, cb)
+      this._onScrape(params, cb)
     } else {
       cb(new Error('Invalid action'))
     }
