@@ -34,42 +34,40 @@ const parseWebSocketRequest = require('./lib/server/parse-websocket')
 class Server extends EventEmitter {
   constructor (opts = {}) {
     super()
-    const self = this
-
     debug('new server %s', JSON.stringify(opts))
 
-    self.intervalMs = opts.interval
+    this.intervalMs = opts.interval
       ? opts.interval
       : 10 * 60 * 1000 // 10 min
 
-    self._trustProxy = !!opts.trustProxy
-    if (typeof opts.filter === 'function') self._filter = opts.filter
+    this._trustProxy = !!opts.trustProxy
+    if (typeof opts.filter === 'function') this._filter = opts.filter
 
-    self.peersCacheLength = opts.peersCacheLength
-    self.peersCacheTtl = opts.peersCacheTtl
+    this.peersCacheLength = opts.peersCacheLength
+    this.peersCacheTtl = opts.peersCacheTtl
 
-    self._listenCalled = false
-    self.listening = false
-    self.destroyed = false
-    self.torrents = {}
+    this._listenCalled = false
+    this.listening = false
+    this.destroyed = false
+    this.torrents = {}
 
-    self.http = null
-    self.udp4 = null
-    self.udp6 = null
-    self.ws = null
+    this.http = null
+    this.udp4 = null
+    this.udp6 = null
+    this.ws = null
 
     // start an http tracker unless the user explictly says no
     if (opts.http !== false) {
-      self.http = http.createServer()
-      self.http.on('error', err => { self._onError(err) })
-      self.http.on('listening', onListening)
+      this.http = http.createServer()
+      this.http.on('error', err => { this._onError(err) })
+      this.http.on('listening', onListening)
 
       // Add default http request handler on next tick to give user the chance to add
       // their own handler first. Handle requests untouched by user's handler.
       process.nextTick(() => {
-        self.http.on('request', (req, res) => {
+        this.http.on('request', (req, res) => {
           if (res.headersSent) return
-          self.onHttpRequest(req, res)
+          this.onHttpRequest(req, res)
         })
       })
     }
@@ -78,32 +76,32 @@ class Server extends EventEmitter {
     if (opts.udp !== false) {
       const isNode10 = /^v0.10./.test(process.version)
 
-      self.udp4 = self.udp = dgram.createSocket(
+      this.udp4 = this.udp = dgram.createSocket(
         isNode10 ? 'udp4' : { type: 'udp4', reuseAddr: true }
       )
-      self.udp4.on('message', (msg, rinfo) => { self.onUdpRequest(msg, rinfo) })
-      self.udp4.on('error', err => { self._onError(err) })
-      self.udp4.on('listening', onListening)
+      this.udp4.on('message', (msg, rinfo) => { this.onUdpRequest(msg, rinfo) })
+      this.udp4.on('error', err => { this._onError(err) })
+      this.udp4.on('listening', onListening)
 
-      self.udp6 = dgram.createSocket(
+      this.udp6 = dgram.createSocket(
         isNode10 ? 'udp6' : { type: 'udp6', reuseAddr: true }
       )
-      self.udp6.on('message', (msg, rinfo) => { self.onUdpRequest(msg, rinfo) })
-      self.udp6.on('error', err => { self._onError(err) })
-      self.udp6.on('listening', onListening)
+      this.udp6.on('message', (msg, rinfo) => { this.onUdpRequest(msg, rinfo) })
+      this.udp6.on('error', err => { this._onError(err) })
+      this.udp6.on('listening', onListening)
     }
 
     // start a websocket tracker (for WebTorrent) unless the user explicitly says no
     if (opts.ws !== false) {
-      if (!self.http) {
-        self.http = http.createServer()
-        self.http.on('error', err => { self._onError(err) })
-        self.http.on('listening', onListening)
+      if (!this.http) {
+        this.http = http.createServer()
+        this.http.on('error', err => { this._onError(err) })
+        this.http.on('listening', onListening)
 
         // Add default http request handler on next tick to give user the chance to add
         // their own handler first. Handle requests untouched by user's handler.
         process.nextTick(() => {
-          self.http.on('request', (req, res) => {
+          this.http.on('request', (req, res) => {
             if (res.headersSent) return
             // For websocket trackers, we only need to handle the UPGRADE http method.
             // Return 404 for all other request types.
@@ -112,35 +110,35 @@ class Server extends EventEmitter {
           })
         })
       }
-      self.ws = new WebSocketServer({
-        server: self.http,
+      this.ws = new WebSocketServer({
+        server: this.http,
         perMessageDeflate: false,
         clientTracking: false
       })
-      self.ws.address = () => {
-        return self.http.address()
+      this.ws.address = () => {
+        return this.http.address()
       }
-      self.ws.on('error', err => { self._onError(err) })
-      self.ws.on('connection', (socket, req) => {
+      this.ws.on('error', err => { this._onError(err) })
+      this.ws.on('connection', (socket, req) => {
         // Note: socket.upgradeReq was removed in ws@3.0.0, so re-add it.
         // https://github.com/websockets/ws/pull/1099
         socket.upgradeReq = req
-        self.onWebSocketConnection(socket)
+        this.onWebSocketConnection(socket)
       })
     }
 
     if (opts.stats !== false) {
-      if (!self.http) {
-        self.http = http.createServer()
-        self.http.on('error', err => { self._onError(err) })
-        self.http.on('listening', onListening)
+      if (!this.http) {
+        this.http = http.createServer()
+        this.http.on('error', err => { this._onError(err) })
+        this.http.on('listening', onListening)
       }
 
       // Http handler for '/stats' route
-      self.http.on('request', (req, res) => {
+      this.http.on('request', (req, res) => {
         if (res.headersSent) return
 
-        const infoHashes = Object.keys(self.torrents)
+        const infoHashes = Object.keys(this.torrents)
         let activeTorrents = 0
         const allPeers = {}
 
@@ -196,7 +194,7 @@ class Server extends EventEmitter {
 
         if (req.method === 'GET' && (req.url === '/stats' || req.url === '/stats.json')) {
           infoHashes.forEach(infoHash => {
-            const peers = self.torrents[infoHash].peers
+            const peers = this.torrents[infoHash].peers
             const keys = peers.keys
             if (keys.length > 0) activeTorrents++
 
@@ -253,14 +251,24 @@ class Server extends EventEmitter {
             res.write(JSON.stringify(stats))
             res.end()
           } else if (req.url === '/stats') {
-            res.end(`<h1>${stats.torrents} torrents (${stats.activeTorrents} active)</h1>\n<h2>Connected Peers: ${stats.peersAll}</h2>\n<h3>Peers Seeding Only: ${stats.peersSeederOnly}</h3>\n<h3>Peers Leeching Only: ${stats.peersLeecherOnly}</h3>\n<h3>Peers Seeding & Leeching: ${stats.peersSeederAndLeecher}</h3>\n<h3>IPv4 Peers: ${stats.peersIPv4}</h3>\n<h3>IPv6 Peers: ${stats.peersIPv6}</h3>\n<h3>Clients:</h3>\n${printClients(stats.clients)}`
-            )
+            res.end(`
+              <h1>${stats.torrents} torrents (${stats.activeTorrents} active)</h1>
+              <h2>Connected Peers: ${stats.peersAll}</h2>
+              <h3>Peers Seeding Only: ${stats.peersSeederOnly}</h3>
+              <h3>Peers Leeching Only: ${stats.peersLeecherOnly}</h3>
+              <h3>Peers Seeding & Leeching: ${stats.peersSeederAndLeecher}</h3>
+              <h3>IPv4 Peers: ${stats.peersIPv4}</h3>
+              <h3>IPv6 Peers: ${stats.peersIPv6}</h3>
+              <h3>Clients:</h3>
+              ${printClients(stats.clients)}
+            `.replace(/^\s+/gm, '')) // trim left
           }
         }
       })
     }
 
-    let num = !!self.http + !!self.udp4 + !!self.udp6
+    let num = !!this.http + !!this.udp4 + !!this.udp6
+    const self = this
     function onListening () {
       num -= 1
       if (num === 0) {
@@ -451,8 +459,6 @@ class Server extends EventEmitter {
   }
 
   _onWebSocketRequest (socket, opts, params) {
-    const self = this
-
     try {
       params = parseWebSocketRequest(socket, opts, params)
     } catch (err) {
@@ -462,14 +468,14 @@ class Server extends EventEmitter {
 
       // even though it's an error for the client, it's just a warning for the server.
       // don't crash the server because a client sent bad data :)
-      self.emit('warning', err)
+      this.emit('warning', err)
       return
     }
 
     if (!socket.peerId) socket.peerId = params.peer_id // as hex
 
-    self._onRequest(params, (err, response) => {
-      if (self.destroyed || socket.destroyed) return
+    this._onRequest(params, (err, response) => {
+      if (this.destroyed || socket.destroyed) return
       if (err) {
         socket.send(JSON.stringify({
           action: params.action === common.ACTIONS.ANNOUNCE ? 'announce' : 'scrape',
@@ -477,7 +483,7 @@ class Server extends EventEmitter {
           info_hash: common.hexToBinary(params.info_hash)
         }), socket.onSend)
 
-        self.emit('warning', err)
+        this.emit('warning', err)
         return
       }
 
@@ -495,7 +501,7 @@ class Server extends EventEmitter {
         response.info_hash = common.hexToBinary(params.info_hash)
 
         // WebSocket tracker should have a shorter interval – default: 2 minutes
-        response.interval = Math.ceil(self.intervalMs / 1000 / 5)
+        response.interval = Math.ceil(this.intervalMs / 1000 / 5)
       }
 
       // Skip sending update back for 'answer' announce messages – not needed
@@ -519,19 +525,26 @@ class Server extends EventEmitter {
         })
       }
 
+      const done = () => {
+        // emit event once the announce is fully "processed"
+        if (params.action === common.ACTIONS.ANNOUNCE) {
+          this.emit(common.EVENT_NAMES[params.event], params.peer_id, params)
+        }
+      }
+
       if (params.answer) {
         debug('got answer %s from %s', JSON.stringify(params.answer), params.peer_id)
 
-        self.getSwarm(params.info_hash, (err, swarm) => {
-          if (self.destroyed) return
-          if (err) return self.emit('warning', err)
+        this.getSwarm(params.info_hash, (err, swarm) => {
+          if (this.destroyed) return
+          if (err) return this.emit('warning', err)
           if (!swarm) {
-            return self.emit('warning', new Error('no swarm with that `info_hash`'))
+            return this.emit('warning', new Error('no swarm with that `info_hash`'))
           }
           // Mark the destination peer as recently used in cache
           const toPeer = swarm.peers.get(params.to_peer_id)
           if (!toPeer) {
-            return self.emit('warning', new Error('no peer with that `to_peer_id`'))
+            return this.emit('warning', new Error('no peer with that `to_peer_id`'))
           }
 
           toPeer.socket.send(JSON.stringify({
@@ -547,13 +560,6 @@ class Server extends EventEmitter {
         })
       } else {
         done()
-      }
-
-      function done () {
-        // emit event once the announce is fully "processed"
-        if (params.action === common.ACTIONS.ANNOUNCE) {
-          self.emit(common.EVENT_NAMES[params.event], params.peer_id, params)
-        }
       }
     })
   }
@@ -624,8 +630,8 @@ class Server extends EventEmitter {
   _onAnnounce (params, cb) {
     const self = this
 
-    if (self._filter) {
-      self._filter(params.info_hash, params, err => {
+    if (this._filter) {
+      this._filter(params.info_hash, params, err => {
         // Presence of `err` means that this announce request is disallowed
         if (err) return cb(err)
 
@@ -693,17 +699,15 @@ class Server extends EventEmitter {
   }
 
   _onScrape (params, cb) {
-    const self = this
-
     if (params.info_hash == null) {
       // if info_hash param is omitted, stats for all torrents are returned
       // TODO: make this configurable!
-      params.info_hash = Object.keys(self.torrents)
+      params.info_hash = Object.keys(this.torrents)
     }
 
     series(params.info_hash.map(infoHash => {
       return cb => {
-        self.getSwarm(infoHash, (err, swarm) => {
+        this.getSwarm(infoHash, (err, swarm) => {
           if (err) return cb(err)
           if (swarm) {
             swarm.scrape(params, (err, scrapeInfo) => {
@@ -725,7 +729,7 @@ class Server extends EventEmitter {
       const response = {
         action: common.ACTIONS.SCRAPE,
         files: {},
-        flags: { min_request_interval: Math.ceil(self.intervalMs / 1000) }
+        flags: { min_request_interval: Math.ceil(this.intervalMs / 1000) }
       }
 
       results.forEach(result => {
