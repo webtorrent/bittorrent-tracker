@@ -750,14 +750,15 @@ Server.Swarm = Swarm
 function makeUdpPacket (params) {
   let packet
   switch (params.action) {
-    case common.ACTIONS.CONNECT:
+    case common.ACTIONS.CONNECT: {
       packet = Buffer.concat([
         common.toUInt32(common.ACTIONS.CONNECT),
         common.toUInt32(params.transactionId),
         params.connectionId
       ])
       break
-    case common.ACTIONS.ANNOUNCE:
+    }
+    case common.ACTIONS.ANNOUNCE: {
       packet = Buffer.concat([
         common.toUInt32(common.ACTIONS.ANNOUNCE),
         common.toUInt32(params.transactionId),
@@ -767,7 +768,8 @@ function makeUdpPacket (params) {
         params.peers
       ])
       break
-    case common.ACTIONS.SCRAPE:
+    }
+    case common.ACTIONS.SCRAPE: {
       const scrapeResponse = [
         common.toUInt32(common.ACTIONS.SCRAPE),
         common.toUInt32(params.transactionId)
@@ -782,13 +784,15 @@ function makeUdpPacket (params) {
       }
       packet = Buffer.concat(scrapeResponse)
       break
-    case common.ACTIONS.ERROR:
+    }
+    case common.ACTIONS.ERROR: {
       packet = Buffer.concat([
         common.toUInt32(common.ACTIONS.ERROR),
         common.toUInt32(params.transactionId || 0),
         Buffer.from(String(params['failure reason']))
       ])
       break
+    }
     default:
       throw new Error(`Action not implemented: ${params.action}`)
   }
