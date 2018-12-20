@@ -749,7 +749,6 @@ Server.Swarm = Swarm
 
 function makeUdpPacket (params) {
   let packet
-  let scrapeResponse
   switch (params.action) {
     case common.ACTIONS.CONNECT:
       packet = Buffer.concat([
@@ -769,7 +768,7 @@ function makeUdpPacket (params) {
       ])
       break
     case common.ACTIONS.SCRAPE:
-      scrapeResponse = [
+      const scrapeResponse = [
         common.toUInt32(common.ACTIONS.SCRAPE),
         common.toUInt32(params.transactionId)
       ]
