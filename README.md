@@ -61,7 +61,7 @@ var requiredOpts = {
   infoHash: new Buffer('012345678901234567890'), // hex string or Buffer
   peerId: new Buffer('01234567890123456789'), // hex string or Buffer
   announce: [], // list of tracker server urls
-  port: 6881 // torrent client port, (in browser, optional)
+  port: 6881 // torrent client port (in browser)
 }
 
 var optionalOpts = {
