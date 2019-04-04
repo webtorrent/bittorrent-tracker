@@ -18,8 +18,8 @@ const WebSocketTracker = require('./lib/client/websocket-tracker')
  * Find torrent peers, to help a torrent client participate in a torrent swarm.
  *
  * @param {Object} opts                          options object
- * @param {string|Buffer} opts.infoHash          torrent info hash
- * @param {string|Buffer} opts.peerId            peer id
+ * @param {string|ArrayBufferView} opts.infoHash torrent info hash
+ * @param {string|ArrayBufferView} opts.peerId   xpeer id
  * @param {string|Array.<string>} opts.announce  announce
  * @param {number} opts.port                     torrent client listening port
  * @param {function} opts.getAnnounceOpts        callback to provide data to tracker
@@ -38,13 +38,13 @@ class Client extends EventEmitter {
 
     this.peerId = typeof opts.peerId === 'string'
       ? opts.peerId
-      : opts.peerId.toString('hex')
+      : Buffer.from(opts.peerId).toString('hex')
     this._peerIdBuffer = Buffer.from(this.peerId, 'hex')
     this._peerIdBinary = this._peerIdBuffer.toString('binary')
 
     this.infoHash = typeof opts.infoHash === 'string'
       ? opts.infoHash.toLowerCase()
-      : opts.infoHash.toString('hex')
+      : Buffer.from(opts.infoHash).toString('hex')
     this._infoHashBuffer = Buffer.from(this.infoHash, 'hex')
     this._infoHashBinary = this._infoHashBuffer.toString('binary')
 
