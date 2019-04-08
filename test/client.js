@@ -468,3 +468,77 @@ test('http: userAgent', function (t) {
     client.start()
   })
 })
+
+function testSupportedTracker (t, serverType) {
+  t.plan(1)
+
+  common.createServer(t, serverType, function (server, announceUrl) {
+    var client = new Client({
+      infoHash: fixtures.leaves.parsedTorrent.infoHash,
+      announce: announceUrl,
+      peerId: peerId1,
+      port: port,
+      wrtc: {}
+    })
+
+    if (serverType === 'ws') common.mockWebsocketTracker(client)
+    client.on('error', function (err) { t.error(err) })
+    client.on('warning', function (err) { t.error(err) })
+
+    client.start()
+
+    client.once('update', function (data) {
+      t.pass('tracker is valid')
+
+      server.close()
+      client.destroy()
+    })
+  })
+}
+
+test('http: valid tracker port', function (t) {
+  testSupportedTracker(t, 'http')
+})
+
+test('udp: valid tracker port', function (t) {
+  testSupportedTracker(t, 'udp')
+})
+
+test('ws: valid tracker port', function (t) {
+  testSupportedTracker(t, 'ws')
+})
+
+function testUnsupportedTracker (t, announceUrl) {
+  t.plan(1)
+
+  var client = new Client({
+    infoHash: fixtures.leaves.parsedTorrent.infoHash,
+    announce: announceUrl,
+    peerId: peerId1,
+    port: port,
+    wrtc: {}
+  })
+
+  client.on('error', function (err) { t.error(err) })
+  client.on('warning', function (err) {
+    t.ok(err.message.includes('tracker'), 'got warning')
+
+    client.destroy()
+  })
+}
+
+test('unsupported tracker protocol', function (t) {
+  testUnsupportedTracker(t, 'badprotocol://127.0.0.1:8080/announce')
+})
+
+test('http: invalid tracker port', function (t) {
+  testUnsupportedTracker(t, 'http://127.0.0.1:69691337/announce')
+})
+
+test('udp: invalid tracker port', function (t) {
+  testUnsupportedTracker(t, 'udp://127.0.0.1:69691337')
+})
+
+test('ws: invalid tracker port', function (t) {
+  testUnsupportedTracker(t, 'ws://127.0.0.1:69691337')
+})
