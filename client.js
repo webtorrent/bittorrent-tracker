@@ -85,7 +85,14 @@ class Client extends EventEmitter {
 
     this._trackers = announce
       .map(announceUrl => {
-        const protocol = url.parse(announceUrl).protocol
+        const parsedUrl = url.parse(announceUrl)
+        const port = parsedUrl.port
+        if (port < 0 || port > 65535) {
+          nextTickWarn(new Error(`Invalid tracker port: ${announceUrl}`))
+          return null
+        }
+
+        const protocol = parsedUrl.protocol
         if ((protocol === 'http:' || protocol === 'https:') &&
             typeof HTTPTracker === 'function') {
           return new HTTPTracker(this, announceUrl)
