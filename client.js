@@ -62,7 +62,7 @@ class Client extends EventEmitter {
     this._wrtc = typeof opts.wrtc === 'function' ? opts.wrtc() : opts.wrtc
 
     let announce = typeof opts.announce === 'string'
-      ? [ opts.announce ]
+      ? [opts.announce]
       : opts.announce == null ? [] : opts.announce
 
     // Remove trailing slash from trackers to catch duplicates

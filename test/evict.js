@@ -31,7 +31,7 @@ function serverTest (t, serverType, serverFamily) {
 
     var client1 = new Client({
       infoHash: infoHash,
-      announce: [ announceUrl ],
+      announce: [announceUrl],
       peerId: peerId,
       port: 6881,
       wrtc: wrtc
@@ -43,7 +43,7 @@ function serverTest (t, serverType, serverFamily) {
     client1.once('update', function (data) {
       var client2 = new Client({
         infoHash: infoHash,
-        announce: [ announceUrl ],
+        announce: [announceUrl],
         peerId: peerId2,
         port: 6882,
         wrtc: wrtc
@@ -68,7 +68,7 @@ function serverTest (t, serverType, serverFamily) {
 
           var client3 = new Client({
             infoHash: infoHash,
-            announce: [ announceUrl ],
+            announce: [announceUrl],
             peerId: peerId3,
             port: 6880,
             wrtc: wrtc
