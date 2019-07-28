@@ -249,7 +249,7 @@ class Server extends EventEmitter {
             clients: groupByClient()
           }
 
-          if (req.url === '/stats.json' || req.headers['accept'] === 'application/json') {
+          if (req.url === '/stats.json' || req.headers.accept === 'application/json') {
             res.write(JSON.stringify(stats))
             res.end()
           } else if (req.url === '/stats') {

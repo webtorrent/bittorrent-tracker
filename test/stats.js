@@ -145,7 +145,7 @@ test('server: get leecher stats.json', function (t) {
         t.equal(stats.peersSeederOnly, 0)
         t.equal(stats.peersLeecherOnly, 1)
         t.equal(stats.peersSeederAndLeecher, 0)
-        t.equal(stats.clients['WebTorrent']['0.91'], 1)
+        t.equal(stats.clients.WebTorrent['0.91'], 1)
 
         client.destroy(function () { t.pass('client destroyed') })
         server.close(function () { t.pass('server closed') })
@@ -186,7 +186,7 @@ test('server: get leecher stats.json (unknown peerId)', function (t) {
         t.equal(stats.peersSeederOnly, 0)
         t.equal(stats.peersLeecherOnly, 1)
         t.equal(stats.peersSeederAndLeecher, 0)
-        t.equal(stats.clients['unknown']['01234567'], 1)
+        t.equal(stats.clients.unknown['01234567'], 1)
 
         client.destroy(function () { t.pass('client destroyed') })
         server.close(function () { t.pass('server closed') })
