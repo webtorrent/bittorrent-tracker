@@ -5,7 +5,6 @@ const once = require('once')
 const parallel = require('run-parallel')
 const Peer = require('simple-peer')
 const uniq = require('uniq')
-const URL = require('url').URL
 
 const common = require('./lib/common')
 const HTTPTracker = require('./lib/client/http-tracker') // empty object in browser
