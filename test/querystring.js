@@ -1,4 +1,3 @@
-var Buffer = require('safe-buffer').Buffer
 var common = require('../lib/common')
 var test = require('tape')
 

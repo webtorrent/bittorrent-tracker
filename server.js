@@ -1,4 +1,3 @@
-const { Buffer } = require('safe-buffer')
 const bencode = require('bencode')
 const debug = require('debug')('bittorrent-tracker:server')
 const dgram = require('dgram')

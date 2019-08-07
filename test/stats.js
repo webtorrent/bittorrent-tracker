@@ -1,4 +1,3 @@
-var Buffer = require('safe-buffer').Buffer
 var Client = require('../')
 var commonTest = require('./common')
 var fixtures = require('webtorrent-fixtures')

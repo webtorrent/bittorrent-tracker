@@ -1,4 +1,3 @@
-var Buffer = require('safe-buffer').Buffer
 var Client = require('../')
 var common = require('./common')
 var test = require('tape')

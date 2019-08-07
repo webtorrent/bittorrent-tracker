@@ -1,4 +1,3 @@
-const { Buffer } = require('safe-buffer')
 const debug = require('debug')('bittorrent-tracker:client')
 const EventEmitter = require('events')
 const once = require('once')

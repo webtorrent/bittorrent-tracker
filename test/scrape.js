@@ -1,5 +1,4 @@
 var bencode = require('bencode')
-var Buffer = require('safe-buffer').Buffer
 var Client = require('../')
 var common = require('./common')
 var commonLib = require('../lib/common')
