@@ -16,6 +16,10 @@
     "./lib/client/udp-tracker.js": false,
     "./server.js": false
   },
+  "chromeapp": {
+    "./server.js": false,
+    "dgram": "chrome-dgram"
+  },
   "bugs": {
     "url": "https://github.com/webtorrent/bittorrent-tracker/issues"
   },
@@ -23,6 +27,7 @@
     "bencode": "^2.0.0",
     "bittorrent-peerid": "^1.0.2",
     "bn.js": "^5.0.0",
+    "chrome-dgram": "^3.0.2",
     "compact2string": "^1.2.0",
     "debug": "^4.0.1",
     "ip": "^1.0.1",
