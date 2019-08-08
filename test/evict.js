@@ -1,9 +1,7 @@
 var Client = require('../')
 var common = require('./common')
 var test = require('tape')
-var electronWebrtc = require('electron-webrtc')
-
-var wrtc
+var wrtc = require('wrtc')
 
 var infoHash = '4cb67059ed6bd08362da625b3ae77f6f4a075705'
 var peerId = Buffer.from('01234567890123456789')
@@ -115,11 +113,5 @@ test('evict: udp server', function (t) {
 })
 
 test('evict: ws server', function (t) {
-  wrtc = electronWebrtc()
-  wrtc.electronDaemon.once('ready', function () {
-    serverTest(t, 'ws', 'inet')
-  })
-  t.once('end', function () {
-    wrtc.close()
-  })
+  serverTest(t, 'ws', 'inet')
 })
