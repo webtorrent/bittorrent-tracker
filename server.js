@@ -3,6 +3,7 @@ const debug = require('debug')('bittorrent-tracker:server')
 const dgram = require('dgram')
 const EventEmitter = require('events')
 const http = require('http')
+const https = require('https')
 const peerid = require('bittorrent-peerid')
 const series = require('run-series')
 const string2compact = require('string2compact')
@@ -59,7 +60,12 @@ class Server extends EventEmitter {
 
     // start an http tracker unless the user explictly says no
     if (opts.http !== false) {
-      this.http = http.createServer()
+      // Use (ot not) SSL Certificate
+      if (typeof(opts.ssl)!="undefined"){
+        this.http = https.createServer(opts.ssl)
+      } else {
+        this.http = http.createServer()
+      }
       this.http.on('error', err => { this._onError(err) })
       this.http.on('listening', onListening)
 
@@ -95,7 +101,12 @@ class Server extends EventEmitter {
     // start a websocket tracker (for WebTorrent) unless the user explicitly says no
     if (opts.ws !== false) {
       if (!this.http) {
-        this.http = http.createServer()
+        // Use (ot not) SSL Certificate
+        if (typeof(opts.ssl)!="undefined"){
+          this.http = https.createServer(opts.ssl)
+        } else {
+          this.http = http.createServer()
+        }
         this.http.on('error', err => { this._onError(err) })
         this.http.on('listening', onListening)
 
@@ -130,7 +141,12 @@ class Server extends EventEmitter {
 
     if (opts.stats !== false) {
       if (!this.http) {
-        this.http = http.createServer()
+        // Use (ot not) SSL Certificate
+        if (typeof(opts.ssl)!="undefined"){
+          this.http = https.createServer(opts.ssl)
+        } else {
+          this.http = http.createServer()
+        }
         this.http.on('error', err => { this._onError(err) })
         this.http.on('listening', onListening)
       }
