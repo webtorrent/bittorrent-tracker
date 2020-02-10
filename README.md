@@ -223,6 +223,57 @@ server.torrents[infoHash].peers
 
 The http server will handle requests for the following paths: `/announce`, `/scrape`. Requests for other paths will not be handled.
 
+## Using HTTPS and WSS
+
+```
+var Server = require('bittorrent-tracker').Server
+var fs = require('fs')
+
+var privateKey = fs.readFileSync('ssl-cert/privkey.pem');
+var certificate = fs.readFileSync('ssl-cert/fullchain.pem');
+
+var server = new Server({
+  udp: true, // enable udp server? [default=true]
+  http: true, // enable http server? [default=true]
+  ws: true, // enable websocket server? [default=true]
+  ssl: {
+    key: privateKey,
+    cert: certificate
+  },
+  stats: true, // enable web-based statistics? [default=true]
+  filter: function (infoHash, params, cb) {
+    // Blacklist/whitelist function for allowing/disallowing torrents. If this option is
+    // omitted, all torrents are allowed. It is possible to interface with a database or
+    // external system before deciding to allow/deny, because this function is async.
+
+    // It is possible to block by peer id (whitelisting torrent clients) or by secret
+    // key (private trackers). Full access to the original HTTP/UDP request parameters
+    // are available in `params`.
+
+    // This example only allows one torrent.
+
+    var allowed = (infoHash === 'aaa67059ed6bd08362da625b3ae77f6f4a075aaa')
+    if (allowed) {
+      // If the callback is passed `null`, the torrent will be allowed.
+      cb(null)
+    } else {
+      // If the callback is passed an `Error` object, the torrent will be disallowed
+      // and the error's `message` property will be given as the reason.
+      cb(new Error('disallowed torrent'))
+    }
+  }
+})
+
+server.on('listening', function () {
+  // fired when all requested servers are listening
+  console.log('listening on https port:' + server.http.address().port)
+  console.log('listening on wss port:' + server.ws.address().port)
+  console.log('listening on udp port:' + server.udp.address().port)
+})
+```
+
+The tracker will load with https:// and wss://, but no with http:// and ws://.
+
 ## multi scrape
 
 Scraping multiple torrent info is possible with a static `Client.scrape` method:
