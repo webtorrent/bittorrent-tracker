@@ -61,7 +61,7 @@ class Server extends EventEmitter {
     // start an http tracker unless the user explictly says no
     if (opts.http !== false) {
       // Use (ot not) SSL Certificate
-      if (typeof(opts.ssl)!="undefined"){
+      if (typeof opts.ssl !== 'undefined') {
         this.http = https.createServer(opts.ssl)
       } else {
         this.http = http.createServer()
@@ -102,7 +102,7 @@ class Server extends EventEmitter {
     if (opts.ws !== false) {
       if (!this.http) {
         // Use (ot not) SSL Certificate
-        if (typeof(opts.ssl)!="undefined"){
+        if (typeof opts.ssl !== 'undefined') {
           this.http = https.createServer(opts.ssl)
         } else {
           this.http = http.createServer()
@@ -142,7 +142,7 @@ class Server extends EventEmitter {
     if (opts.stats !== false) {
       if (!this.http) {
         // Use (ot not) SSL Certificate
-        if (typeof(opts.ssl)!="undefined"){
+        if (typeof opts.ssl !== 'undefined') {
           this.http = https.createServer(opts.ssl)
         } else {
           this.http = http.createServer()
