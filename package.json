@@ -42,7 +42,6 @@
     "simple-peer": "^9.0.0",
     "simple-websocket": "^8.0.0",
     "string2compact": "^1.1.1",
-    "uniq": "^1.0.1",
     "unordered-array-remove": "^1.0.2",
     "ws": "^7.0.0"
   },
