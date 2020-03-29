@@ -252,7 +252,7 @@ class Server extends EventEmitter {
             res.setHeader('Content-Type', 'application/json')
             res.end(JSON.stringify(stats))
           } else if (req.url === '/stats') {
-            res.setHeader('Content-Type', 'text/html');
+            res.setHeader('Content-Type', 'text/html')
             res.end(`
               <h1>${stats.torrents} torrents (${stats.activeTorrents} active)</h1>
               <h2>Connected Peers: ${stats.peersAll}</h2>
