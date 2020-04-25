@@ -120,7 +120,7 @@ test('server: get leecher stats.json', function (t) {
     var client = new Client({
       infoHash: fixtures.leaves.parsedTorrent.infoHash,
       announce: announceUrl,
-      peerId: peerId,
+      peerId,
       port: 6881
     })
     client.on('error', function (err) { t.error(err) })

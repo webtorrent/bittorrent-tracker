@@ -19,7 +19,7 @@ function serverTest (t, serverType, serverFamily) {
     : '127.0.0.1'
 
   var opts = {
-    serverType: serverType
+    serverType
   }
 
   common.createServer(t, opts, function (server) {
@@ -29,11 +29,11 @@ function serverTest (t, serverType, serverFamily) {
     var announceUrl = serverType + '://' + hostname + ':' + port + '/announce'
 
     var client1 = new Client({
-      infoHash: infoHash,
+      infoHash,
       announce: [announceUrl],
-      peerId: peerId,
+      peerId,
       port: 6881,
-      wrtc: wrtc
+      wrtc
     })
     if (serverType === 'ws') common.mockWebsocketTracker(client1)
 
@@ -89,11 +89,11 @@ function serverTest (t, serverType, serverFamily) {
             t.equal(typeof data.downloaded, 'number')
 
             var client2 = new Client({
-              infoHash: infoHash,
+              infoHash,
               announce: [announceUrl],
               peerId: peerId2,
               port: 6882,
-              wrtc: wrtc
+              wrtc
             })
             if (serverType === 'ws') common.mockWebsocketTracker(client2)
 
@@ -109,11 +109,11 @@ function serverTest (t, serverType, serverFamily) {
               t.equal(data.incomplete, 1)
 
               var client3 = new Client({
-                infoHash: infoHash,
+                infoHash,
                 announce: [announceUrl],
                 peerId: peerId3,
                 port: 6880,
-                wrtc: wrtc
+                wrtc
               })
               if (serverType === 'ws') common.mockWebsocketTracker(client3)
 

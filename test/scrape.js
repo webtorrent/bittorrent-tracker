@@ -14,7 +14,7 @@ function testSingle (t, serverType) {
     var client = new Client({
       infoHash: fixtures.leaves.parsedTorrent.infoHash,
       announce: announceUrl,
-      peerId: peerId,
+      peerId,
       port: 6881,
       wrtc: {}
     })
@@ -199,7 +199,7 @@ test('server: all info_hash scrape (manual http request)', function (t) {
     var client = new Client({
       infoHash: fixtures.leaves.parsedTorrent.infoHash,
       announce: announceUrl,
-      peerId: peerId,
+      peerId,
       port: 6881
     })
     client.on('error', function (err) { t.error(err) })

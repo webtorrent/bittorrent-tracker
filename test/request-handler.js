@@ -9,7 +9,7 @@ var peerId = Buffer.from('01234567890123456789')
 function testRequestHandler (t, serverType) {
   t.plan(5)
 
-  var opts = { serverType: serverType } // this is test-suite-only option
+  var opts = { serverType } // this is test-suite-only option
 
   class Swarm extends Server.Swarm {
     announce (params, cb) {
@@ -33,7 +33,7 @@ function testRequestHandler (t, serverType) {
     var client1 = new Client({
       infoHash: fixtures.alice.parsedTorrent.infoHash,
       announce: announceUrl,
-      peerId: peerId,
+      peerId,
       port: 6881,
       wrtc: {}
     })

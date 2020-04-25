@@ -13,8 +13,8 @@ test('ensure client.destroy() callback is called with re-used websockets in sock
     var client1 = new Client({
       infoHash: fixtures.leaves.parsedTorrent.infoHash,
       announce: announceUrl,
-      peerId: peerId,
-      port: port,
+      peerId,
+      port,
       wrtc: {}
     })
 
@@ -30,8 +30,8 @@ test('ensure client.destroy() callback is called with re-used websockets in sock
       var client2 = new Client({
         infoHash: fixtures.alice.parsedTorrent.infoHash, // different info hash
         announce: announceUrl,
-        peerId: peerId,
-        port: port,
+        peerId,
+        port,
         wrtc: {}
       })
 

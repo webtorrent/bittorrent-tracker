@@ -16,7 +16,7 @@ function testClientStart (t, serverType) {
       infoHash: fixtures.leaves.parsedTorrent.infoHash,
       announce: announceUrl,
       peerId: peerId1,
-      port: port,
+      port,
       wrtc: {}
     })
 
@@ -62,7 +62,7 @@ function testClientStop (t, serverType) {
       infoHash: fixtures.leaves.parsedTorrent.infoHash,
       announce: announceUrl,
       peerId: peerId1,
-      port: port,
+      port,
       wrtc: {}
     })
 
@@ -110,7 +110,7 @@ function testClientStopDestroy (t, serverType) {
       infoHash: fixtures.leaves.parsedTorrent.infoHash,
       announce: announceUrl,
       peerId: peerId1,
-      port: port,
+      port,
       wrtc: {}
     })
 
@@ -164,7 +164,7 @@ function testClientUpdate (t, serverType) {
       infoHash: fixtures.leaves.parsedTorrent.infoHash,
       announce: announceUrl,
       peerId: peerId1,
-      port: port,
+      port,
       wrtc: {}
     })
 
@@ -217,7 +217,7 @@ function testClientScrape (t, serverType) {
       infoHash: fixtures.leaves.parsedTorrent.infoHash,
       announce: announceUrl,
       peerId: peerId1,
-      port: port,
+      port,
       wrtc: {}
     })
 
@@ -259,7 +259,7 @@ function testClientAnnounceWithParams (t, serverType) {
       infoHash: fixtures.leaves.parsedTorrent.infoHash,
       announce: announceUrl,
       peerId: peerId1,
-      port: port,
+      port,
       wrtc: {}
     })
 
@@ -307,7 +307,7 @@ function testClientGetAnnounceOpts (t, serverType) {
       infoHash: fixtures.leaves.parsedTorrent.infoHash,
       announce: announceUrl,
       peerId: peerId1,
-      port: port,
+      port,
       getAnnounceOpts: function () {
         return {
           testParam: 'this is a test'
@@ -358,7 +358,7 @@ function testClientAnnounceWithNumWant (t, serverType) {
       infoHash: fixtures.leaves.parsedTorrent.infoHash,
       announce: [announceUrl],
       peerId: peerId1,
-      port: port,
+      port,
       wrtc: {}
     })
 
@@ -449,7 +449,7 @@ test('http: userAgent', function (t) {
       infoHash: fixtures.leaves.parsedTorrent.infoHash,
       announce: announceUrl,
       peerId: peerId1,
-      port: port,
+      port,
       userAgent: 'WebTorrent/0.98.0 (https://webtorrent.io)',
       wrtc: {}
     })
@@ -476,7 +476,7 @@ function testSupportedTracker (t, serverType) {
       infoHash: fixtures.leaves.parsedTorrent.infoHash,
       announce: announceUrl,
       peerId: peerId1,
-      port: port,
+      port,
       wrtc: {}
     })
 
@@ -514,7 +514,7 @@ function testUnsupportedTracker (t, announceUrl) {
     infoHash: fixtures.leaves.parsedTorrent.infoHash,
     announce: announceUrl,
     peerId: peerId1,
-    port: port,
+    port,
     wrtc: {}
   })
 

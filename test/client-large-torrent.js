@@ -11,7 +11,7 @@ function testLargeTorrent (t, serverType) {
   common.createServer(t, serverType, function (server, announceUrl) {
     var client = new Client({
       infoHash: fixtures.sintel.parsedTorrent.infoHash,
-      peerId: peerId,
+      peerId,
       port: 6881,
       announce: announceUrl,
       wrtc: {}

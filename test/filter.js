@@ -8,7 +8,7 @@ var peerId = Buffer.from('01234567890123456789')
 function testFilterOption (t, serverType) {
   t.plan(8)
 
-  var opts = { serverType: serverType } // this is test-suite-only option
+  var opts = { serverType } // this is test-suite-only option
   opts.filter = function (infoHash, params, cb) {
     process.nextTick(function () {
       if (infoHash === fixtures.alice.parsedTorrent.infoHash) {
@@ -23,7 +23,7 @@ function testFilterOption (t, serverType) {
     var client1 = new Client({
       infoHash: fixtures.alice.parsedTorrent.infoHash,
       announce: announceUrl,
-      peerId: peerId,
+      peerId,
       port: 6881,
       wrtc: {}
     })
@@ -40,7 +40,7 @@ function testFilterOption (t, serverType) {
         var client2 = new Client({
           infoHash: fixtures.leaves.parsedTorrent.infoHash,
           announce: announceUrl,
-          peerId: peerId,
+          peerId,
           port: 6881,
           wrtc: {}
         })
@@ -88,7 +88,7 @@ test('ws: filter option blocks tracker from tracking torrent', function (t) {
 function testFilterCustomError (t, serverType) {
   t.plan(8)
 
-  var opts = { serverType: serverType } // this is test-suite-only option
+  var opts = { serverType } // this is test-suite-only option
   opts.filter = function (infoHash, params, cb) {
     process.nextTick(function () {
       if (infoHash === fixtures.alice.parsedTorrent.infoHash) {
@@ -103,7 +103,7 @@ function testFilterCustomError (t, serverType) {
     var client1 = new Client({
       infoHash: fixtures.alice.parsedTorrent.infoHash,
       announce: announceUrl,
-      peerId: peerId,
+      peerId,
       port: 6881,
       wrtc: {}
     })
@@ -119,7 +119,7 @@ function testFilterCustomError (t, serverType) {
         var client2 = new Client({
           infoHash: fixtures.leaves.parsedTorrent.infoHash,
           announce: announceUrl,
-          peerId: peerId,
+          peerId,
           port: 6881,
           wrtc: {}
         })
