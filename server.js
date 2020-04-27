@@ -136,137 +136,7 @@ class Server extends EventEmitter {
       }
 
       // Http handler for '/stats' route
-      this.http.on('request', (req, res) => {
-        if (res.headersSent) return
-
-        const infoHashes = Object.keys(this.torrents)
-        let activeTorrents = 0
-        const allPeers = {}
-
-        function countPeers (filterFunction) {
-          let count = 0
-          let key
-
-          for (key in allPeers) {
-            if (hasOwnProperty.call(allPeers, key) && filterFunction(allPeers[key])) {
-              count++
-            }
-          }
-
-          return count
-        }
-
-        function groupByClient () {
-          const clients = {}
-          for (const key in allPeers) {
-            if (hasOwnProperty.call(allPeers, key)) {
-              const peer = allPeers[key]
-
-              if (!clients[peer.client.client]) {
-                clients[peer.client.client] = {}
-              }
-              const client = clients[peer.client.client]
-              // If the client is not known show 8 chars from peerId as version
-              const version = peer.client.version || Buffer.from(peer.peerId, 'hex').toString().substring(0, 8)
-              if (!client[version]) {
-                client[version] = 0
-              }
-              client[version]++
-            }
-          }
-          return clients
-        }
-
-        function printClients (clients) {
-          let html = '<ul>\n'
-          for (const name in clients) {
-            if (hasOwnProperty.call(clients, name)) {
-              const client = clients[name]
-              for (const version in client) {
-                if (hasOwnProperty.call(client, version)) {
-                  html += `<li><strong>${name}</strong> ${version} : ${client[version]}</li>\n`
-                }
-              }
-            }
-          }
-          html += '</ul>'
-          return html
-        }
-
-        if (req.method === 'GET' && (req.url === '/stats' || req.url === '/stats.json')) {
-          infoHashes.forEach(infoHash => {
-            const peers = this.torrents[infoHash].peers
-            const keys = peers.keys
-            if (keys.length > 0) activeTorrents++
-
-            keys.forEach(peerId => {
-              // Don't mark the peer as most recently used for stats
-              const peer = peers.peek(peerId)
-              if (peer == null) return // peers.peek() can evict the peer
-
-              if (!hasOwnProperty.call(allPeers, peerId)) {
-                allPeers[peerId] = {
-                  ipv4: false,
-                  ipv6: false,
-                  seeder: false,
-                  leecher: false
-                }
-              }
-
-              if (peer.ip.includes(':')) {
-                allPeers[peerId].ipv6 = true
-              } else {
-                allPeers[peerId].ipv4 = true
-              }
-
-              if (peer.complete) {
-                allPeers[peerId].seeder = true
-              } else {
-                allPeers[peerId].leecher = true
-              }
-
-              allPeers[peerId].peerId = peer.peerId
-              allPeers[peerId].client = peerid(peer.peerId)
-            })
-          })
-
-          const isSeederOnly = peer => { return peer.seeder && peer.leecher === false }
-          const isLeecherOnly = peer => { return peer.leecher && peer.seeder === false }
-          const isSeederAndLeecher = peer => { return peer.seeder && peer.leecher }
-          const isIPv4 = peer => { return peer.ipv4 }
-          const isIPv6 = peer => { return peer.ipv6 }
-
-          const stats = {
-            torrents: infoHashes.length,
-            activeTorrents,
-            peersAll: Object.keys(allPeers).length,
-            peersSeederOnly: countPeers(isSeederOnly),
-            peersLeecherOnly: countPeers(isLeecherOnly),
-            peersSeederAndLeecher: countPeers(isSeederAndLeecher),
-            peersIPv4: countPeers(isIPv4),
-            peersIPv6: countPeers(isIPv6),
-            clients: groupByClient()
-          }
-
-          if (req.url === '/stats.json' || req.headers.accept === 'application/json') {
-            res.setHeader('Content-Type', 'application/json')
-            res.end(JSON.stringify(stats))
-          } else if (req.url === '/stats') {
-            res.setHeader('Content-Type', 'text/html')
-            res.end(`
-              <h1>${stats.torrents} torrents (${stats.activeTorrents} active)</h1>
-              <h2>Connected Peers: ${stats.peersAll}</h2>
-              <h3>Peers Seeding Only: ${stats.peersSeederOnly}</h3>
-              <h3>Peers Leeching Only: ${stats.peersLeecherOnly}</h3>
-              <h3>Peers Seeding & Leeching: ${stats.peersSeederAndLeecher}</h3>
-              <h3>IPv4 Peers: ${stats.peersIPv4}</h3>
-              <h3>IPv6 Peers: ${stats.peersIPv6}</h3>
-              <h3>Clients:</h3>
-              ${printClients(stats.clients)}
-            `.replace(/^\s+/gm, '')) // trim left
-          }
-        }
-      })
+      this.http.on('request', this.onStats);
     }
 
     let num = !!this.http + !!this.udp4 + !!this.udp6
@@ -277,6 +147,137 @@ class Server extends EventEmitter {
         self.listening = true
         debug('listening')
         self.emit('listening')
+      }
+    }
+  }
+
+  onStats = (req, res) => {
+    if (res.headersSent) return
+
+    const infoHashes = Object.keys(this.torrents)
+    let activeTorrents = 0
+    const allPeers = {}
+
+    function countPeers (filterFunction) {
+      let count = 0
+      let key
+
+      for (key in allPeers) {
+        if (hasOwnProperty.call(allPeers, key) && filterFunction(allPeers[key])) {
+          count++
+        }
+      }
+
+      return count
+    }
+
+    function groupByClient () {
+      const clients = {}
+      for (const key in allPeers) {
+        if (hasOwnProperty.call(allPeers, key)) {
+          const peer = allPeers[key]
+
+          if (!clients[peer.client.client]) {
+            clients[peer.client.client] = {}
+          }
+          const client = clients[peer.client.client]
+          // If the client is not known show 8 chars from peerId as version
+          const version = peer.client.version || Buffer.from(peer.peerId, 'hex').toString().substring(0, 8)
+          if (!client[version]) {
+            client[version] = 0
+          }
+          client[version]++
+        }
+      }
+      return clients
+    }
+
+    function printClients (clients) {
+      let html = '<ul>\n'
+      for (const name in clients) {
+        if (hasOwnProperty.call(clients, name)) {
+          const client = clients[name]
+          for (const version in client) {
+            if (hasOwnProperty.call(client, version)) {
+              html += `<li><strong>${name}</strong> ${version} : ${client[version]}</li>\n`
+            }
+          }
+        }
+      }
+      html += '</ul>'
+      return html
+    }
+
+    if (req.method === 'GET' && (req.url === '/stats' || req.url === '/stats.json')) {
+      infoHashes.forEach(infoHash => {
+        const peers = this.torrents[infoHash].peers
+        const keys = peers.keys
+        if (keys.length > 0) activeTorrents++
+
+        keys.forEach(peerId => {
+          // Don't mark the peer as most recently used for stats
+          const peer = peers.peek(peerId)
+          if (peer == null) return // peers.peek() can evict the peer
+
+          if (!hasOwnProperty.call(allPeers, peerId)) {
+            allPeers[peerId] = {
+              ipv4: false,
+              ipv6: false,
+              seeder: false,
+              leecher: false
+            }
+          }
+
+          if (peer.ip.includes(':')) {
+            allPeers[peerId].ipv6 = true
+          } else {
+            allPeers[peerId].ipv4 = true
+          }
+
+          if (peer.complete) {
+            allPeers[peerId].seeder = true
+          } else {
+            allPeers[peerId].leecher = true
+          }
+
+          allPeers[peerId].peerId = peer.peerId
+          allPeers[peerId].client = peerid(peer.peerId)
+        })
+      })
+
+      const isSeederOnly = peer => { return peer.seeder && peer.leecher === false }
+      const isLeecherOnly = peer => { return peer.leecher && peer.seeder === false }
+      const isSeederAndLeecher = peer => { return peer.seeder && peer.leecher }
+      const isIPv4 = peer => { return peer.ipv4 }
+      const isIPv6 = peer => { return peer.ipv6 }
+
+      const stats = {
+        torrents: infoHashes.length,
+        activeTorrents,
+        peersAll: Object.keys(allPeers).length,
+        peersSeederOnly: countPeers(isSeederOnly),
+        peersLeecherOnly: countPeers(isLeecherOnly),
+        peersSeederAndLeecher: countPeers(isSeederAndLeecher),
+        peersIPv4: countPeers(isIPv4),
+        peersIPv6: countPeers(isIPv6),
+        clients: groupByClient()
+      }
+
+      if (req.url === '/stats.json' || req.headers.accept === 'application/json') {
+        res.write(JSON.stringify(stats))
+        res.end()
+      } else if (req.url === '/stats') {
+        res.end(`
+          <h1>${stats.torrents} torrents (${stats.activeTorrents} active)</h1>
+          <h2>Connected Peers: ${stats.peersAll}</h2>
+          <h3>Peers Seeding Only: ${stats.peersSeederOnly}</h3>
+          <h3>Peers Leeching Only: ${stats.peersLeecherOnly}</h3>
+          <h3>Peers Seeding & Leeching: ${stats.peersSeederAndLeecher}</h3>
+          <h3>IPv4 Peers: ${stats.peersIPv4}</h3>
+          <h3>IPv6 Peers: ${stats.peersIPv6}</h3>
+          <h3>Clients:</h3>
+          ${printClients(stats.clients)}
+        `.replace(/^\s+/gm, '')) // trim left
       }
     }
   }
@@ -362,6 +363,10 @@ class Server extends EventEmitter {
 
   onHttpRequest (req, res, opts = {}) {
     opts.trustProxy = opts.trustProxy || this._trustProxy
+
+    if (req.originalUrl === "/stats" || req.originalUrl === "/stats.json") {
+      return this.onStats(req, res);
+    }
 
     let params
     try {
