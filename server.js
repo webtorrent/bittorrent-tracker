@@ -151,7 +151,7 @@ class Server extends EventEmitter {
     }
   }
 
-  onStats = (req, res) => {
+  onStats (req, res) {
     if (res.headersSent) return
 
     const infoHashes = Object.keys(this.torrents)
