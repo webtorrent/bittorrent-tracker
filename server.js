@@ -136,7 +136,7 @@ class Server extends EventEmitter {
       }
 
       // Http handler for '/stats' route
-      this.http.on('request', this.onStats);
+      this.http.on('request', this.onStats)
     }
 
     let num = !!this.http + !!this.udp4 + !!this.udp6
@@ -364,8 +364,8 @@ class Server extends EventEmitter {
   onHttpRequest (req, res, opts = {}) {
     opts.trustProxy = opts.trustProxy || this._trustProxy
 
-    if (req.originalUrl === "/stats" || req.originalUrl === "/stats.json") {
-      return this.onStats(req, res);
+    if (req.originalUrl === '/stats' || req.originalUrl === '/stats.json') {
+      return this.onStats(req, res)
     }
 
     let params
