@@ -15,7 +15,7 @@ function testMagnet (t, serverType) {
     var client = new Client({
       infoHash: parsedTorrent.infoHash,
       announce: announceUrl,
-      peerId: peerId,
+      peerId,
       port: 6881,
       wrtc: {}
     })
