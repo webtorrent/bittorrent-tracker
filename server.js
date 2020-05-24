@@ -365,7 +365,7 @@ class Server extends EventEmitter {
     opts.trustProxy = opts.trustProxy || this._trustProxy
 
     if (req.originalUrl === '/stats' || req.originalUrl === '/stats.json') {
-      return this.onStats.bind(req, res)
+      return this.onStats.bind(this, req, res)
     }
 
     let params
