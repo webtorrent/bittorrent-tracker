@@ -281,8 +281,8 @@ Client.scrape = (opts, cb) => {
 
   opts.infoHash = Array.isArray(opts.infoHash)
     ? opts.infoHash.map(infoHash => {
-      return Buffer.from(infoHash, 'hex')
-    })
+        return Buffer.from(infoHash, 'hex')
+      })
     : Buffer.from(opts.infoHash, 'hex')
   client.scrape({ infoHash: opts.infoHash })
   return client
