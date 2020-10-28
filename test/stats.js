@@ -16,6 +16,7 @@ function parseHtml (html) {
     if (a) {
       return parseInt(a[1])
     }
+    return null
   })
   var i = 0
   return {
