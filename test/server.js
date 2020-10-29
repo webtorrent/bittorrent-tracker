@@ -1,34 +1,34 @@
-var Client = require('../')
-var common = require('./common')
-var test = require('tape')
-var wrtc = require('wrtc')
+const Client = require('../')
+const common = require('./common')
+const test = require('tape')
+const wrtc = require('wrtc')
 
-var infoHash = '4cb67059ed6bd08362da625b3ae77f6f4a075705'
-var peerId = Buffer.from('01234567890123456789')
-var peerId2 = Buffer.from('12345678901234567890')
-var peerId3 = Buffer.from('23456789012345678901')
+const infoHash = '4cb67059ed6bd08362da625b3ae77f6f4a075705'
+const peerId = Buffer.from('01234567890123456789')
+const peerId2 = Buffer.from('12345678901234567890')
+const peerId3 = Buffer.from('23456789012345678901')
 
 function serverTest (t, serverType, serverFamily) {
   t.plan(40)
 
-  var hostname = serverFamily === 'inet6'
+  const hostname = serverFamily === 'inet6'
     ? '[::1]'
     : '127.0.0.1'
-  var clientIp = serverFamily === 'inet6'
+  const clientIp = serverFamily === 'inet6'
     ? '::1'
     : '127.0.0.1'
 
-  var opts = {
+  const opts = {
     serverType
   }
 
   common.createServer(t, opts, function (server) {
     // Not using announceUrl param from `common.createServer()` since we
     // want to control IPv4 vs IPv6.
-    var port = server[serverType].address().port
-    var announceUrl = serverType + '://' + hostname + ':' + port + '/announce'
+    const port = server[serverType].address().port
+    const announceUrl = serverType + '://' + hostname + ':' + port + '/announce'
 
-    var client1 = new Client({
+    const client1 = new Client({
       infoHash,
       announce: [announceUrl],
       peerId,
@@ -56,11 +56,11 @@ function serverTest (t, serverType, serverFamily) {
         t.equal(swarm.incomplete, 1)
         t.equal(swarm.peers.length, 1)
 
-        var id = serverType === 'ws'
+        const id = serverType === 'ws'
           ? peerId.toString('hex')
           : hostname + ':6881'
 
-        var peer = swarm.peers.peek(id)
+        const peer = swarm.peers.peek(id)
         t.equal(peer.type, serverType)
         t.equal(peer.ip, clientIp)
         t.equal(peer.peerId, peerId.toString('hex'))
@@ -88,7 +88,7 @@ function serverTest (t, serverType, serverFamily) {
             t.equal(data.incomplete, 0)
             t.equal(typeof data.downloaded, 'number')
 
-            var client2 = new Client({
+            const client2 = new Client({
               infoHash,
               announce: [announceUrl],
               peerId: peerId2,
@@ -108,7 +108,7 @@ function serverTest (t, serverType, serverFamily) {
               t.equal(data.complete, 1)
               t.equal(data.incomplete, 1)
 
-              var client3 = new Client({
+              const client3 = new Client({
                 infoHash,
                 announce: [announceUrl],
                 peerId: peerId3,

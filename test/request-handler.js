@@ -1,15 +1,15 @@
-var Client = require('../')
-var common = require('./common')
-var fixtures = require('webtorrent-fixtures')
-var test = require('tape')
-var Server = require('../server')
+const Client = require('../')
+const common = require('./common')
+const fixtures = require('webtorrent-fixtures')
+const test = require('tape')
+const Server = require('../server')
 
-var peerId = Buffer.from('01234567890123456789')
+const peerId = Buffer.from('01234567890123456789')
 
 function testRequestHandler (t, serverType) {
   t.plan(5)
 
-  var opts = { serverType } // this is test-suite-only option
+  const opts = { serverType } // this is test-suite-only option
 
   class Swarm extends Server.Swarm {
     announce (params, cb) {
@@ -23,14 +23,14 @@ function testRequestHandler (t, serverType) {
   }
 
   // Use a custom Swarm implementation for this test only
-  var OldSwarm = Server.Swarm
+  const OldSwarm = Server.Swarm
   Server.Swarm = Swarm
   t.on('end', function () {
     Server.Swarm = OldSwarm
   })
 
   common.createServer(t, opts, function (server, announceUrl) {
-    var client1 = new Client({
+    const client1 = new Client({
       infoHash: fixtures.alice.parsedTorrent.infoHash,
       announce: announceUrl,
       peerId,

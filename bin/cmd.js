@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 
-var minimist = require('minimist')
-var Server = require('../').Server
+const minimist = require('minimist')
+const Server = require('../').Server
 
-var argv = minimist(process.argv.slice(2), {
+const argv = minimist(process.argv.slice(2), {
   alias: {
     h: 'help',
     p: 'port',
@@ -70,13 +70,13 @@ if (argv.help) {
 
 if (argv.silent) argv.quiet = true
 
-var allFalsy = !argv.http && !argv.udp && !argv.ws
+const allFalsy = !argv.http && !argv.udp && !argv.ws
 
 argv.http = allFalsy || argv.http
 argv.udp = allFalsy || argv.udp
 argv.ws = allFalsy || argv.ws
 
-var server = new Server({
+const server = new Server({
   http: argv.http,
   interval: argv.interval,
   stats: argv.stats,
@@ -104,7 +104,7 @@ server.on('stop', function (addr) {
   if (!argv.quiet) console.log('stop: ' + addr)
 })
 
-var hostname = {
+const hostname = {
   http: argv['http-hostname'],
   udp4: argv['udp-hostname'],
   udp6: argv['udp6-hostname']
@@ -112,33 +112,33 @@ var hostname = {
 
 server.listen(argv.port, hostname, function () {
   if (server.http && argv.http && !argv.quiet) {
-    var httpAddr = server.http.address()
-    var httpHost = httpAddr.address !== '::' ? httpAddr.address : 'localhost'
-    var httpPort = httpAddr.port
+    const httpAddr = server.http.address()
+    const httpHost = httpAddr.address !== '::' ? httpAddr.address : 'localhost'
+    const httpPort = httpAddr.port
     console.log('HTTP tracker: http://' + httpHost + ':' + httpPort + '/announce')
   }
   if (server.udp && !argv.quiet) {
-    var udpAddr = server.udp.address()
-    var udpHost = udpAddr.address
-    var udpPort = udpAddr.port
+    const udpAddr = server.udp.address()
+    const udpHost = udpAddr.address
+    const udpPort = udpAddr.port
     console.log('UDP tracker: udp://' + udpHost + ':' + udpPort)
   }
   if (server.udp6 && !argv.quiet) {
-    var udp6Addr = server.udp6.address()
-    var udp6Host = udp6Addr.address !== '::' ? udp6Addr.address : 'localhost'
-    var udp6Port = udp6Addr.port
+    const udp6Addr = server.udp6.address()
+    const udp6Host = udp6Addr.address !== '::' ? udp6Addr.address : 'localhost'
+    const udp6Port = udp6Addr.port
     console.log('UDP6 tracker: udp://' + udp6Host + ':' + udp6Port)
   }
   if (server.ws && !argv.quiet) {
-    var wsAddr = server.http.address()
-    var wsHost = wsAddr.address !== '::' ? wsAddr.address : 'localhost'
-    var wsPort = wsAddr.port
+    const wsAddr = server.http.address()
+    const wsHost = wsAddr.address !== '::' ? wsAddr.address : 'localhost'
+    const wsPort = wsAddr.port
     console.log('WebSocket tracker: ws://' + wsHost + ':' + wsPort)
   }
   if (server.http && argv.stats && !argv.quiet) {
-    var statsAddr = server.http.address()
-    var statsHost = statsAddr.address !== '::' ? statsAddr.address : 'localhost'
-    var statsPort = statsAddr.port
+    const statsAddr = server.http.address()
+    const statsHost = statsAddr.address !== '::' ? statsAddr.address : 'localhost'
+    const statsPort = statsAddr.port
     console.log('Tracker stats: http://' + statsHost + ':' + statsPort + '/stats')
   }
 })

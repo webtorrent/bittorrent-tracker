@@ -1,18 +1,18 @@
-var Client = require('../')
-var common = require('./common')
-var fixtures = require('webtorrent-fixtures')
-var test = require('tape')
+const Client = require('../')
+const common = require('./common')
+const fixtures = require('webtorrent-fixtures')
+const test = require('tape')
 
-var peerId1 = Buffer.from('01234567890123456789')
-var peerId2 = Buffer.from('12345678901234567890')
-var peerId3 = Buffer.from('23456789012345678901')
-var port = 6881
+const peerId1 = Buffer.from('01234567890123456789')
+const peerId2 = Buffer.from('12345678901234567890')
+const peerId3 = Buffer.from('23456789012345678901')
+const port = 6881
 
 function testClientStart (t, serverType) {
   t.plan(4)
 
   common.createServer(t, serverType, function (server, announceUrl) {
-    var client = new Client({
+    const client = new Client({
       infoHash: fixtures.leaves.parsedTorrent.infoHash,
       announce: announceUrl,
       peerId: peerId1,
@@ -58,7 +58,7 @@ function testClientStop (t, serverType) {
   t.plan(4)
 
   common.createServer(t, serverType, function (server, announceUrl) {
-    var client = new Client({
+    const client = new Client({
       infoHash: fixtures.leaves.parsedTorrent.infoHash,
       announce: announceUrl,
       peerId: peerId1,
@@ -106,7 +106,7 @@ function testClientStopDestroy (t, serverType) {
   t.plan(2)
 
   common.createServer(t, serverType, function (server, announceUrl) {
-    var client = new Client({
+    const client = new Client({
       infoHash: fixtures.leaves.parsedTorrent.infoHash,
       announce: announceUrl,
       peerId: peerId1,
@@ -160,7 +160,7 @@ function testClientUpdate (t, serverType) {
   t.plan(4)
 
   common.createServer(t, serverType, function (server, announceUrl) {
-    var client = new Client({
+    const client = new Client({
       infoHash: fixtures.leaves.parsedTorrent.infoHash,
       announce: announceUrl,
       peerId: peerId1,
@@ -213,7 +213,7 @@ function testClientScrape (t, serverType) {
   t.plan(4)
 
   common.createServer(t, serverType, function (server, announceUrl) {
-    var client = new Client({
+    const client = new Client({
       infoHash: fixtures.leaves.parsedTorrent.infoHash,
       announce: announceUrl,
       peerId: peerId1,
@@ -255,7 +255,7 @@ function testClientAnnounceWithParams (t, serverType) {
   t.plan(5)
 
   common.createServer(t, serverType, function (server, announceUrl) {
-    var client = new Client({
+    const client = new Client({
       infoHash: fixtures.leaves.parsedTorrent.infoHash,
       announce: announceUrl,
       peerId: peerId1,
@@ -303,7 +303,7 @@ function testClientGetAnnounceOpts (t, serverType) {
   t.plan(5)
 
   common.createServer(t, serverType, function (server, announceUrl) {
-    var client = new Client({
+    const client = new Client({
       infoHash: fixtures.leaves.parsedTorrent.infoHash,
       announce: announceUrl,
       peerId: peerId1,
@@ -354,7 +354,7 @@ function testClientAnnounceWithNumWant (t, serverType) {
   t.plan(4)
 
   common.createServer(t, serverType, function (server, announceUrl) {
-    var client1 = new Client({
+    const client1 = new Client({
       infoHash: fixtures.leaves.parsedTorrent.infoHash,
       announce: [announceUrl],
       peerId: peerId1,
@@ -368,7 +368,7 @@ function testClientAnnounceWithNumWant (t, serverType) {
 
     client1.start()
     client1.once('update', function () {
-      var client2 = new Client({
+      const client2 = new Client({
         infoHash: fixtures.leaves.parsedTorrent.infoHash,
         announce: announceUrl,
         peerId: peerId2,
@@ -382,7 +382,7 @@ function testClientAnnounceWithNumWant (t, serverType) {
 
       client2.start()
       client2.once('update', function () {
-        var client3 = new Client({
+        const client3 = new Client({
           infoHash: fixtures.leaves.parsedTorrent.infoHash,
           announce: announceUrl,
           peerId: peerId3,
@@ -398,7 +398,7 @@ function testClientAnnounceWithNumWant (t, serverType) {
         client3.on('peer', function () {
           t.pass('got one peer (this should only fire once)')
 
-          var num = 3
+          let num = 3
           function tryCloseServer () {
             num -= 1
             if (num === 0) server.close()
@@ -445,7 +445,7 @@ test('http: userAgent', function (t) {
       t.ok(req.headers['user-agent'].indexOf('WebTorrent') !== -1)
     })
 
-    var client = new Client({
+    const client = new Client({
       infoHash: fixtures.leaves.parsedTorrent.infoHash,
       announce: announceUrl,
       peerId: peerId1,
@@ -472,7 +472,7 @@ function testSupportedTracker (t, serverType) {
   t.plan(1)
 
   common.createServer(t, serverType, function (server, announceUrl) {
-    var client = new Client({
+    const client = new Client({
       infoHash: fixtures.leaves.parsedTorrent.infoHash,
       announce: announceUrl,
       peerId: peerId1,
@@ -510,7 +510,7 @@ test('ws: valid tracker port', function (t) {
 function testUnsupportedTracker (t, announceUrl) {
   t.plan(1)
 
-  var client = new Client({
+  const client = new Client({
     infoHash: fixtures.leaves.parsedTorrent.infoHash,
     announce: announceUrl,
     peerId: peerId1,

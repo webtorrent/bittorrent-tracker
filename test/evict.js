@@ -1,21 +1,21 @@
-var Client = require('../')
-var common = require('./common')
-var test = require('tape')
-var wrtc = require('wrtc')
+const Client = require('../')
+const common = require('./common')
+const test = require('tape')
+const wrtc = require('wrtc')
 
-var infoHash = '4cb67059ed6bd08362da625b3ae77f6f4a075705'
-var peerId = Buffer.from('01234567890123456789')
-var peerId2 = Buffer.from('12345678901234567890')
-var peerId3 = Buffer.from('23456789012345678901')
+const infoHash = '4cb67059ed6bd08362da625b3ae77f6f4a075705'
+const peerId = Buffer.from('01234567890123456789')
+const peerId2 = Buffer.from('12345678901234567890')
+const peerId3 = Buffer.from('23456789012345678901')
 
 function serverTest (t, serverType, serverFamily) {
   t.plan(10)
 
-  var hostname = serverFamily === 'inet6'
+  const hostname = serverFamily === 'inet6'
     ? '[::1]'
     : '127.0.0.1'
 
-  var opts = {
+  const opts = {
     serverType,
     peersCacheLength: 2 // LRU cache can only contain a max of 2 peers
   }
@@ -23,10 +23,10 @@ function serverTest (t, serverType, serverFamily) {
   common.createServer(t, opts, function (server) {
     // Not using announceUrl param from `common.createServer()` since we
     // want to control IPv4 vs IPv6.
-    var port = server[serverType].address().port
-    var announceUrl = serverType + '://' + hostname + ':' + port + '/announce'
+    const port = server[serverType].address().port
+    const announceUrl = serverType + '://' + hostname + ':' + port + '/announce'
 
-    var client1 = new Client({
+    const client1 = new Client({
       infoHash,
       announce: [announceUrl],
       peerId,
@@ -38,7 +38,7 @@ function serverTest (t, serverType, serverFamily) {
     client1.start()
 
     client1.once('update', function (data) {
-      var client2 = new Client({
+      const client2 = new Client({
         infoHash,
         announce: [announceUrl],
         peerId: peerId2,
@@ -56,14 +56,14 @@ function serverTest (t, serverType, serverFamily) {
           t.equal(swarm.complete + swarm.incomplete, 2)
 
           // Ensure that first peer is evicted when a third one is added
-          var evicted = false
+          let evicted = false
           swarm.peers.once('evict', function (evictedPeer) {
             t.equal(evictedPeer.value.peerId, peerId.toString('hex'))
             t.equal(swarm.complete + swarm.incomplete, 2)
             evicted = true
           })
 
-          var client3 = new Client({
+          const client3 = new Client({
             infoHash,
             announce: [announceUrl],
             peerId: peerId3,

@@ -1,14 +1,14 @@
-var Client = require('../')
-var common = require('./common')
-var fixtures = require('webtorrent-fixtures')
-var test = require('tape')
+const Client = require('../')
+const common = require('./common')
+const fixtures = require('webtorrent-fixtures')
+const test = require('tape')
 
-var peerId = Buffer.from('01234567890123456789')
+const peerId = Buffer.from('01234567890123456789')
 
 function testFilterOption (t, serverType) {
   t.plan(8)
 
-  var opts = { serverType } // this is test-suite-only option
+  const opts = { serverType } // this is test-suite-only option
   opts.filter = function (infoHash, params, cb) {
     process.nextTick(function () {
       if (infoHash === fixtures.alice.parsedTorrent.infoHash) {
@@ -20,7 +20,7 @@ function testFilterOption (t, serverType) {
   }
 
   common.createServer(t, opts, function (server, announceUrl) {
-    var client1 = new Client({
+    const client1 = new Client({
       infoHash: fixtures.alice.parsedTorrent.infoHash,
       announce: announceUrl,
       peerId,
@@ -37,7 +37,7 @@ function testFilterOption (t, serverType) {
       client1.destroy(function () {
         t.pass('client1 destroyed')
 
-        var client2 = new Client({
+        const client2 = new Client({
           infoHash: fixtures.leaves.parsedTorrent.infoHash,
           announce: announceUrl,
           peerId,
@@ -88,7 +88,7 @@ test('ws: filter option blocks tracker from tracking torrent', function (t) {
 function testFilterCustomError (t, serverType) {
   t.plan(8)
 
-  var opts = { serverType } // this is test-suite-only option
+  const opts = { serverType } // this is test-suite-only option
   opts.filter = function (infoHash, params, cb) {
     process.nextTick(function () {
       if (infoHash === fixtures.alice.parsedTorrent.infoHash) {
@@ -100,7 +100,7 @@ function testFilterCustomError (t, serverType) {
   }
 
   common.createServer(t, opts, function (server, announceUrl) {
-    var client1 = new Client({
+    const client1 = new Client({
       infoHash: fixtures.alice.parsedTorrent.infoHash,
       announce: announceUrl,
       peerId,
@@ -116,7 +116,7 @@ function testFilterCustomError (t, serverType) {
 
       client1.destroy(function () {
         t.pass('client1 destroyed')
-        var client2 = new Client({
+        const client2 = new Client({
           infoHash: fixtures.leaves.parsedTorrent.infoHash,
           announce: announceUrl,
           peerId,
