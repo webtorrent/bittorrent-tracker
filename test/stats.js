@@ -8,7 +8,7 @@ var peerId = Buffer.from('-WW0091-4ea5886ce160')
 var unknownPeerId = Buffer.from('01234567890123456789')
 
 function parseHtml (html) {
-  var extractValue = new RegExp('[^v^h](\\d+)')
+  var extractValue = /[^v^h](\d+)/
   var array = html.replace('torrents', '\n').split('\n').filter(function (line) {
     return line && line.trim().length > 0
   }).map(function (line) {
