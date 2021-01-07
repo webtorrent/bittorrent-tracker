@@ -1,15 +1,17 @@
-# bittorrent-tracker [![travis][travis-image]][travis-url] [![npm][npm-image]][npm-url] [![downloads][downloads-image]][downloads-url]
+# bittorrent-tracker [![travis][travis-image]][travis-url] [![npm][npm-image]][npm-url] [![downloads][downloads-image]][downloads-url] [![javascript style guide][standard-image]][standard-url]
 
-[travis-image]: https://img.shields.io/travis/feross/bittorrent-tracker/master.svg
-[travis-url]: https://travis-ci.org/feross/bittorrent-tracker
+[travis-image]: https://img.shields.io/travis/webtorrent/bittorrent-tracker/master.svg
+[travis-url]: https://travis-ci.org/webtorrent/bittorrent-tracker
 [npm-image]: https://img.shields.io/npm/v/bittorrent-tracker.svg
 [npm-url]: https://npmjs.org/package/bittorrent-tracker
 [downloads-image]: https://img.shields.io/npm/dm/bittorrent-tracker.svg
 [downloads-url]: https://npmjs.org/package/bittorrent-tracker
+[standard-image]: https://img.shields.io/badge/code_style-standard-brightgreen.svg
+[standard-url]: https://standardjs.com
 
 #### Simple, robust, BitTorrent tracker (client & server) implementation
 
-![tracker](https://raw.githubusercontent.com/feross/bittorrent-tracker/master/img.png)
+![tracker visualization](img/img.png)
 
 Node.js implementation of a [BitTorrent tracker](https://wiki.theory.org/BitTorrentSpecification#Tracker_HTTP.2FHTTPS_Protocol), client and server.
 
@@ -31,10 +33,14 @@ This module is used by [WebTorrent](http://webtorrent.io).
 - Supports tracker "scrape" extension
 - Robust and well-tested
   - Comprehensive test suite (runs entirely offline, so it's reliable)
-  - Used by popular clients: [WebTorrent](http://webtorrent.io), [peerflix](https://github.com/mafintosh/peerflix), and [playback](https://mafintosh.github.io/playback/)
+  - Used by popular clients: [WebTorrent](http://webtorrent.io), [peerflix](https://www.npmjs.com/package/peerflix), and [playback](https://mafintosh.github.io/playback/)
 - Tracker statistics available via web interface at `/stats` or JSON data at `/stats.json`
 
-Also see [bittorrent-dht](https://github.com/feross/bittorrent-dht).
+Also see [bittorrent-dht](https://www.npmjs.com/package/bittorrent-dht).
+
+### Tracker stats
+
+![Screenshot](img/trackerStats.png)
 
 ## install
 
@@ -61,10 +67,12 @@ var requiredOpts = {
 var optionalOpts = {
   // RTCPeerConnection config object (only used in browser)
   rtcConfig: {},
-  // custom webrtc impl, useful in node to specify [wrtc](https://npmjs.com/package/wrtc)
+  // User-Agent header for http requests
+  userAgent: '',
+  // Custom webrtc impl, useful in node to specify [wrtc](https://npmjs.com/package/wrtc)
   wrtc: {},
   getAnnounceOpts: function () {
-    // provide a callback that will be called whenever announce() is called
+    // Provide a callback that will be called whenever announce() is called
     // internally (on timer), or by the user
     return {
       uploaded: 0,
@@ -73,7 +81,7 @@ var optionalOpts = {
       customParam: 'blah' // custom parameters supported
     }
   },
-  
+  // Proxy config object
   proxyOpts: {
       // Socks proxy options (used to proxy requests in node)
       socksProxy: {
@@ -110,7 +118,7 @@ var optionalOpts = {
       // Populated with Socks.Agent if socksProxy is provided
       httpAgent: {},
       httpsAgent: {}
-  }
+  },
 }
 
 var client = new Client(requiredOpts)
@@ -193,10 +201,14 @@ var server = new Server({
     // This example only allows one torrent.
 
     var allowed = (infoHash === 'aaa67059ed6bd08362da625b3ae77f6f4a075aaa')
-    cb(allowed)
-
-    // In addition to returning a boolean (`true` for allowed, `false` for disallowed),
-    // you can return an `Error` object to disallow and provide a custom reason.
+    if (allowed) {
+      // If the callback is passed `null`, the torrent will be allowed.
+      cb(null)
+    } else {
+      // If the callback is passed an `Error` object, the torrent will be disallowed
+      // and the error's `message` property will be given as the reason.
+      cb(new Error('disallowed torrent'))
+    }
   }
 })
 
@@ -255,7 +267,7 @@ Scraping multiple torrent info is possible with a static `Client.scrape` method:
 
 ```js
 var Client = require('bittorrent-tracker')
-Client.scrape(announceUrl, [ infoHash1, infoHash2 ], function (err, results) {
+Client.scrape({ announce: announceUrl, infoHash: [ infoHash1, infoHash2 ]}, function (err, results) {
   results[infoHash1].announce
   results[infoHash1].infoHash
   results[infoHash1].complete
@@ -267,6 +279,12 @@ Client.scrape(announceUrl, [ infoHash1, infoHash2 ], function (err, results) {
 ````
 
 ## command line
+
+Install `bittorrent-tracker` globally:
+
+```sh
+$ npm install -g bittorrent-tracker
+```
 
 Easily start a tracker server:
 
@@ -298,10 +316,8 @@ $ bittorrent-tracker --help
     -q, --quiet          only show error output
     -s, --silent         show no output
     -v, --version        print the current version
-
-  Please report bugs!  https://github.com/feross/bittorrent-tracker/issues
 ```
 
 ## license
 
-MIT. Copyright (c) [Feross Aboukhadijeh](http://feross.org).
+MIT. Copyright (c) [Feross Aboukhadijeh](https://feross.org) and [WebTorrent, LLC](https://webtorrent.io).

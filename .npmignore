@@ -1,1 +1,6 @@
-img.png
+.travis.yml
+CONTRIBUTING.md
+examples/
+img/
+test/
+tools/

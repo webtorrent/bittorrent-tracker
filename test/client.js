@@ -1,25 +1,24 @@
-var Buffer = require('safe-buffer').Buffer
-var Client = require('../')
-var common = require('./common')
-var fixtures = require('webtorrent-fixtures')
-var http = require('http')
-var net = require('net')
-var test = require('tape')
+const Client = require('../')
+const common = require('./common')
+const http = require('http')
+const fixtures = require('webtorrent-fixtures')
+const net = require('net')
+const test = require('tape')
 
-var peerId1 = Buffer.from('01234567890123456789')
-var peerId2 = Buffer.from('12345678901234567890')
-var peerId3 = Buffer.from('23456789012345678901')
-var port = 6881
+const peerId1 = Buffer.from('01234567890123456789')
+const peerId2 = Buffer.from('12345678901234567890')
+const peerId3 = Buffer.from('23456789012345678901')
+const port = 6881
 
 function testClientStart (t, serverType) {
   t.plan(4)
 
   common.createServer(t, serverType, function (server, announceUrl) {
-    var client = new Client({
+    const client = new Client({
       infoHash: fixtures.leaves.parsedTorrent.infoHash,
       announce: announceUrl,
       peerId: peerId1,
-      port: port,
+      port,
       wrtc: {}
     })
 
@@ -58,14 +57,14 @@ test('ws: client.start()', function (t) {
 })
 
 function testClientStop (t, serverType) {
-  t.plan(3)
+  t.plan(4)
 
   common.createServer(t, serverType, function (server, announceUrl) {
-    var client = new Client({
+    const client = new Client({
       infoHash: fixtures.leaves.parsedTorrent.infoHash,
       announce: announceUrl,
       peerId: peerId1,
-      port: port,
+      port,
       wrtc: {}
     })
 
@@ -75,7 +74,9 @@ function testClientStop (t, serverType) {
 
     client.start()
 
-    setTimeout(function () {
+    client.once('update', function () {
+      t.pass('client received response to "start" message')
+
       client.stop()
 
       client.once('update', function (data) {
@@ -87,7 +88,7 @@ function testClientStop (t, serverType) {
         server.close()
         client.destroy()
       })
-    }, 1000)
+    })
   })
 }
 
@@ -103,15 +104,15 @@ test('ws: client.stop()', function (t) {
   testClientStop(t, 'ws')
 })
 
-function testClientUpdate (t, serverType) {
-  t.plan(4)
+function testClientStopDestroy (t, serverType) {
+  t.plan(2)
 
   common.createServer(t, serverType, function (server, announceUrl) {
-    var client = new Client({
+    const client = new Client({
       infoHash: fixtures.leaves.parsedTorrent.infoHash,
       announce: announceUrl,
       peerId: peerId1,
-      port: port,
+      port,
       wrtc: {}
     })
 
@@ -119,14 +120,68 @@ function testClientUpdate (t, serverType) {
     client.on('error', function (err) { t.error(err) })
     client.on('warning', function (err) { t.error(err) })
 
-    client.setInterval(2000)
+    client.start()
+
+    client.once('update', function () {
+      t.pass('client received response to "start" message')
+
+      client.stop()
+
+      client.on('update', function () { t.fail('client should not receive update after destroy is called') })
+
+      // Call destroy() in the same tick as stop(), but the message should still
+      // be received by the server, though obviously the client won't receive the
+      // response.
+      client.destroy()
+
+      server.once('stop', function (peer, params) {
+        t.pass('server received "stop" message')
+        setTimeout(function () {
+          // give the websocket server time to finish in progress (stream) messages
+          // to peers
+          server.close()
+        }, 100)
+      })
+    })
+  })
+}
+
+test('http: client.stop(); client.destroy()', function (t) {
+  testClientStopDestroy(t, 'http')
+})
+
+test('udp: client.stop(); client.destroy()', function (t) {
+  testClientStopDestroy(t, 'udp')
+})
+
+test('ws: client.stop(); client.destroy()', function (t) {
+  testClientStopDestroy(t, 'ws')
+})
+
+function testClientUpdate (t, serverType) {
+  t.plan(4)
+
+  common.createServer(t, serverType, function (server, announceUrl) {
+    const client = new Client({
+      infoHash: fixtures.leaves.parsedTorrent.infoHash,
+      announce: announceUrl,
+      peerId: peerId1,
+      port,
+      wrtc: {}
+    })
+
+    if (serverType === 'ws') common.mockWebsocketTracker(client)
+    client.on('error', function (err) { t.error(err) })
+    client.on('warning', function (err) { t.error(err) })
+
+    client.setInterval(500)
 
     client.start()
 
     client.once('update', function () {
-      client.setInterval(2000)
+      client.setInterval(500)
 
-      // after interval (2s), we should get another update
+      // after interval, we should get another update
       client.once('update', function (data) {
         // received an update!
         t.equal(data.announce, announceUrl)
@@ -160,11 +215,11 @@ function testClientScrape (t, serverType) {
   t.plan(4)
 
   common.createServer(t, serverType, function (server, announceUrl) {
-    var client = new Client({
+    const client = new Client({
       infoHash: fixtures.leaves.parsedTorrent.infoHash,
       announce: announceUrl,
       peerId: peerId1,
-      port: port,
+      port,
       wrtc: {}
     })
 
@@ -202,11 +257,11 @@ function testClientAnnounceWithParams (t, serverType) {
   t.plan(5)
 
   common.createServer(t, serverType, function (server, announceUrl) {
-    var client = new Client({
+    const client = new Client({
       infoHash: fixtures.leaves.parsedTorrent.infoHash,
       announce: announceUrl,
       peerId: peerId1,
-      port: port,
+      port,
       wrtc: {}
     })
 
@@ -250,11 +305,11 @@ function testClientGetAnnounceOpts (t, serverType) {
   t.plan(5)
 
   common.createServer(t, serverType, function (server, announceUrl) {
-    var client = new Client({
+    const client = new Client({
       infoHash: fixtures.leaves.parsedTorrent.infoHash,
       announce: announceUrl,
       peerId: peerId1,
-      port: port,
+      port,
       getAnnounceOpts: function () {
         return {
           testParam: 'this is a test'
@@ -301,11 +356,11 @@ function testClientAnnounceWithNumWant (t, serverType) {
   t.plan(4)
 
   common.createServer(t, serverType, function (server, announceUrl) {
-    var client1 = new Client({
+    const client1 = new Client({
       infoHash: fixtures.leaves.parsedTorrent.infoHash,
-      announce: [ announceUrl ],
+      announce: [announceUrl],
       peerId: peerId1,
-      port: port,
+      port,
       wrtc: {}
     })
 
@@ -315,7 +370,7 @@ function testClientAnnounceWithNumWant (t, serverType) {
 
     client1.start()
     client1.once('update', function () {
-      var client2 = new Client({
+      const client2 = new Client({
         infoHash: fixtures.leaves.parsedTorrent.infoHash,
         announce: announceUrl,
         peerId: peerId2,
@@ -329,7 +384,7 @@ function testClientAnnounceWithNumWant (t, serverType) {
 
       client2.start()
       client2.once('update', function () {
-        var client3 = new Client({
+        const client3 = new Client({
           infoHash: fixtures.leaves.parsedTorrent.infoHash,
           announce: announceUrl,
           peerId: peerId3,
@@ -345,7 +400,7 @@ function testClientAnnounceWithNumWant (t, serverType) {
         client3.on('peer', function () {
           t.pass('got one peer (this should only fire once)')
 
-          var num = 3
+          let num = 3
           function tryCloseServer () {
             num -= 1
             if (num === 0) server.close()
@@ -383,17 +438,123 @@ test('udp: client announce with numwant', function (t) {
   testClientAnnounceWithNumWant(t, 'udp')
 })
 
+test('http: userAgent', function (t) {
+  t.plan(2)
+
+  common.createServer(t, 'http', function (server, announceUrl) {
+    // Confirm that user-agent header is set
+    server.http.on('request', function (req, res) {
+      t.ok(req.headers['user-agent'].indexOf('WebTorrent') !== -1)
+    })
+
+    const client = new Client({
+      infoHash: fixtures.leaves.parsedTorrent.infoHash,
+      announce: announceUrl,
+      peerId: peerId1,
+      port,
+      userAgent: 'WebTorrent/0.98.0 (https://webtorrent.io)',
+      wrtc: {}
+    })
+
+    client.on('error', function (err) { t.error(err) })
+    client.on('warning', function (err) { t.error(err) })
+
+    client.once('update', function (data) {
+      t.equal(data.announce, announceUrl)
+
+      server.close()
+      client.destroy()
+    })
+
+    client.start()
+  })
+})
+
+function testSupportedTracker (t, serverType) {
+  t.plan(1)
+
+  common.createServer(t, serverType, function (server, announceUrl) {
+    const client = new Client({
+      infoHash: fixtures.leaves.parsedTorrent.infoHash,
+      announce: announceUrl,
+      peerId: peerId1,
+      port,
+      wrtc: {}
+    })
+
+    if (serverType === 'ws') common.mockWebsocketTracker(client)
+    client.on('error', function (err) { t.error(err) })
+    client.on('warning', function (err) { t.error(err) })
+
+    client.start()
+
+    client.once('update', function (data) {
+      t.pass('tracker is valid')
+
+      server.close()
+      client.destroy()
+    })
+  })
+}
+
+test('http: valid tracker port', function (t) {
+  testSupportedTracker(t, 'http')
+})
+
+test('udp: valid tracker port', function (t) {
+  testSupportedTracker(t, 'udp')
+})
+
+test('ws: valid tracker port', function (t) {
+  testSupportedTracker(t, 'ws')
+})
+
+function testUnsupportedTracker (t, announceUrl) {
+  t.plan(1)
+
+  const client = new Client({
+    infoHash: fixtures.leaves.parsedTorrent.infoHash,
+    announce: announceUrl,
+    peerId: peerId1,
+    port,
+    wrtc: {}
+  })
+
+  client.on('error', function (err) { t.error(err) })
+  client.on('warning', function (err) {
+    t.ok(err.message.includes('tracker'), 'got warning')
+
+    client.destroy()
+  })
+}
+
+test('unsupported tracker protocol', function (t) {
+  testUnsupportedTracker(t, 'badprotocol://127.0.0.1:8080/announce')
+})
+
+test('http: invalid tracker port', function (t) {
+  testUnsupportedTracker(t, 'http://127.0.0.1:69691337/announce')
+})
+
+test('udp: invalid tracker port', function (t) {
+  testUnsupportedTracker(t, 'udp://127.0.0.1:69691337')
+})
+
+test('ws: invalid tracker port', function (t) {
+  testUnsupportedTracker(t, 'ws://127.0.0.1:69691337')
+})
+
 function testClientStartHttpAgent (t, serverType) {
   t.plan(5)
 
   common.createServer(t, serverType, function (server, announceUrl) {
-    var agent = new http.Agent()
-    var agentUsed = false
+    const agent = new http.Agent()
+    let agentUsed = false
     agent.createConnection = function (opts, fn) {
       agentUsed = true
       return net.createConnection(opts, fn)
     }
-    var client = new Client({
+    const client = new Client({
       infoHash: fixtures.leaves.parsedTorrent.infoHash,
       announce: announceUrl,
       peerId: peerId1,

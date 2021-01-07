@@ -1,53 +1,57 @@
-var Buffer = require('safe-buffer').Buffer
-var Client = require('../')
-var common = require('./common')
-var fixtures = require('webtorrent-fixtures')
-var test = require('tape')
+const Client = require('../')
+const common = require('./common')
+const fixtures = require('webtorrent-fixtures')
+const test = require('tape')
 
-var peerId = Buffer.from('01234567890123456789')
+const peerId = Buffer.from('01234567890123456789')
 
 function testFilterOption (t, serverType) {
   t.plan(8)
 
-  var opts = { serverType: serverType } // this is test-suite-only option
+  const opts = { serverType } // this is test-suite-only option
   opts.filter = function (infoHash, params, cb) {
     process.nextTick(function () {
-      cb(infoHash !== fixtures.alice.parsedTorrent.infoHash)
+      if (infoHash === fixtures.alice.parsedTorrent.infoHash) {
+        cb(new Error('disallowed info_hash (Alice)'))
+      } else {
+        cb(null)
+      }
     })
   }
 
   common.createServer(t, opts, function (server, announceUrl) {
-    var client = new Client({
+    const client1 = new Client({
       infoHash: fixtures.alice.parsedTorrent.infoHash,
       announce: announceUrl,
-      peerId: peerId,
+      peerId,
       port: 6881,
       wrtc: {}
     })
 
-    client.on('error', function (err) { t.error(err) })
-    if (serverType === 'ws') common.mockWebsocketTracker(client)
+    client1.on('error', function (err) { t.error(err) })
+    if (serverType === 'ws') common.mockWebsocketTracker(client1)
 
-    client.once('warning', function (err) {
-      t.ok(/disallowed info_hash/.test(err.message), 'got client warning')
+    client1.once('warning', function (err) {
+      t.ok(err.message.includes('disallowed info_hash (Alice)'), 'got client warning')
 
-      client.destroy(function () {
-        t.pass('client destroyed')
-        client = new Client({
+      client1.destroy(function () {
+        t.pass('client1 destroyed')
+
+        const client2 = new Client({
           infoHash: fixtures.leaves.parsedTorrent.infoHash,
           announce: announceUrl,
-          peerId: peerId,
+          peerId,
           port: 6881,
           wrtc: {}
         })
-        if (serverType === 'ws') common.mockWebsocketTracker(client)
+        if (serverType === 'ws') common.mockWebsocketTracker(client2)
 
-        client.on('error', function (err) { t.error(err) })
-        client.on('warning', function (err) { t.error(err) })
+        client2.on('error', function (err) { t.error(err) })
+        client2.on('warning', function (err) { t.error(err) })
 
-        client.on('update', function () {
+        client2.on('update', function () {
           t.pass('got announce')
-          client.destroy(function () { t.pass('client destroyed') })
+          client2.destroy(function () { t.pass('client2 destroyed') })
           server.close(function () { t.pass('server closed') })
         })
 
@@ -55,17 +59,17 @@ function testFilterOption (t, serverType) {
           t.equal(Object.keys(server.torrents).length, 1)
         })
 
-        client.start()
+        client2.start()
       })
     })
 
     server.removeAllListeners('warning')
     server.once('warning', function (err) {
-      t.ok(/disallowed info_hash/.test(err.message), 'got server warning')
+      t.ok(err.message.includes('disallowed info_hash (Alice)'), 'got server warning')
       t.equal(Object.keys(server.torrents).length, 0)
     })
 
-    client.start()
+    client1.start()
   })
 }
 
@@ -84,46 +88,49 @@ test('ws: filter option blocks tracker from tracking torrent', function (t) {
 function testFilterCustomError (t, serverType) {
   t.plan(8)
 
-  var opts = { serverType: serverType } // this is test-suite-only option
+  const opts = { serverType } // this is test-suite-only option
   opts.filter = function (infoHash, params, cb) {
     process.nextTick(function () {
-      if (infoHash === fixtures.alice.parsedTorrent.infoHash) cb(new Error('alice blocked'))
-      else cb(true)
+      if (infoHash === fixtures.alice.parsedTorrent.infoHash) {
+        cb(new Error('alice blocked'))
+      } else {
+        cb(null)
+      }
     })
   }
 
   common.createServer(t, opts, function (server, announceUrl) {
-    var client = new Client({
+    const client1 = new Client({
       infoHash: fixtures.alice.parsedTorrent.infoHash,
       announce: announceUrl,
-      peerId: peerId,
+      peerId,
       port: 6881,
       wrtc: {}
     })
 
-    client.on('error', function (err) { t.error(err) })
-    if (serverType === 'ws') common.mockWebsocketTracker(client)
+    client1.on('error', function (err) { t.error(err) })
+    if (serverType === 'ws') common.mockWebsocketTracker(client1)
 
-    client.once('warning', function (err) {
+    client1.once('warning', function (err) {
       t.ok(/alice blocked/.test(err.message), 'got client warning')
 
-      client.destroy(function () {
-        t.pass('client destroyed')
-        client = new Client({
+      client1.destroy(function () {
+        t.pass('client1 destroyed')
+        const client2 = new Client({
           infoHash: fixtures.leaves.parsedTorrent.infoHash,
           announce: announceUrl,
-          peerId: peerId,
+          peerId,
           port: 6881,
           wrtc: {}
         })
-        if (serverType === 'ws') common.mockWebsocketTracker(client)
+        if (serverType === 'ws') common.mockWebsocketTracker(client2)
 
-        client.on('error', function (err) { t.error(err) })
-        client.on('warning', function (err) { t.error(err) })
+        client2.on('error', function (err) { t.error(err) })
+        client2.on('warning', function (err) { t.error(err) })
 
-        client.on('update', function () {
+        client2.on('update', function () {
           t.pass('got announce')
-          client.destroy(function () { t.pass('client destroyed') })
+          client2.destroy(function () { t.pass('client2 destroyed') })
           server.close(function () { t.pass('server closed') })
         })
 
@@ -131,7 +138,7 @@ function testFilterCustomError (t, serverType) {
           t.equal(Object.keys(server.torrents).length, 1)
         })
 
-        client.start()
+        client2.start()
       })
     })
 
@@ -141,7 +148,7 @@ function testFilterCustomError (t, serverType) {
       t.equal(Object.keys(server.torrents).length, 0)
     })
 
-    client.start()
+    client1.start()
   })
 }
 
