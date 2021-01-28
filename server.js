@@ -120,11 +120,14 @@ class Server extends EventEmitter {
         clientTracking: false,
         ...(isObject(opts.ws) ? opts.ws : undefined)
       })
-      if (!noServer) {
-        this.ws.address = () => {
-          return this.http.address()
+
+      this.ws.address = () => {
+        if (noServer) {
+          throw new Error('address() unavailable with { noServer: true }')
         }
+        return this.http.address()
       }
+
       this.ws.on('error', err => { this._onError(err) })
       this.ws.on('connection', (socket, req) => {
         // Note: socket.upgradeReq was removed in ws@3.0.0, so re-add it.
