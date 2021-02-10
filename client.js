@@ -3,6 +3,7 @@ const EventEmitter = require('events')
 const once = require('once')
 const parallel = require('run-parallel')
 const Peer = require('simple-peer')
+const queueMicrotask = require('queue-microtask')
 
 const common = require('./lib/common')
 const HTTPTracker = require('./lib/client/http-tracker') // empty object in browser
@@ -76,7 +77,7 @@ class Client extends EventEmitter {
     const webrtcSupport = this._wrtc !== false && (!!this._wrtc || Peer.WEBRTC_SUPPORT)
 
     const nextTickWarn = err => {
-      process.nextTick(() => {
+      queueMicrotask(() => {
         this.emit('warning', err)
       })
     }
