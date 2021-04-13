@@ -65,6 +65,12 @@ var requiredOpts = {
 }
 
 var optionalOpts = {
+  // RTCPeerConnection config object (only used in browser)
+  rtcConfig: {},
+  // User-Agent header for http requests
+  userAgent: '',
+  // Custom webrtc impl, useful in node to specify [wrtc](https://npmjs.com/package/wrtc)
+  wrtc: {},
   getAnnounceOpts: function () {
     // Provide a callback that will be called whenever announce() is called
     // internally (on timer), or by the user
@@ -75,12 +81,44 @@ var optionalOpts = {
       customParam: 'blah' // custom parameters supported
     }
   },
-  // RTCPeerConnection config object (only used in browser)
-  rtcConfig: {},
-  // User-Agent header for http requests
-  userAgent: '',
-  // Custom webrtc impl, useful in node to specify [wrtc](https://npmjs.com/package/wrtc)
-  wrtc: {},
+  // Proxy config object
+  proxyOpts: {
+      // Socks proxy options (used to proxy requests in node)
+      socksProxy: {
+          // Configuration from socks module (https://github.com/JoshGlazebrook/socks)
+          proxy: {
+              // IP Address of Proxy (Required)
+              ipaddress: "1.2.3.4",
+              // TCP Port of Proxy (Required)
+              port: 1080,
+              // Proxy Type [4, 5] (Required)
+              // Note: 4 works for both 4 and 4a.
+              // Type 4 does not support UDP association relay 
+              type: 5,
+              
+              // SOCKS 4 Specific:
+              
+              // UserId used when making a SOCKS 4/4a request. (Optional)
+              userid: "someuserid",
+
+              // SOCKS 5 Specific:
+      
+              // Authentication used for SOCKS 5 (when it's required) (Optional)
+              authentication: {
+                  username: "Josh",
+                  password: "somepassword"
+              }
+          },
+          
+          // Amount of time to wait for a connection to be established. (Optional)
+          // - defaults to 10000ms (10 seconds)
+          timeout: 10000
+      },
+      // NodeJS HTTP agents (used to proxy HTTP and Websocket requests in node)
+      // Populated with Socks.Agent if socksProxy is provided
+      httpAgent: {},
+      httpsAgent: {}
+  },
 }
 
 var client = new Client(requiredOpts)
