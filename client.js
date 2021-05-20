@@ -86,7 +86,7 @@ class Client extends EventEmitter {
       .map(announceUrl => {
         let parsedUrl
         try {
-          parsedUrl = new URL(announceUrl)
+          parsedUrl = common.parseUrl(announceUrl)
         } catch (err) {
           nextTickWarn(new Error(`Invalid tracker URL: ${announceUrl}`))
           return null

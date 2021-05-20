@@ -534,10 +534,34 @@ test('http: invalid tracker port', function (t) {
   testUnsupportedTracker(t, 'http://127.0.0.1:69691337/announce')
 })
 
+test('http: invalid tracker url', function (t) {
+  testUnsupportedTracker(t, 'http:')
+})
+
+test('http: invalid tracker url with slash', function (t) {
+  testUnsupportedTracker(t, 'http://')
+})
+
 test('udp: invalid tracker port', function (t) {
   testUnsupportedTracker(t, 'udp://127.0.0.1:69691337')
 })
 
+test('udp: invalid tracker url', function (t) {
+  testUnsupportedTracker(t, 'udp:')
+})
+
+test('udp: invalid tracker url with slash', function (t) {
+  testUnsupportedTracker(t, 'udp://')
+})
+
 test('ws: invalid tracker port', function (t) {
   testUnsupportedTracker(t, 'ws://127.0.0.1:69691337')
+})
+
+test('ws: invalid tracker url', function (t) {
+  testUnsupportedTracker(t, 'ws:')
+})
+
+test('ws: invalid tracker url with slash', function (t) {
+  testUnsupportedTracker(t, 'ws://')
 })
