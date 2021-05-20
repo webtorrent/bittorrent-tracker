@@ -1,7 +1,7 @@
 {
   "name": "bittorrent-tracker",
   "description": "Simple, robust, BitTorrent tracker (client & server) implementation",
-  "version": "9.15.0",
+  "version": "9.17.0",
   "author": {
     "name": "WebTorrent LLC",
     "email": "feross@webtorrent.io",
@@ -34,6 +34,7 @@
     "lru": "^3.1.0",
     "minimist": "^1.2.5",
     "once": "^1.4.0",
+    "queue-microtask": "^1.2.2",
     "random-iterate": "^1.0.1",
     "randombytes": "^2.1.0",
     "run-parallel": "^1.1.9",

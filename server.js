@@ -23,14 +23,14 @@ const hasOwnProperty = Object.prototype.hasOwnProperty
  * metrics from clients that help the tracker keep overall statistics about the torrent.
  * Responses include a peer list that helps the client participate in the torrent.
  *
- * @param {Object}  opts            options object
- * @param {Number}  opts.interval   tell clients to announce on this interval (ms)
- * @param {Number}  opts.trustProxy trust 'x-forwarded-for' header from reverse proxy
- * @param {boolean} opts.http       start an http server? (default: true)
- * @param {boolean} opts.udp        start a udp server? (default: true)
- * @param {boolean} opts.ws         start a websocket server? (default: true)
- * @param {boolean} opts.stats      enable web-based statistics? (default: true)
- * @param {function} opts.filter    black/whitelist fn for disallowing/allowing torrents
+ * @param {Object}  opts                options object
+ * @param {Number}  opts.interval       tell clients to announce on this interval (ms)
+ * @param {Number}  opts.trustProxy     trust 'x-forwarded-for' header from reverse proxy
+ * @param {boolean|Object} opts.http    start an http server?, or options for http.createServer (default: true)
+ * @param {boolean|Object} opts.udp     start a udp server?, or extra options for dgram.createSocket (default: true)
+ * @param {boolean|Object} opts.ws      start a websocket server?, or extra options for new WebSocketServer (default: true)
+ * @param {boolean} opts.stats          enable web-based statistics? (default: true)
+ * @param {function} opts.filter        black/whitelist fn for disallowing/allowing torrents
  */
 class Server extends EventEmitter {
   constructor (opts = {}) {
@@ -59,7 +59,7 @@ class Server extends EventEmitter {
 
     // start an http tracker unless the user explictly says no
     if (opts.http !== false) {
-      this.http = http.createServer()
+      this.http = http.createServer(isObject(opts.http) ? opts.http : undefined)
       this.http.on('error', err => { this._onError(err) })
       this.http.on('listening', onListening)
 
@@ -75,18 +75,20 @@ class Server extends EventEmitter {
 
     // start a udp tracker unless the user explicitly says no
     if (opts.udp !== false) {
-      const isNode10 = /^v0.10./.test(process.version)
-
-      this.udp4 = this.udp = dgram.createSocket(
-        isNode10 ? 'udp4' : { type: 'udp4', reuseAddr: true }
-      )
+      this.udp4 = this.udp = dgram.createSocket({
+        type: 'udp4',
+        reuseAddr: true,
+        ...(isObject(opts.udp) ? opts.udp : undefined)
+      })
       this.udp4.on('message', (msg, rinfo) => { this.onUdpRequest(msg, rinfo) })
       this.udp4.on('error', err => { this._onError(err) })
       this.udp4.on('listening', onListening)
 
-      this.udp6 = dgram.createSocket(
-        isNode10 ? 'udp6' : { type: 'udp6', reuseAddr: true }
-      )
+      this.udp6 = dgram.createSocket({
+        type: 'udp6',
+        reuseAddr: true,
+        ...(isObject(opts.udp) ? opts.udp : undefined)
+      })
       this.udp6.on('message', (msg, rinfo) => { this.onUdpRequest(msg, rinfo) })
       this.udp6.on('error', err => { this._onError(err) })
       this.udp6.on('listening', onListening)
@@ -94,7 +96,8 @@ class Server extends EventEmitter {
 
     // start a websocket tracker (for WebTorrent) unless the user explicitly says no
     if (opts.ws !== false) {
-      if (!this.http) {
+      const noServer = isObject(opts.ws) && opts.ws.noServer
+      if (!this.http && !noServer) {
         this.http = http.createServer()
         this.http.on('error', err => { this._onError(err) })
         this.http.on('listening', onListening)
@@ -112,13 +115,19 @@ class Server extends EventEmitter {
         })
       }
       this.ws = new WebSocketServer({
-        server: this.http,
+        server: noServer ? undefined : this.http,
         perMessageDeflate: false,
-        clientTracking: false
+        clientTracking: false,
+        ...(isObject(opts.ws) ? opts.ws : undefined)
       })
+
       this.ws.address = () => {
+        if (noServer) {
+          throw new Error('address() unavailable with { noServer: true }')
+        }
         return this.http.address()
       }
+
       this.ws.on('error', err => { this._onError(err) })
       this.ws.on('connection', (socket, req) => {
         // Note: socket.upgradeReq was removed in ws@3.0.0, so re-add it.
@@ -296,10 +305,6 @@ class Server extends EventEmitter {
     const hostname = typeof args[1] !== 'function' ? args[1] : undefined
 
     debug('listen (port: %o hostname: %o)', port, hostname)
-
-    function isObject (obj) {
-      return typeof obj === 'object' && obj !== null
-    }
 
     const httpPort = isObject(port) ? (port.http || 0) : port
     const udpPort = isObject(port) ? (port.udp || 0) : port
@@ -799,6 +804,10 @@ function makeUdpPacket (params) {
       throw new Error(`Action not implemented: ${params.action}`)
   }
   return packet
+}
+
+function isObject (obj) {
+  return typeof obj === 'object' && obj !== null
 }
 
 function toNumber (x) {

@@ -1,7 +1,7 @@
-# bittorrent-tracker [![travis][travis-image]][travis-url] [![npm][npm-image]][npm-url] [![downloads][downloads-image]][downloads-url] [![javascript style guide][standard-image]][standard-url]
+# bittorrent-tracker [![ci][ci-image]][ci-url] [![npm][npm-image]][npm-url] [![downloads][downloads-image]][downloads-url] [![javascript style guide][standard-image]][standard-url]
 
-[travis-image]: https://img.shields.io/travis/webtorrent/bittorrent-tracker/master.svg
-[travis-url]: https://travis-ci.org/webtorrent/bittorrent-tracker
+[ci-image]: https://img.shields.io/github/workflow/status/webtorrent/bittorrent-tracker/ci/master
+[ci-url]: https://github.com/webtorrent/bittorrent-tracker/actions
 [npm-image]: https://img.shields.io/npm/v/bittorrent-tracker.svg
 [npm-url]: https://npmjs.org/package/bittorrent-tracker
 [downloads-image]: https://img.shields.io/npm/dm/bittorrent-tracker.svg
