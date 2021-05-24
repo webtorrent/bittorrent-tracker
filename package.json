@@ -70,7 +70,7 @@
   "main": "index.js",
   "optionalDependencies": {
     "bufferutil": "^4.0.3",
-    "utf-8-validate": "^5.0.2"
+    "utf-8-validate": "^5.0.5"
   },
   "repository": {
     "type": "git",
