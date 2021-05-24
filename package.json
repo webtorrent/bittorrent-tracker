@@ -38,7 +38,7 @@
     "random-iterate": "^1.0.1",
     "randombytes": "^2.1.0",
     "run-parallel": "^1.1.9",
-    "run-series": "^1.1.8",
+    "run-series": "^1.1.9",
     "simple-get": "^4.0.0",
     "simple-peer": "^9.7.1",
     "simple-websocket": "^9.0.0",
