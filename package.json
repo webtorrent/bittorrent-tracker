@@ -51,7 +51,7 @@
     "standard": "*",
     "tape": "^5.0.0",
     "webtorrent-fixtures": "^1.7.3",
-    "wrtc": "^0.4.4"
+    "wrtc": "^0.4.7"
   },
   "engines": {
     "node": ">=10"
