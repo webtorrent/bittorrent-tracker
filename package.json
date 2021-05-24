@@ -49,7 +49,7 @@
   "devDependencies": {
     "magnet-uri": "^5.4.0",
     "standard": "*",
-    "tape": "^5.0.0",
+    "tape": "^5.2.2",
     "webtorrent-fixtures": "^1.7.3",
     "wrtc": "^0.4.4"
   },
