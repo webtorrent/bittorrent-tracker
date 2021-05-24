@@ -93,5 +93,13 @@
       "type": "consulting",
       "url": "https://feross.org/support"
     }
-  ]
+  ],
+  "renovate": {
+    "extends": [
+      "github>webtorrent/renovate-config"
+    ],
+    "lockFileMaintenance": {
+      "enabled": false
+    }
+  },
 }
