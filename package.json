@@ -47,11 +47,11 @@
     "ws": "^7.4.5"
   },
   "devDependencies": {
-    "magnet-uri": "^6.2.0",
+    "magnet-uri": "6.2.0",
     "standard": "*",
-    "tape": "^5.2.2",
-    "webtorrent-fixtures": "^1.7.3",
-    "wrtc": "^0.4.7"
+    "tape": "5.2.2",
+    "webtorrent-fixtures": "1.7.3",
+    "wrtc": "0.4.7"
   },
   "engines": {
     "node": ">=10"
