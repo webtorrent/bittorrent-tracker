@@ -1,3 +1,10 @@
+## [9.17.2](https://github.com/webtorrent/bittorrent-tracker/compare/v9.17.1...v9.17.2) (2021-06-15)
+
+
+### Bug Fixes
+
+* modernize ([e5994d2](https://github.com/webtorrent/bittorrent-tracker/commit/e5994d2ebdec10fe2165e31f5b498382eeeaaf5f))
+
 ## [9.17.1](https://github.com/webtorrent/bittorrent-tracker/compare/v9.17.0...v9.17.1) (2021-06-15)
 
 
