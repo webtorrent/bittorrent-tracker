@@ -47,7 +47,9 @@
     "ws": "^7.4.5"
   },
   "devDependencies": {
+    "@webtorrent/semantic-release-config": "^1.0.5",
     "magnet-uri": "6.2.0",
+    "semantic-release": "^17.4.3",
     "standard": "*",
     "tape": "5.2.2",
     "webtorrent-fixtures": "1.7.3",
@@ -98,5 +100,8 @@
     "extends": [
       "github>webtorrent/renovate-config"
     ]
+  },
+  "release": {
+    "extends": "@webtorrent/semantic-release-config"
   }
 }
