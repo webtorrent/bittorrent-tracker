@@ -10,7 +10,7 @@ const test = require('tape')
 const peerId = Buffer.from('01234567890123456789')
 
 function testSingle (t, serverType) {
-  commonTest.createServer(t, serverType, function (server, announceUrl) {
+  commonTest.createServer(t, serverType, (server, announceUrl) => {
     const client = new Client({
       infoHash: fixtures.leaves.parsedTorrent.infoHash,
       announce: announceUrl,
@@ -20,51 +20,51 @@ function testSingle (t, serverType) {
     })
 
     if (serverType === 'ws') common.mockWebsocketTracker(client)
-    client.on('error', function (err) { t.error(err) })
-    client.on('warning', function (err) { t.error(err) })
+    client.on('error', err => { t.error(err) })
+    client.on('warning', err => { t.error(err) })
 
     client.scrape()
 
-    client.on('scrape', function (data) {
+    client.on('scrape', data => {
       t.equal(data.announce, announceUrl)
       t.equal(data.infoHash, fixtures.leaves.parsedTorrent.infoHash)
       t.equal(typeof data.complete, 'number')
       t.equal(typeof data.incomplete, 'number')
       t.equal(typeof data.downloaded, 'number')
       client.destroy()
-      server.close(function () {
+      server.close(() => {
         t.end()
       })
     })
   })
 }
 
-test('http: single info_hash scrape', function (t) {
+test('http: single info_hash scrape', t => {
   testSingle(t, 'http')
 })
 
-test('udp: single info_hash scrape', function (t) {
+test('udp: single info_hash scrape', t => {
   testSingle(t, 'udp')
 })
 
-test('ws: single info_hash scrape', function (t) {
+test('ws: single info_hash scrape', t => {
   testSingle(t, 'ws')
 })
 
 function clientScrapeStatic (t, serverType) {
-  commonTest.createServer(t, serverType, function (server, announceUrl) {
+  commonTest.createServer(t, serverType, (server, announceUrl) => {
     const client = Client.scrape({
       announce: announceUrl,
       infoHash: fixtures.leaves.parsedTorrent.infoHash,
       wrtc: {}
-    }, function (err, data) {
+    }, (err, data) => {
       t.error(err)
       t.equal(data.announce, announceUrl)
       t.equal(data.infoHash, fixtures.leaves.parsedTorrent.infoHash)
       t.equal(typeof data.complete, 'number')
       t.equal(typeof data.incomplete, 'number')
       t.equal(typeof data.downloaded, 'number')
-      server.close(function () {
+      server.close(() => {
         t.end()
       })
     })
@@ -72,43 +72,43 @@ function clientScrapeStatic (t, serverType) {
   })
 }
 
-test('http: scrape using Client.scrape static method', function (t) {
+test('http: scrape using Client.scrape static method', t => {
   clientScrapeStatic(t, 'http')
 })
 
-test('udp: scrape using Client.scrape static method', function (t) {
+test('udp: scrape using Client.scrape static method', t => {
   clientScrapeStatic(t, 'udp')
 })
 
-test('ws: scrape using Client.scrape static method', function (t) {
+test('ws: scrape using Client.scrape static method', t => {
   clientScrapeStatic(t, 'ws')
 })
 
 // Ensure the callback function gets called when an invalid url is passed
 function clientScrapeStaticInvalid (t, serverType) {
-  let announceUrl = serverType + '://invalid.lol'
+  let announceUrl = `${serverType}://invalid.lol`
   if (serverType === 'http') announceUrl += '/announce'
 
   const client = Client.scrape({
     announce: announceUrl,
     infoHash: fixtures.leaves.parsedTorrent.infoHash,
     wrtc: {}
-  }, function (err, data) {
+  }, (err, data) => {
     t.ok(err instanceof Error)
     t.end()
   })
   if (serverType === 'ws') common.mockWebsocketTracker(client)
 }
 
-test('http: scrape using Client.scrape static method (invalid url)', function (t) {
+test('http: scrape using Client.scrape static method (invalid url)', t => {
   clientScrapeStaticInvalid(t, 'http')
 })
 
-test('udp: scrape using Client.scrape static method (invalid url)', function (t) {
+test('udp: scrape using Client.scrape static method (invalid url)', t => {
   clientScrapeStaticInvalid(t, 'udp')
 })
 
-test('ws: scrape using Client.scrape static method (invalid url)', function (t) {
+test('ws: scrape using Client.scrape static method (invalid url)', t => {
   clientScrapeStaticInvalid(t, 'ws')
 })
 
@@ -116,11 +116,11 @@ function clientScrapeMulti (t, serverType) {
   const infoHash1 = fixtures.leaves.parsedTorrent.infoHash
   const infoHash2 = fixtures.alice.parsedTorrent.infoHash
 
-  commonTest.createServer(t, serverType, function (server, announceUrl) {
+  commonTest.createServer(t, serverType, (server, announceUrl) => {
     Client.scrape({
       infoHash: [infoHash1, infoHash2],
       announce: announceUrl
-    }, function (err, results) {
+    }, (err, results) => {
       t.error(err)
 
       t.equal(results[infoHash1].announce, announceUrl)
@@ -135,35 +135,35 @@ function clientScrapeMulti (t, serverType) {
       t.equal(typeof results[infoHash2].incomplete, 'number')
       t.equal(typeof results[infoHash2].downloaded, 'number')
 
-      server.close(function () {
+      server.close(() => {
         t.end()
       })
     })
   })
 }
 
-test('http: MULTI scrape using Client.scrape static method', function (t) {
+test('http: MULTI scrape using Client.scrape static method', t => {
   clientScrapeMulti(t, 'http')
 })
 
-test('udp: MULTI scrape using Client.scrape static method', function (t) {
+test('udp: MULTI scrape using Client.scrape static method', t => {
   clientScrapeMulti(t, 'udp')
 })
 
-test('server: multiple info_hash scrape (manual http request)', function (t) {
+test('server: multiple info_hash scrape (manual http request)', t => {
   t.plan(13)
 
   const binaryInfoHash1 = commonLib.hexToBinary(fixtures.leaves.parsedTorrent.infoHash)
   const binaryInfoHash2 = commonLib.hexToBinary(fixtures.alice.parsedTorrent.infoHash)
 
-  commonTest.createServer(t, 'http', function (server, announceUrl) {
+  commonTest.createServer(t, 'http', (server, announceUrl) => {
     const scrapeUrl = announceUrl.replace('/announce', '/scrape')
 
-    const url = scrapeUrl + '?' + commonLib.querystringStringify({
-      info_hash: [binaryInfoHash1, binaryInfoHash2]
-    })
+    const url = `${scrapeUrl}?${commonLib.querystringStringify({
+  info_hash: [binaryInfoHash1, binaryInfoHash2]
+})}`
 
-    get.concat(url, function (err, res, data) {
+    get.concat(url, (err, res, data) => {
       t.error(err)
 
       t.equal(res.statusCode, 200)
@@ -182,17 +182,17 @@ test('server: multiple info_hash scrape (manual http request)', function (t) {
       t.equal(typeof data.files[binaryInfoHash2].incomplete, 'number')
       t.equal(typeof data.files[binaryInfoHash2].downloaded, 'number')
 
-      server.close(function () { t.pass('server closed') })
+      server.close(() => { t.pass('server closed') })
     })
   })
 })
 
-test('server: all info_hash scrape (manual http request)', function (t) {
+test('server: all info_hash scrape (manual http request)', t => {
   t.plan(10)
 
   const binaryInfoHash = commonLib.hexToBinary(fixtures.leaves.parsedTorrent.infoHash)
 
-  commonTest.createServer(t, 'http', function (server, announceUrl) {
+  commonTest.createServer(t, 'http', (server, announceUrl) => {
     const scrapeUrl = announceUrl.replace('/announce', '/scrape')
 
     // announce a torrent to the tracker
@@ -202,14 +202,14 @@ test('server: all info_hash scrape (manual http request)', function (t) {
       peerId,
       port: 6881
     })
-    client.on('error', function (err) { t.error(err) })
-    client.on('warning', function (err) { t.error(err) })
+    client.on('error', err => { t.error(err) })
+    client.on('warning', err => { t.error(err) })
 
     client.start()
 
-    server.once('start', function () {
+    server.once('start', () => {
       // now do a scrape of everything by omitting the info_hash param
-      get.concat(scrapeUrl, function (err, res, data) {
+      get.concat(scrapeUrl, (err, res, data) => {
         t.error(err)
 
         t.equal(res.statusCode, 200)
@@ -222,8 +222,8 @@ test('server: all info_hash scrape (manual http request)', function (t) {
         t.equal(typeof data.files[binaryInfoHash].incomplete, 'number')
         t.equal(typeof data.files[binaryInfoHash].downloaded, 'number')
 
-        client.destroy(function () { t.pass('client destroyed') })
-        server.close(function () { t.pass('server closed') })
+        client.destroy(() => { t.pass('client destroyed') })
+        server.close(() => { t.pass('server closed') })
       })
     })
   })

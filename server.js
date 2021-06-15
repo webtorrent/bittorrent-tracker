@@ -239,11 +239,11 @@ class Server extends EventEmitter {
             })
           })
 
-          const isSeederOnly = peer => { return peer.seeder && peer.leecher === false }
-          const isLeecherOnly = peer => { return peer.leecher && peer.seeder === false }
-          const isSeederAndLeecher = peer => { return peer.seeder && peer.leecher }
-          const isIPv4 = peer => { return peer.ipv4 }
-          const isIPv6 = peer => { return peer.ipv6 }
+          const isSeederOnly = peer => peer.seeder && peer.leecher === false
+          const isLeecherOnly = peer => peer.leecher && peer.seeder === false
+          const isSeederAndLeecher = peer => peer.seeder && peer.leecher
+          const isIPv4 = peer => peer.ipv4
+          const isIPv6 = peer => peer.ipv6
 
           const stats = {
             torrents: infoHashes.length,
@@ -678,26 +678,16 @@ class Server extends EventEmitter {
           const peers = response.peers
 
           // Find IPv4 peers
-          response.peers = string2compact(peers.filter(peer => {
-            return common.IPV4_RE.test(peer.ip)
-          }).map(peer => {
-            return `${peer.ip}:${peer.port}`
-          }))
+          response.peers = string2compact(peers.filter(peer => common.IPV4_RE.test(peer.ip)).map(peer => `${peer.ip}:${peer.port}`))
           // Find IPv6 peers
-          response.peers6 = string2compact(peers.filter(peer => {
-            return common.IPV6_RE.test(peer.ip)
-          }).map(peer => {
-            return `[${peer.ip}]:${peer.port}`
-          }))
+          response.peers6 = string2compact(peers.filter(peer => common.IPV6_RE.test(peer.ip)).map(peer => `[${peer.ip}]:${peer.port}`))
         } else if (params.compact === 0) {
           // IPv6 peers are not separate for non-compact responses
-          response.peers = response.peers.map(peer => {
-            return {
-              'peer id': common.hexToBinary(peer.peerId),
-              ip: peer.ip,
-              port: peer.port
-            }
-          })
+          response.peers = response.peers.map(peer => ({
+            'peer id': common.hexToBinary(peer.peerId),
+            ip: peer.ip,
+            port: peer.port
+          }))
         } // else, return full peer objects (used for websocket responses)
 
         cb(null, response)
@@ -712,24 +702,22 @@ class Server extends EventEmitter {
       params.info_hash = Object.keys(this.torrents)
     }
 
-    series(params.info_hash.map(infoHash => {
-      return cb => {
-        this.getSwarm(infoHash, (err, swarm) => {
-          if (err) return cb(err)
-          if (swarm) {
-            swarm.scrape(params, (err, scrapeInfo) => {
-              if (err) return cb(err)
-              cb(null, {
-                infoHash,
-                complete: (scrapeInfo && scrapeInfo.complete) || 0,
-                incomplete: (scrapeInfo && scrapeInfo.incomplete) || 0
-              })
+    series(params.info_hash.map(infoHash => cb => {
+      this.getSwarm(infoHash, (err, swarm) => {
+        if (err) return cb(err)
+        if (swarm) {
+          swarm.scrape(params, (err, scrapeInfo) => {
+            if (err) return cb(err)
+            cb(null, {
+              infoHash,
+              complete: (scrapeInfo && scrapeInfo.complete) || 0,
+              incomplete: (scrapeInfo && scrapeInfo.incomplete) || 0
             })
-          } else {
-            cb(null, { infoHash, complete: 0, incomplete: 0 })
-          }
-        })
-      }
+          })
+        } else {
+          cb(null, { infoHash, complete: 0, incomplete: 0 })
+        }
+      })
     }), (err, results) => {
       if (err) return cb(err)
 

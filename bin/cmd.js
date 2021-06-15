@@ -39,7 +39,7 @@ if (argv.version) {
 }
 
 if (argv.help) {
-  console.log(function () {
+  console.log((() => {
   /*
   bittorrent-tracker - Start a bittorrent tracker server
 
@@ -64,7 +64,7 @@ if (argv.help) {
     -v, --version                 print the current version
 
   */
-  }.toString().split(/\n/).slice(2, -2).join('\n'))
+  }).toString().split(/\n/).slice(2, -2).join('\n'))
   process.exit(0)
 }
 
@@ -85,23 +85,23 @@ const server = new Server({
   ws: argv.ws
 })
 
-server.on('error', function (err) {
-  if (!argv.silent) console.error('ERROR: ' + err.message)
+server.on('error', err => {
+  if (!argv.silent) console.error(`ERROR: ${err.message}`)
 })
-server.on('warning', function (err) {
-  if (!argv.quiet) console.log('WARNING: ' + err.message)
+server.on('warning', err => {
+  if (!argv.quiet) console.log(`WARNING: ${err.message}`)
 })
-server.on('update', function (addr) {
-  if (!argv.quiet) console.log('update: ' + addr)
+server.on('update', addr => {
+  if (!argv.quiet) console.log(`update: ${addr}`)
 })
-server.on('complete', function (addr) {
-  if (!argv.quiet) console.log('complete: ' + addr)
+server.on('complete', addr => {
+  if (!argv.quiet) console.log(`complete: ${addr}`)
 })
-server.on('start', function (addr) {
-  if (!argv.quiet) console.log('start: ' + addr)
+server.on('start', addr => {
+  if (!argv.quiet) console.log(`start: ${addr}`)
 })
-server.on('stop', function (addr) {
-  if (!argv.quiet) console.log('stop: ' + addr)
+server.on('stop', addr => {
+  if (!argv.quiet) console.log(`stop: ${addr}`)
 })
 
 const hostname = {
@@ -110,35 +110,35 @@ const hostname = {
   udp6: argv['udp6-hostname']
 }
 
-server.listen(argv.port, hostname, function () {
+server.listen(argv.port, hostname, () => {
   if (server.http && argv.http && !argv.quiet) {
     const httpAddr = server.http.address()
     const httpHost = httpAddr.address !== '::' ? httpAddr.address : 'localhost'
     const httpPort = httpAddr.port
-    console.log('HTTP tracker: http://' + httpHost + ':' + httpPort + '/announce')
+    console.log(`HTTP tracker: http://${httpHost}:${httpPort}/announce`)
   }
   if (server.udp && !argv.quiet) {
     const udpAddr = server.udp.address()
     const udpHost = udpAddr.address
     const udpPort = udpAddr.port
-    console.log('UDP tracker: udp://' + udpHost + ':' + udpPort)
+    console.log(`UDP tracker: udp://${udpHost}:${udpPort}`)
   }
   if (server.udp6 && !argv.quiet) {
     const udp6Addr = server.udp6.address()
     const udp6Host = udp6Addr.address !== '::' ? udp6Addr.address : 'localhost'
     const udp6Port = udp6Addr.port
-    console.log('UDP6 tracker: udp://' + udp6Host + ':' + udp6Port)
+    console.log(`UDP6 tracker: udp://${udp6Host}:${udp6Port}`)
   }
   if (server.ws && !argv.quiet) {
     const wsAddr = server.http.address()
     const wsHost = wsAddr.address !== '::' ? wsAddr.address : 'localhost'
     const wsPort = wsAddr.port
-    console.log('WebSocket tracker: ws://' + wsHost + ':' + wsPort)
+    console.log(`WebSocket tracker: ws://${wsHost}:${wsPort}`)
   }
   if (server.http && argv.stats && !argv.quiet) {
     const statsAddr = server.http.address()
     const statsHost = statsAddr.address !== '::' ? statsAddr.address : 'localhost'
     const statsPort = statsAddr.port
-    console.log('Tracker stats: http://' + statsHost + ':' + statsPort + '/stats')
+    console.log(`Tracker stats: http://${statsHost}:${statsPort}/stats`)
   }
 })
