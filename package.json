@@ -79,6 +79,7 @@
     "url": "git://github.com/webtorrent/bittorrent-tracker.git"
   },
   "scripts": {
+    "preversion": "npm run update-authors",
     "test": "standard && tape test/*.js",
     "update-authors": "./tools/update-authors.sh"
   },
