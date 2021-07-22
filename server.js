@@ -588,7 +588,7 @@ class Server extends EventEmitter {
             event: 'stopped',
             numwant: 0,
             peer_id: socket.peerId
-          }, noop)
+          })
         }
       })
     }

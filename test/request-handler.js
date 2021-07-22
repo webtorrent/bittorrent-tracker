@@ -14,10 +14,10 @@ function testRequestHandler (t, serverType) {
   class Swarm extends Server.Swarm {
     announce (params, cb) {
       super.announce(params, (err, response) => {
-        if (err) return cb(response)
+        if (cb && err) return cb(response)
         response.complete = 246
         response.extraData = 'hi'
-        cb(null, response)
+        if (cb) cb(null, response)
       })
     }
   }
