@@ -1,3 +1,10 @@
+## [9.17.4](https://github.com/webtorrent/bittorrent-tracker/compare/v9.17.3...v9.17.4) (2021-07-22)
+
+
+### Bug Fixes
+
+* if websocket closed, don't produce a response ([ca88435](https://github.com/webtorrent/bittorrent-tracker/commit/ca88435617e59714a456031c75b3a329897d97bd))
+
 ## [9.17.3](https://github.com/webtorrent/bittorrent-tracker/compare/v9.17.2...v9.17.3) (2021-07-02)
 
 
