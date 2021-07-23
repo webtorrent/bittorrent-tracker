@@ -52,7 +52,7 @@
     "semantic-release": "17.4.4",
     "standard": "*",
     "tape": "5.2.2",
-    "webtorrent-fixtures": "1.7.3",
+    "webtorrent-fixtures": "1.7.4",
     "wrtc": "0.4.7"
   },
   "engines": {
