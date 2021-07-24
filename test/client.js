@@ -13,7 +13,7 @@ const port = 6881
 function testClientStart (t, serverType) {
   t.plan(4)
 
-  common.createServer(t, serverType, function (server, announceUrl) {
+  common.createServer(t, serverType, (server, announceUrl) => {
     const client = new Client({
       infoHash: fixtures.leaves.parsedTorrent.infoHash,
       announce: announceUrl,
@@ -23,17 +23,17 @@ function testClientStart (t, serverType) {
     })
 
     if (serverType === 'ws') common.mockWebsocketTracker(client)
-    client.on('error', function (err) { t.error(err) })
-    client.on('warning', function (err) { t.error(err) })
+    client.on('error', err => { t.error(err) })
+    client.on('warning', err => { t.error(err) })
 
-    client.once('update', function (data) {
+    client.once('update', data => {
       t.equal(data.announce, announceUrl)
       t.equal(typeof data.complete, 'number')
       t.equal(typeof data.incomplete, 'number')
 
       client.stop()
 
-      client.once('update', function () {
+      client.once('update', () => {
         t.pass('got response to stop')
         server.close()
         client.destroy()
@@ -44,22 +44,22 @@ function testClientStart (t, serverType) {
   })
 }
 
-test('http: client.start()', function (t) {
+test('http: client.start()', t => {
   testClientStart(t, 'http')
 })
 
-test('udp: client.start()', function (t) {
+test('udp: client.start()', t => {
   testClientStart(t, 'udp')
 })
 
-test('ws: client.start()', function (t) {
+test('ws: client.start()', t => {
   testClientStart(t, 'ws')
 })
 
 function testClientStop (t, serverType) {
   t.plan(4)
 
-  common.createServer(t, serverType, function (server, announceUrl) {
+  common.createServer(t, serverType, (server, announceUrl) => {
     const client = new Client({
       infoHash: fixtures.leaves.parsedTorrent.infoHash,
       announce: announceUrl,
@@ -69,17 +69,17 @@ function testClientStop (t, serverType) {
     })
 
     if (serverType === 'ws') common.mockWebsocketTracker(client)
-    client.on('error', function (err) { t.error(err) })
-    client.on('warning', function (err) { t.error(err) })
+    client.on('error', err => { t.error(err) })
+    client.on('warning', err => { t.error(err) })
 
     client.start()
 
-    client.once('update', function () {
+    client.once('update', () => {
       t.pass('client received response to "start" message')
 
       client.stop()
 
-      client.once('update', function (data) {
+      client.once('update', data => {
         // receive one final update after calling stop
         t.equal(data.announce, announceUrl)
         t.equal(typeof data.complete, 'number')
@@ -92,22 +92,22 @@ function testClientStop (t, serverType) {
   })
 }
 
-test('http: client.stop()', function (t) {
+test('http: client.stop()', t => {
   testClientStop(t, 'http')
 })
 
-test('udp: client.stop()', function (t) {
+test('udp: client.stop()', t => {
   testClientStop(t, 'udp')
 })
 
-test('ws: client.stop()', function (t) {
+test('ws: client.stop()', t => {
   testClientStop(t, 'ws')
 })
 
 function testClientStopDestroy (t, serverType) {
   t.plan(2)
 
-  common.createServer(t, serverType, function (server, announceUrl) {
+  common.createServer(t, serverType, (server, announceUrl) => {
     const client = new Client({
       infoHash: fixtures.leaves.parsedTorrent.infoHash,
       announce: announceUrl,
@@ -117,26 +117,26 @@ function testClientStopDestroy (t, serverType) {
     })
 
     if (serverType === 'ws') common.mockWebsocketTracker(client)
-    client.on('error', function (err) { t.error(err) })
-    client.on('warning', function (err) { t.error(err) })
+    client.on('error', err => { t.error(err) })
+    client.on('warning', err => { t.error(err) })
 
     client.start()
 
-    client.once('update', function () {
+    client.once('update', () => {
       t.pass('client received response to "start" message')
 
       client.stop()
 
-      client.on('update', function () { t.fail('client should not receive update after destroy is called') })
+      client.on('update', () => { t.fail('client should not receive update after destroy is called') })
 
       // Call destroy() in the same tick as stop(), but the message should still
       // be received by the server, though obviously the client won't receive the
       // response.
       client.destroy()
 
-      server.once('stop', function (peer, params) {
+      server.once('stop', (peer, params) => {
         t.pass('server received "stop" message')
-        setTimeout(function () {
+        setTimeout(() => {
           // give the websocket server time to finish in progress (stream) messages
           // to peers
           server.close()
@@ -146,22 +146,22 @@ function testClientStopDestroy (t, serverType) {
   })
 }
 
-test('http: client.stop(); client.destroy()', function (t) {
+test('http: client.stop(); client.destroy()', t => {
   testClientStopDestroy(t, 'http')
 })
 
-test('udp: client.stop(); client.destroy()', function (t) {
+test('udp: client.stop(); client.destroy()', t => {
   testClientStopDestroy(t, 'udp')
 })
 
-test('ws: client.stop(); client.destroy()', function (t) {
+test('ws: client.stop(); client.destroy()', t => {
   testClientStopDestroy(t, 'ws')
 })
 
 function testClientUpdate (t, serverType) {
   t.plan(4)
 
-  common.createServer(t, serverType, function (server, announceUrl) {
+  common.createServer(t, serverType, (server, announceUrl) => {
     const client = new Client({
       infoHash: fixtures.leaves.parsedTorrent.infoHash,
       announce: announceUrl,
@@ -171,25 +171,25 @@ function testClientUpdate (t, serverType) {
     })
 
     if (serverType === 'ws') common.mockWebsocketTracker(client)
-    client.on('error', function (err) { t.error(err) })
-    client.on('warning', function (err) { t.error(err) })
+    client.on('error', err => { t.error(err) })
+    client.on('warning', err => { t.error(err) })
 
     client.setInterval(500)
 
     client.start()
 
-    client.once('update', function () {
+    client.once('update', () => {
       client.setInterval(500)
 
       // after interval, we should get another update
-      client.once('update', function (data) {
+      client.once('update', data => {
         // received an update!
         t.equal(data.announce, announceUrl)
         t.equal(typeof data.complete, 'number')
         t.equal(typeof data.incomplete, 'number')
         client.stop()
 
-        client.once('update', function () {
+        client.once('update', () => {
           t.pass('got response to stop')
           server.close()
           client.destroy()
@@ -199,22 +199,22 @@ function testClientUpdate (t, serverType) {
   })
 }
 
-test('http: client.update()', function (t) {
+test('http: client.update()', t => {
   testClientUpdate(t, 'http')
 })
 
-test('udp: client.update()', function (t) {
+test('udp: client.update()', t => {
   testClientUpdate(t, 'udp')
 })
 
-test('ws: client.update()', function (t) {
+test('ws: client.update()', t => {
   testClientUpdate(t, 'ws')
 })
 
 function testClientScrape (t, serverType) {
   t.plan(4)
 
-  common.createServer(t, serverType, function (server, announceUrl) {
+  common.createServer(t, serverType, (server, announceUrl) => {
     const client = new Client({
       infoHash: fixtures.leaves.parsedTorrent.infoHash,
       announce: announceUrl,
@@ -224,10 +224,10 @@ function testClientScrape (t, serverType) {
     })
 
     if (serverType === 'ws') common.mockWebsocketTracker(client)
-    client.on('error', function (err) { t.error(err) })
-    client.on('warning', function (err) { t.error(err) })
+    client.on('error', err => { t.error(err) })
+    client.on('warning', err => { t.error(err) })
 
-    client.once('scrape', function (data) {
+    client.once('scrape', data => {
       t.equal(data.announce, announceUrl)
       t.equal(typeof data.complete, 'number')
       t.equal(typeof data.incomplete, 'number')
@@ -241,22 +241,22 @@ function testClientScrape (t, serverType) {
   })
 }
 
-test('http: client.scrape()', function (t) {
+test('http: client.scrape()', t => {
   testClientScrape(t, 'http')
 })
 
-test('udp: client.scrape()', function (t) {
+test('udp: client.scrape()', t => {
   testClientScrape(t, 'udp')
 })
 
-test('ws: client.scrape()', function (t) {
+test('ws: client.scrape()', t => {
   testClientScrape(t, 'ws')
 })
 
 function testClientAnnounceWithParams (t, serverType) {
   t.plan(5)
 
-  common.createServer(t, serverType, function (server, announceUrl) {
+  common.createServer(t, serverType, (server, announceUrl) => {
     const client = new Client({
       infoHash: fixtures.leaves.parsedTorrent.infoHash,
       announce: announceUrl,
@@ -265,22 +265,22 @@ function testClientAnnounceWithParams (t, serverType) {
       wrtc: {}
     })
 
-    server.on('start', function (peer, params) {
+    server.on('start', (peer, params) => {
       t.equal(params.testParam, 'this is a test')
     })
 
     if (serverType === 'ws') common.mockWebsocketTracker(client)
-    client.on('error', function (err) { t.error(err) })
-    client.on('warning', function (err) { t.error(err) })
+    client.on('error', err => { t.error(err) })
+    client.on('warning', err => { t.error(err) })
 
-    client.once('update', function (data) {
+    client.once('update', data => {
       t.equal(data.announce, announceUrl)
       t.equal(typeof data.complete, 'number')
       t.equal(typeof data.incomplete, 'number')
 
       client.stop()
 
-      client.once('update', function () {
+      client.once('update', () => {
         t.pass('got response to stop')
         server.close()
         client.destroy()
@@ -293,24 +293,24 @@ function testClientAnnounceWithParams (t, serverType) {
   })
 }
 
-test('http: client.announce() with params', function (t) {
+test('http: client.announce() with params', t => {
   testClientAnnounceWithParams(t, 'http')
 })
 
-test('ws: client.announce() with params', function (t) {
+test('ws: client.announce() with params', t => {
   testClientAnnounceWithParams(t, 'ws')
 })
 
 function testClientGetAnnounceOpts (t, serverType) {
   t.plan(5)
 
-  common.createServer(t, serverType, function (server, announceUrl) {
+  common.createServer(t, serverType, (server, announceUrl) => {
     const client = new Client({
       infoHash: fixtures.leaves.parsedTorrent.infoHash,
       announce: announceUrl,
       peerId: peerId1,
       port,
-      getAnnounceOpts: function () {
+      getAnnounceOpts () {
         return {
           testParam: 'this is a test'
         }
@@ -318,22 +318,22 @@ function testClientGetAnnounceOpts (t, serverType) {
       wrtc: {}
     })
 
-    server.on('start', function (peer, params) {
+    server.on('start', (peer, params) => {
       t.equal(params.testParam, 'this is a test')
     })
 
     if (serverType === 'ws') common.mockWebsocketTracker(client)
-    client.on('error', function (err) { t.error(err) })
-    client.on('warning', function (err) { t.error(err) })
+    client.on('error', err => { t.error(err) })
+    client.on('warning', err => { t.error(err) })
 
-    client.once('update', function (data) {
+    client.once('update', data => {
       t.equal(data.announce, announceUrl)
       t.equal(typeof data.complete, 'number')
       t.equal(typeof data.incomplete, 'number')
 
       client.stop()
 
-      client.once('update', function () {
+      client.once('update', () => {
         t.pass('got response to stop')
         server.close()
         client.destroy()
@@ -344,18 +344,18 @@ function testClientGetAnnounceOpts (t, serverType) {
   })
 }
 
-test('http: client `opts.getAnnounceOpts`', function (t) {
+test('http: client `opts.getAnnounceOpts`', t => {
   testClientGetAnnounceOpts(t, 'http')
 })
 
-test('ws: client `opts.getAnnounceOpts`', function (t) {
+test('ws: client `opts.getAnnounceOpts`', t => {
   testClientGetAnnounceOpts(t, 'ws')
 })
 
 function testClientAnnounceWithNumWant (t, serverType) {
   t.plan(4)
 
-  common.createServer(t, serverType, function (server, announceUrl) {
+  common.createServer(t, serverType, (server, announceUrl) => {
     const client1 = new Client({
       infoHash: fixtures.leaves.parsedTorrent.infoHash,
       announce: [announceUrl],
@@ -365,11 +365,11 @@ function testClientAnnounceWithNumWant (t, serverType) {
     })
 
     if (serverType === 'ws') common.mockWebsocketTracker(client1)
-    client1.on('error', function (err) { t.error(err) })
-    client1.on('warning', function (err) { t.error(err) })
+    client1.on('error', err => { t.error(err) })
+    client1.on('warning', err => { t.error(err) })
 
     client1.start()
-    client1.once('update', function () {
+    client1.once('update', () => {
       const client2 = new Client({
         infoHash: fixtures.leaves.parsedTorrent.infoHash,
         announce: announceUrl,
@@ -379,11 +379,11 @@ function testClientAnnounceWithNumWant (t, serverType) {
       })
 
       if (serverType === 'ws') common.mockWebsocketTracker(client2)
-      client2.on('error', function (err) { t.error(err) })
-      client2.on('warning', function (err) { t.error(err) })
+      client2.on('error', err => { t.error(err) })
+      client2.on('warning', err => { t.error(err) })
 
       client2.start()
-      client2.once('update', function () {
+      client2.once('update', () => {
         const client3 = new Client({
           infoHash: fixtures.leaves.parsedTorrent.infoHash,
           announce: announceUrl,
@@ -393,11 +393,11 @@ function testClientAnnounceWithNumWant (t, serverType) {
         })
 
         if (serverType === 'ws') common.mockWebsocketTracker(client3)
-        client3.on('error', function (err) { t.error(err) })
-        client3.on('warning', function (err) { t.error(err) })
+        client3.on('error', err => { t.error(err) })
+        client3.on('warning', err => { t.error(err) })
 
         client3.start({ numwant: 1 })
-        client3.on('peer', function () {
+        client3.on('peer', () => {
           t.pass('got one peer (this should only fire once)')
 
           let num = 3
@@ -407,19 +407,19 @@ function testClientAnnounceWithNumWant (t, serverType) {
           }
 
           client1.stop()
-          client1.once('update', function () {
+          client1.once('update', () => {
             t.pass('got response to stop (client1)')
             client1.destroy()
             tryCloseServer()
           })
           client2.stop()
-          client2.once('update', function () {
+          client2.once('update', () => {
             t.pass('got response to stop (client2)')
             client2.destroy()
             tryCloseServer()
           })
           client3.stop()
-          client3.once('update', function () {
+          client3.once('update', () => {
             t.pass('got response to stop (client3)')
             client3.destroy()
             tryCloseServer()
@@ -430,21 +430,21 @@ function testClientAnnounceWithNumWant (t, serverType) {
   })
 }
 
-test('http: client announce with numwant', function (t) {
+test('http: client announce with numwant', t => {
   testClientAnnounceWithNumWant(t, 'http')
 })
 
-test('udp: client announce with numwant', function (t) {
+test('udp: client announce with numwant', t => {
   testClientAnnounceWithNumWant(t, 'udp')
 })
 
-test('http: userAgent', function (t) {
+test('http: userAgent', t => {
   t.plan(2)
 
-  common.createServer(t, 'http', function (server, announceUrl) {
+  common.createServer(t, 'http', (server, announceUrl) => {
     // Confirm that user-agent header is set
-    server.http.on('request', function (req, res) {
-      t.ok(req.headers['user-agent'].indexOf('WebTorrent') !== -1)
+    server.http.on('request', (req, res) => {
+      t.ok(req.headers['user-agent'].includes('WebTorrent'))
     })
 
     const client = new Client({
@@ -456,10 +456,10 @@ test('http: userAgent', function (t) {
       wrtc: {}
     })
 
-    client.on('error', function (err) { t.error(err) })
-    client.on('warning', function (err) { t.error(err) })
+    client.on('error', err => { t.error(err) })
+    client.on('warning', err => { t.error(err) })
 
-    client.once('update', function (data) {
+    client.once('update', data => {
       t.equal(data.announce, announceUrl)
 
       server.close()
@@ -473,7 +473,7 @@ test('http: userAgent', function (t) {
 function testSupportedTracker (t, serverType) {
   t.plan(1)
 
-  common.createServer(t, serverType, function (server, announceUrl) {
+  common.createServer(t, serverType, (server, announceUrl) => {
     const client = new Client({
       infoHash: fixtures.leaves.parsedTorrent.infoHash,
       announce: announceUrl,
@@ -483,12 +483,12 @@ function testSupportedTracker (t, serverType) {
     })
 
     if (serverType === 'ws') common.mockWebsocketTracker(client)
-    client.on('error', function (err) { t.error(err) })
-    client.on('warning', function (err) { t.error(err) })
+    client.on('error', err => { t.error(err) })
+    client.on('warning', err => { t.error(err) })
 
     client.start()
 
-    client.once('update', function (data) {
+    client.once('update', data => {
       t.pass('tracker is valid')
 
       server.close()
@@ -497,15 +497,15 @@ function testSupportedTracker (t, serverType) {
   })
 }
 
-test('http: valid tracker port', function (t) {
+test('http: valid tracker port', t => {
   testSupportedTracker(t, 'http')
 })
 
-test('udp: valid tracker port', function (t) {
+test('udp: valid tracker port', t => {
   testSupportedTracker(t, 'udp')
 })
 
-test('ws: valid tracker port', function (t) {
+test('ws: valid tracker port', t => {
   testSupportedTracker(t, 'ws')
 })
 
@@ -520,28 +520,52 @@ function testUnsupportedTracker (t, announceUrl) {
     wrtc: {}
   })
 
-  client.on('error', function (err) { t.error(err) })
-  client.on('warning', function (err) {
+  client.on('error', err => { t.error(err) })
+  client.on('warning', err => {
     t.ok(err.message.includes('tracker'), 'got warning')
 
     client.destroy()
   })
 }
 
-test('unsupported tracker protocol', function (t) {
+test('unsupported tracker protocol', t => {
   testUnsupportedTracker(t, 'badprotocol://127.0.0.1:8080/announce')
 })
 
-test('http: invalid tracker port', function (t) {
+test('http: invalid tracker port', t => {
   testUnsupportedTracker(t, 'http://127.0.0.1:69691337/announce')
 })
 
-test('udp: invalid tracker port', function (t) {
+test('http: invalid tracker url', t => {
+  testUnsupportedTracker(t, 'http:')
+})
+
+test('http: invalid tracker url with slash', t => {
+  testUnsupportedTracker(t, 'http://')
+})
+
+test('udp: invalid tracker port', t => {
   testUnsupportedTracker(t, 'udp://127.0.0.1:69691337')
 })
 
-test('ws: invalid tracker port', function (t) {
+test('udp: invalid tracker url', t => {
+  testUnsupportedTracker(t, 'udp:')
+})
+
+test('udp: invalid tracker url with slash', t => {
+  testUnsupportedTracker(t, 'udp://')
+})
+
+test('ws: invalid tracker port', t => {
   testUnsupportedTracker(t, 'ws://127.0.0.1:69691337')
+})
+
+test('ws: invalid tracker url', t => {
+  testUnsupportedTracker(t, 'ws:')
+})
+
+test('ws: invalid tracker url with slash', t => {
+  testUnsupportedTracker(t, 'ws://')
 })
 
 function testClientStartHttpAgent (t, serverType) {

@@ -22,11 +22,11 @@ function serverTest (t, serverType, serverFamily) {
     serverType
   }
 
-  common.createServer(t, opts, function (server) {
+  common.createServer(t, opts, server => {
     // Not using announceUrl param from `common.createServer()` since we
     // want to control IPv4 vs IPv6.
     const port = server[serverType].address().port
-    const announceUrl = serverType + '://' + hostname + ':' + port + '/announce'
+    const announceUrl = `${serverType}://${hostname}:${port}/announce`
 
     const client1 = new Client({
       infoHash,
@@ -39,16 +39,16 @@ function serverTest (t, serverType, serverFamily) {
 
     client1.start()
 
-    server.once('start', function () {
+    server.once('start', () => {
       t.pass('got start message from client1')
     })
 
-    client1.once('update', function (data) {
+    client1.once('update', data => {
       t.equal(data.announce, announceUrl)
       t.equal(data.complete, 0)
       t.equal(data.incomplete, 1)
 
-      server.getSwarm(infoHash, function (err, swarm) {
+      server.getSwarm(infoHash, (err, swarm) => {
         t.error(err)
 
         t.equal(Object.keys(server.torrents).length, 1)
@@ -58,7 +58,7 @@ function serverTest (t, serverType, serverFamily) {
 
         const id = serverType === 'ws'
           ? peerId.toString('hex')
-          : hostname + ':6881'
+          : `${hostname}:6881`
 
         const peer = swarm.peers.peek(id)
         t.equal(peer.type, serverType)
@@ -75,14 +75,14 @@ function serverTest (t, serverType, serverFamily) {
 
         client1.complete()
 
-        client1.once('update', function (data) {
+        client1.once('update', data => {
           t.equal(data.announce, announceUrl)
           t.equal(data.complete, 1)
           t.equal(data.incomplete, 0)
 
           client1.scrape()
 
-          client1.once('scrape', function (data) {
+          client1.once('scrape', data => {
             t.equal(data.announce, announceUrl)
             t.equal(data.complete, 1)
             t.equal(data.incomplete, 0)
@@ -99,11 +99,11 @@ function serverTest (t, serverType, serverFamily) {
 
             client2.start()
 
-            server.once('start', function () {
+            server.once('start', () => {
               t.pass('got start message from client2')
             })
 
-            client2.once('update', function (data) {
+            client2.once('update', data => {
               t.equal(data.announce, announceUrl)
               t.equal(data.complete, 1)
               t.equal(data.incomplete, 1)
@@ -119,38 +119,38 @@ function serverTest (t, serverType, serverFamily) {
 
               client3.start()
 
-              server.once('start', function () {
+              server.once('start', () => {
                 t.pass('got start message from client3')
               })
 
-              client3.once('update', function (data) {
+              client3.once('update', data => {
                 t.equal(data.announce, announceUrl)
                 t.equal(data.complete, 1)
                 t.equal(data.incomplete, 2)
 
                 client2.stop()
-                client2.once('update', function (data) {
+                client2.once('update', data => {
                   t.equal(data.announce, announceUrl)
                   t.equal(data.complete, 1)
                   t.equal(data.incomplete, 1)
 
-                  client2.destroy(function () {
+                  client2.destroy(() => {
                     t.pass('client2 destroyed')
                     client3.stop()
-                    client3.once('update', function (data) {
+                    client3.once('update', data => {
                       t.equal(data.announce, announceUrl)
                       t.equal(data.complete, 1)
                       t.equal(data.incomplete, 0)
 
-                      client1.destroy(function () {
+                      client1.destroy(() => {
                         t.pass('client1 destroyed')
                       })
 
-                      client3.destroy(function () {
+                      client3.destroy(() => {
                         t.pass('client3 destroyed')
                       })
 
-                      server.close(function () {
+                      server.close(() => {
                         t.pass('server destroyed')
                       })
                     })
@@ -165,18 +165,18 @@ function serverTest (t, serverType, serverFamily) {
   })
 }
 
-test('http ipv4 server', function (t) {
+test('http ipv4 server', t => {
   serverTest(t, 'http', 'inet')
 })
 
-test('http ipv6 server', function (t) {
+test('http ipv6 server', t => {
   serverTest(t, 'http', 'inet6')
 })
 
-test('udp server', function (t) {
+test('udp server', t => {
   serverTest(t, 'udp', 'inet')
 })
 
-test('ws server', function (t) {
+test('ws server', t => {
   serverTest(t, 'ws', 'inet')
 })

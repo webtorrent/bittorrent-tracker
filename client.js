@@ -3,6 +3,7 @@ const EventEmitter = require('events')
 const once = require('once')
 const parallel = require('run-parallel')
 const Peer = require('simple-peer')
+const queueMicrotask = require('queue-microtask')
 
 const common = require('./lib/common')
 const HTTPTracker = require('./lib/client/http-tracker') // empty object in browser
@@ -78,7 +79,7 @@ class Client extends EventEmitter {
     const webrtcSupport = this._wrtc !== false && (!!this._wrtc || Peer.WEBRTC_SUPPORT)
 
     const nextTickWarn = err => {
-      process.nextTick(() => {
+      queueMicrotask(() => {
         this.emit('warning', err)
       })
     }
@@ -87,7 +88,7 @@ class Client extends EventEmitter {
       .map(announceUrl => {
         let parsedUrl
         try {
-          parsedUrl = new URL(announceUrl)
+          parsedUrl = common.parseUrl(announceUrl)
         } catch (err) {
           nextTickWarn(new Error(`Invalid tracker URL: ${announceUrl}`))
           return null
@@ -282,9 +283,7 @@ Client.scrape = (opts, cb) => {
   })
 
   opts.infoHash = Array.isArray(opts.infoHash)
-    ? opts.infoHash.map(infoHash => {
-        return Buffer.from(infoHash, 'hex')
-      })
+    ? opts.infoHash.map(infoHash => Buffer.from(infoHash, 'hex'))
     : Buffer.from(opts.infoHash, 'hex')
   client.scrape({ infoHash: opts.infoHash })
   return client

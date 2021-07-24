@@ -11,7 +11,7 @@ function testMagnet (t, serverType) {
 
   const parsedTorrent = magnet(fixtures.leaves.magnetURI)
 
-  common.createServer(t, serverType, function (server, announceUrl) {
+  common.createServer(t, serverType, (server, announceUrl) => {
     const client = new Client({
       infoHash: parsedTorrent.infoHash,
       announce: announceUrl,
@@ -21,24 +21,24 @@ function testMagnet (t, serverType) {
     })
 
     if (serverType === 'ws') common.mockWebsocketTracker(client)
-    client.on('error', function (err) { t.error(err) })
-    client.on('warning', function (err) { t.error(err) })
+    client.on('error', err => { t.error(err) })
+    client.on('warning', err => { t.error(err) })
 
-    client.once('update', function (data) {
+    client.once('update', data => {
       t.equal(data.announce, announceUrl)
       t.equal(typeof data.complete, 'number')
       t.equal(typeof data.incomplete, 'number')
 
       client.update()
 
-      client.once('update', function (data) {
+      client.once('update', data => {
         t.equal(data.announce, announceUrl)
         t.equal(typeof data.complete, 'number')
         t.equal(typeof data.incomplete, 'number')
 
         client.stop()
 
-        client.once('update', function (data) {
+        client.once('update', data => {
           t.equal(data.announce, announceUrl)
           t.equal(typeof data.complete, 'number')
           t.equal(typeof data.incomplete, 'number')
@@ -53,14 +53,14 @@ function testMagnet (t, serverType) {
   })
 }
 
-test('http: magnet: client.start/update/stop()', function (t) {
+test('http: magnet: client.start/update/stop()', t => {
   testMagnet(t, 'http')
 })
 
-test('udp: magnet: client.start/update/stop()', function (t) {
+test('udp: magnet: client.start/update/stop()', t => {
   testMagnet(t, 'udp')
 })
 
-test('ws: magnet: client.start/update/stop()', function (t) {
+test('ws: magnet: client.start/update/stop()', t => {
   testMagnet(t, 'ws')
 })

@@ -9,9 +9,7 @@ const unknownPeerId = Buffer.from('01234567890123456789')
 
 function parseHtml (html) {
   const extractValue = /[^v^h](\d+)/
-  const array = html.replace('torrents', '\n').split('\n').filter(function (line) {
-    return line && line.trim().length > 0
-  }).map(function (line) {
+  const array = html.replace('torrents', '\n').split('\n').filter(line => line && line.trim().length > 0).map(line => {
     const a = extractValue.exec(line)
     if (a) {
       return parseInt(a[1])
@@ -31,13 +29,13 @@ function parseHtml (html) {
   }
 }
 
-test('server: get empty stats', function (t) {
+test('server: get empty stats', t => {
   t.plan(11)
 
-  commonTest.createServer(t, 'http', function (server, announceUrl) {
+  commonTest.createServer(t, 'http', (server, announceUrl) => {
     const url = announceUrl.replace('/announce', '/stats')
 
-    get.concat(url, function (err, res, data) {
+    get.concat(url, (err, res, data) => {
       t.error(err)
 
       const stats = parseHtml(data.toString())
@@ -51,15 +49,15 @@ test('server: get empty stats', function (t) {
       t.equal(stats.peersIPv4, 0)
       t.equal(stats.peersIPv6, 0)
 
-      server.close(function () { t.pass('server closed') })
+      server.close(() => { t.pass('server closed') })
     })
   })
 })
 
-test('server: get empty stats with json header', function (t) {
+test('server: get empty stats with json header', t => {
   t.plan(11)
 
-  commonTest.createServer(t, 'http', function (server, announceUrl) {
+  commonTest.createServer(t, 'http', (server, announceUrl) => {
     const opts = {
       url: announceUrl.replace('/announce', '/stats'),
       headers: {
@@ -68,7 +66,7 @@ test('server: get empty stats with json header', function (t) {
       json: true
     }
 
-    get.concat(opts, function (err, res, stats) {
+    get.concat(opts, (err, res, stats) => {
       t.error(err)
 
       t.equal(res.statusCode, 200)
@@ -81,21 +79,21 @@ test('server: get empty stats with json header', function (t) {
       t.equal(stats.peersIPv4, 0)
       t.equal(stats.peersIPv6, 0)
 
-      server.close(function () { t.pass('server closed') })
+      server.close(() => { t.pass('server closed') })
     })
   })
 })
 
-test('server: get empty stats on stats.json', function (t) {
+test('server: get empty stats on stats.json', t => {
   t.plan(11)
 
-  commonTest.createServer(t, 'http', function (server, announceUrl) {
+  commonTest.createServer(t, 'http', (server, announceUrl) => {
     const opts = {
       url: announceUrl.replace('/announce', '/stats.json'),
       json: true
     }
 
-    get.concat(opts, function (err, res, stats) {
+    get.concat(opts, (err, res, stats) => {
       t.error(err)
 
       t.equal(res.statusCode, 200)
@@ -108,15 +106,15 @@ test('server: get empty stats on stats.json', function (t) {
       t.equal(stats.peersIPv4, 0)
       t.equal(stats.peersIPv6, 0)
 
-      server.close(function () { t.pass('server closed') })
+      server.close(() => { t.pass('server closed') })
     })
   })
 })
 
-test('server: get leecher stats.json', function (t) {
+test('server: get leecher stats.json', t => {
   t.plan(11)
 
-  commonTest.createServer(t, 'http', function (server, announceUrl) {
+  commonTest.createServer(t, 'http', (server, announceUrl) => {
     // announce a torrent to the tracker
     const client = new Client({
       infoHash: fixtures.leaves.parsedTorrent.infoHash,
@@ -124,18 +122,18 @@ test('server: get leecher stats.json', function (t) {
       peerId,
       port: 6881
     })
-    client.on('error', function (err) { t.error(err) })
-    client.on('warning', function (err) { t.error(err) })
+    client.on('error', err => { t.error(err) })
+    client.on('warning', err => { t.error(err) })
 
     client.start()
 
-    server.once('start', function () {
+    server.once('start', () => {
       const opts = {
         url: announceUrl.replace('/announce', '/stats.json'),
         json: true
       }
 
-      get.concat(opts, function (err, res, stats) {
+      get.concat(opts, (err, res, stats) => {
         t.error(err)
 
         t.equal(res.statusCode, 200)
@@ -147,17 +145,17 @@ test('server: get leecher stats.json', function (t) {
         t.equal(stats.peersSeederAndLeecher, 0)
         t.equal(stats.clients.WebTorrent['0.91'], 1)
 
-        client.destroy(function () { t.pass('client destroyed') })
-        server.close(function () { t.pass('server closed') })
+        client.destroy(() => { t.pass('client destroyed') })
+        server.close(() => { t.pass('server closed') })
       })
     })
   })
 })
 
-test('server: get leecher stats.json (unknown peerId)', function (t) {
+test('server: get leecher stats.json (unknown peerId)', t => {
   t.plan(11)
 
-  commonTest.createServer(t, 'http', function (server, announceUrl) {
+  commonTest.createServer(t, 'http', (server, announceUrl) => {
     // announce a torrent to the tracker
     const client = new Client({
       infoHash: fixtures.leaves.parsedTorrent.infoHash,
@@ -165,18 +163,18 @@ test('server: get leecher stats.json (unknown peerId)', function (t) {
       peerId: unknownPeerId,
       port: 6881
     })
-    client.on('error', function (err) { t.error(err) })
-    client.on('warning', function (err) { t.error(err) })
+    client.on('error', err => { t.error(err) })
+    client.on('warning', err => { t.error(err) })
 
     client.start()
 
-    server.once('start', function () {
+    server.once('start', () => {
       const opts = {
         url: announceUrl.replace('/announce', '/stats.json'),
         json: true
       }
 
-      get.concat(opts, function (err, res, stats) {
+      get.concat(opts, (err, res, stats) => {
         t.error(err)
 
         t.equal(res.statusCode, 200)
@@ -188,8 +186,8 @@ test('server: get leecher stats.json (unknown peerId)', function (t) {
         t.equal(stats.peersSeederAndLeecher, 0)
         t.equal(stats.clients.unknown['01234567'], 1)
 
-        client.destroy(function () { t.pass('client destroyed') })
-        server.close(function () { t.pass('server closed') })
+        client.destroy(() => { t.pass('client destroyed') })
+        server.close(() => { t.pass('server closed') })
       })
     })
   })

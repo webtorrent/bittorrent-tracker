@@ -13,11 +13,11 @@ function testRequestHandler (t, serverType) {
 
   class Swarm extends Server.Swarm {
     announce (params, cb) {
-      super.announce(params, function (err, response) {
-        if (err) return cb(response)
+      super.announce(params, (err, response) => {
+        if (cb && err) return cb(response)
         response.complete = 246
         response.extraData = 'hi'
-        cb(null, response)
+        if (cb) cb(null, response)
       })
     }
   }
@@ -25,11 +25,11 @@ function testRequestHandler (t, serverType) {
   // Use a custom Swarm implementation for this test only
   const OldSwarm = Server.Swarm
   Server.Swarm = Swarm
-  t.on('end', function () {
+  t.on('end', () => {
     Server.Swarm = OldSwarm
   })
 
-  common.createServer(t, opts, function (server, announceUrl) {
+  common.createServer(t, opts, (server, announceUrl) => {
     const client1 = new Client({
       infoHash: fixtures.alice.parsedTorrent.infoHash,
       announce: announceUrl,
@@ -38,22 +38,22 @@ function testRequestHandler (t, serverType) {
       wrtc: {}
     })
 
-    client1.on('error', function (err) { t.error(err) })
+    client1.on('error', err => { t.error(err) })
     if (serverType === 'ws') common.mockWebsocketTracker(client1)
 
-    server.once('start', function () {
+    server.once('start', () => {
       t.pass('got start message from client1')
     })
 
-    client1.once('update', function (data) {
+    client1.once('update', data => {
       t.equal(data.complete, 246)
       t.equal(data.extraData.toString(), 'hi')
 
-      client1.destroy(function () {
+      client1.destroy(() => {
         t.pass('client1 destroyed')
       })
 
-      server.close(function () {
+      server.close(() => {
         t.pass('server destroyed')
       })
     })
@@ -62,11 +62,11 @@ function testRequestHandler (t, serverType) {
   })
 }
 
-test('http: request handler option intercepts announce requests and responses', function (t) {
+test('http: request handler option intercepts announce requests and responses', t => {
   testRequestHandler(t, 'http')
 })
 
-test('ws: request handler option intercepts announce requests and responses', function (t) {
+test('ws: request handler option intercepts announce requests and responses', t => {
   testRequestHandler(t, 'ws')
 })
 

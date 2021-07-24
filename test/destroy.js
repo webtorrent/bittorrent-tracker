@@ -9,7 +9,7 @@ const port = 6881
 function testNoEventsAfterDestroy (t, serverType) {
   t.plan(1)
 
-  common.createServer(t, serverType, function (server, announceUrl) {
+  common.createServer(t, serverType, (server, announceUrl) => {
     const client = new Client({
       infoHash: fixtures.leaves.parsedTorrent.infoHash,
       announce: announceUrl,
@@ -19,10 +19,10 @@ function testNoEventsAfterDestroy (t, serverType) {
     })
 
     if (serverType === 'ws') common.mockWebsocketTracker(client)
-    client.on('error', function (err) { t.error(err) })
-    client.on('warning', function (err) { t.error(err) })
+    client.on('error', err => { t.error(err) })
+    client.on('warning', err => { t.error(err) })
 
-    client.once('update', function () {
+    client.once('update', () => {
       t.fail('no "update" event should fire, since client is destroyed')
     })
 
@@ -30,21 +30,21 @@ function testNoEventsAfterDestroy (t, serverType) {
     client.update()
     client.destroy()
 
-    setTimeout(function () {
+    setTimeout(() => {
       t.pass('wait to see if any events are fired')
       server.close()
     }, 1000)
   })
 }
 
-test('http: no "update" events after destroy()', function (t) {
+test('http: no "update" events after destroy()', t => {
   testNoEventsAfterDestroy(t, 'http')
 })
 
-test('udp: no "update" events after destroy()', function (t) {
+test('udp: no "update" events after destroy()', t => {
   testNoEventsAfterDestroy(t, 'udp')
 })
 
-test('ws: no "update" events after destroy()', function (t) {
+test('ws: no "update" events after destroy()', t => {
   testNoEventsAfterDestroy(t, 'ws')
 })
