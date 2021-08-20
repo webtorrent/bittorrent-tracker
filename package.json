@@ -50,7 +50,7 @@
     "ws": "^7.4.5"
   },
   "devDependencies": {
-    "@webtorrent/semantic-release-config": "1.0.5",
+    "@webtorrent/semantic-release-config": "1.0.7",
     "magnet-uri": "6.2.0",
     "semantic-release": "17.4.5",
     "standard": "*",
