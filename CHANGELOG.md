@@ -1,3 +1,10 @@
+# [9.18.0](https://github.com/webtorrent/bittorrent-tracker/compare/v9.17.4...v9.18.0) (2021-08-20)
+
+
+### Features
+
+* add proxy support for tracker clients ([#356](https://github.com/webtorrent/bittorrent-tracker/issues/356)) ([ad64dc3](https://github.com/webtorrent/bittorrent-tracker/commit/ad64dc3a68cddccc2c1f05d0d8bb833f2c4860b2))
+
 ## [9.17.4](https://github.com/webtorrent/bittorrent-tracker/compare/v9.17.3...v9.17.4) (2021-07-22)
 
 
