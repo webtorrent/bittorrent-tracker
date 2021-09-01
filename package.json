@@ -19,7 +19,8 @@
   },
   "chromeapp": {
     "./server.js": false,
-    "dgram": "chrome-dgram"
+    "dgram": "chrome-dgram",
+    "socks": false
   },
   "bugs": {
     "url": "https://github.com/webtorrent/bittorrent-tracker/issues"
