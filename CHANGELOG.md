@@ -1,3 +1,10 @@
+## [9.18.1](https://github.com/webtorrent/bittorrent-tracker/compare/v9.18.0...v9.18.1) (2021-09-01)
+
+
+### Bug Fixes
+
+* disable socks in chromeapp ([#398](https://github.com/webtorrent/bittorrent-tracker/issues/398)) ([7fd5877](https://github.com/webtorrent/bittorrent-tracker/commit/7fd587789548453a852ea01e54900a5e9155db67))
+
 # [9.18.0](https://github.com/webtorrent/bittorrent-tracker/compare/v9.17.4...v9.18.0) (2021-08-20)
 
 
