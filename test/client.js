@@ -582,7 +582,7 @@ function testClientStartHttpAgent (t, serverType) {
       infoHash: fixtures.leaves.parsedTorrent.infoHash,
       announce: announceUrl,
       peerId: peerId1,
-      port: port,
+      port,
       wrtc: {},
       proxyOpts: {
         httpAgent: agent
