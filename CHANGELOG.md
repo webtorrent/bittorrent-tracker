@@ -1,3 +1,10 @@
+## [9.18.3](https://github.com/webtorrent/bittorrent-tracker/compare/v9.18.2...v9.18.3) (2021-10-29)
+
+
+### Bug Fixes
+
+* **deps:** update dependency clone to v2 ([#393](https://github.com/webtorrent/bittorrent-tracker/issues/393)) ([dc6f796](https://github.com/webtorrent/bittorrent-tracker/commit/dc6f7966844216c39491d6623dd412d5ca65d4c4))
+
 ## [9.18.2](https://github.com/webtorrent/bittorrent-tracker/compare/v9.18.1...v9.18.2) (2021-09-02)
 
 

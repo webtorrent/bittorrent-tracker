@@ -1,7 +1,7 @@
 {
   "name": "bittorrent-tracker",
   "description": "Simple, robust, BitTorrent tracker (client & server) implementation",
-  "version": "9.18.2",
+  "version": "9.18.3",
   "author": {
     "name": "WebTorrent LLC",
     "email": "feross@webtorrent.io",
