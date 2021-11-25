@@ -189,6 +189,7 @@ var server = new Server({
   http: true, // enable http server? [default=true]
   ws: true, // enable websocket server? [default=true]
   stats: true, // enable web-based statistics? [default=true]
+  trustProxy: false // enable trusting x-forwarded-for header for remote IP [default=false]
   filter: function (infoHash, params, cb) {
     // Blacklist/whitelist function for allowing/disallowing torrents. If this option is
     // omitted, all torrents are allowed. It is possible to interface with a database or
