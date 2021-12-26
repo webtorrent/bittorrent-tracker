@@ -189,7 +189,7 @@ var server = new Server({
   http: true, // enable http server? [default=true]
   ws: true, // enable websocket server? [default=true]
   stats: true, // enable web-based statistics? [default=true]
-  trustProxy: false // enable trusting x-forwarded-for header for remote IP [default=false]
+  trustProxy: false, // enable trusting x-forwarded-for header for remote IP [default=false]
   filter: function (infoHash, params, cb) {
     // Blacklist/whitelist function for allowing/disallowing torrents. If this option is
     // omitted, all torrents are allowed. It is possible to interface with a database or
@@ -230,12 +230,34 @@ server.on('warning', function (err) {
 
 server.on('listening', function () {
   // fired when all requested servers are listening
-  console.log('listening on http port:' + server.http.address().port)
-  console.log('listening on udp port:' + server.udp.address().port)
+
+  // HTTP
+  var httpAddr = server.http.address()
+  var httpHost = httpAddr.address !== '::' ? httpAddr.address : 'localhost'
+  var httpPort = httpAddr.port
+  console.log(`HTTP tracker: http://${httpHost}:${httpPort}/announce`)
+
+  // UDP
+  var udpAddr = server.udp.address()
+  var udpHost = udpAddr.address
+  var udpPort = udpAddr.port
+  console.log(`UDP tracker: udp://${udpHost}:${udpPort}`)
+
+  // WS
+  var wsAddr = server.http.address()
+  var wsHost = wsAddr.address !== '::' ? wsAddr.address : 'localhost'
+  var wsPort = wsAddr.port
+  console.log(`WebSocket tracker: ws://${wsHost}:${wsPort}`)
+
 })
 
+
 // start tracker server listening! Use 0 to listen on a random free port.
-server.listen(port, hostname, onlistening)
+var port = 0,
+hostname = "localhost"
+server.listen(port, hostname, () => {
+  // Do something on listening...
+})
 
 // listen for individual tracker messages from peers:
 
