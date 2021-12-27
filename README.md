@@ -246,7 +246,7 @@ server.on('listening', function () {
   // WS
   var wsAddr = server.http.address()
   var wsHost = wsAddr.address !== '::' ? wsAddr.address : 'localhost'
-  var wsPort = wsAddr.port
+  var wsPort = wsAddr.port 
   console.log(`WebSocket tracker: ws://${wsHost}:${wsPort}`)
 
 })
