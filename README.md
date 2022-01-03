@@ -253,8 +253,8 @@ server.on('listening', function () {
 
 
 // start tracker server listening! Use 0 to listen on a random free port.
-const port = 0,
-hostname = "localhost"
+const port = 0
+const hostname = "localhost"
 server.listen(port, hostname, () => {
   // Do something on listening...
 })
