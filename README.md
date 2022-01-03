@@ -182,14 +182,14 @@ client.on('scrape', function (data) {
 To start a BitTorrent tracker server to track swarms of peers:
 
 ```js
-var Server = require('bittorrent-tracker').Server
+const Server = require('bittorrent-tracker').Server
 
-var server = new Server({
+const server = new Server({
   udp: true, // enable udp server? [default=true]
   http: true, // enable http server? [default=true]
   ws: true, // enable websocket server? [default=true]
   stats: true, // enable web-based statistics? [default=true]
-  trustProxy: false // enable trusting x-forwarded-for header for remote IP [default=false]
+  trustProxy: false, // enable trusting x-forwarded-for header for remote IP [default=false]
   filter: function (infoHash, params, cb) {
     // Blacklist/whitelist function for allowing/disallowing torrents. If this option is
     // omitted, all torrents are allowed. It is possible to interface with a database or
@@ -201,7 +201,7 @@ var server = new Server({
 
     // This example only allows one torrent.
 
-    var allowed = (infoHash === 'aaa67059ed6bd08362da625b3ae77f6f4a075aaa')
+    const allowed = (infoHash === 'aaa67059ed6bd08362da625b3ae77f6f4a075aaa')
     if (allowed) {
       // If the callback is passed `null`, the torrent will be allowed.
       cb(null)
@@ -230,12 +230,34 @@ server.on('warning', function (err) {
 
 server.on('listening', function () {
   // fired when all requested servers are listening
-  console.log('listening on http port:' + server.http.address().port)
-  console.log('listening on udp port:' + server.udp.address().port)
+
+  // HTTP
+  const httpAddr = server.http.address()
+  const httpHost = httpAddr.address !== '::' ? httpAddr.address : 'localhost'
+  const httpPort = httpAddr.port
+  console.log(`HTTP tracker: http://${httpHost}:${httpPort}/announce`)
+
+  // UDP
+  const udpAddr = server.udp.address()
+  const udpHost = udpAddr.address
+  const udpPort = udpAddr.port
+  console.log(`UDP tracker: udp://${udpHost}:${udpPort}`)
+
+  // WS
+  const wsAddr = server.http.address()
+  const wsHost = wsAddr.address !== '::' ? wsAddr.address : 'localhost'
+  const wsPort = wsAddr.port
+  console.log(`WebSocket tracker: ws://${wsHost}:${wsPort}`)
+
 })
 
+
 // start tracker server listening! Use 0 to listen on a random free port.
-server.listen(port, hostname, onlistening)
+const port = 0
+const hostname = "localhost"
+server.listen(port, hostname, () => {
+  // Do something on listening...
+})
 
 // listen for individual tracker messages from peers:
 
