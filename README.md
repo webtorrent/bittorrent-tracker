@@ -182,9 +182,9 @@ client.on('scrape', function (data) {
 To start a BitTorrent tracker server to track swarms of peers:
 
 ```js
-var Server = require('bittorrent-tracker').Server
+const Server = require('bittorrent-tracker').Server
 
-var server = new Server({
+const server = new Server({
   udp: true, // enable udp server? [default=true]
   http: true, // enable http server? [default=true]
   ws: true, // enable websocket server? [default=true]
@@ -201,7 +201,7 @@ var server = new Server({
 
     // This example only allows one torrent.
 
-    var allowed = (infoHash === 'aaa67059ed6bd08362da625b3ae77f6f4a075aaa')
+    const allowed = (infoHash === 'aaa67059ed6bd08362da625b3ae77f6f4a075aaa')
     if (allowed) {
       // If the callback is passed `null`, the torrent will be allowed.
       cb(null)
@@ -232,28 +232,28 @@ server.on('listening', function () {
   // fired when all requested servers are listening
 
   // HTTP
-  var httpAddr = server.http.address()
-  var httpHost = httpAddr.address !== '::' ? httpAddr.address : 'localhost'
-  var httpPort = httpAddr.port
+  const httpAddr = server.http.address()
+  const httpHost = httpAddr.address !== '::' ? httpAddr.address : 'localhost'
+  const httpPort = httpAddr.port
   console.log(`HTTP tracker: http://${httpHost}:${httpPort}/announce`)
 
   // UDP
-  var udpAddr = server.udp.address()
-  var udpHost = udpAddr.address
-  var udpPort = udpAddr.port
+  const udpAddr = server.udp.address()
+  const udpHost = udpAddr.address
+  const udpPort = udpAddr.port
   console.log(`UDP tracker: udp://${udpHost}:${udpPort}`)
 
   // WS
-  var wsAddr = server.http.address()
-  var wsHost = wsAddr.address !== '::' ? wsAddr.address : 'localhost'
-  var wsPort = wsAddr.port 
+  const wsAddr = server.http.address()
+  const wsHost = wsAddr.address !== '::' ? wsAddr.address : 'localhost'
+  const wsPort = wsAddr.port
   console.log(`WebSocket tracker: ws://${wsHost}:${wsPort}`)
 
 })
 
 
 // start tracker server listening! Use 0 to listen on a random free port.
-var port = 0,
+const port = 0,
 hostname = "localhost"
 server.listen(port, hostname, () => {
   // Do something on listening...
