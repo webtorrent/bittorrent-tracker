@@ -244,7 +244,7 @@ server.on('listening', function () {
   console.log(`UDP tracker: udp://${udpHost}:${udpPort}`)
 
   // WS
-  const wsAddr = server.http.address()
+  const wsAddr = server.ws.address()
   const wsHost = wsAddr.address !== '::' ? wsAddr.address : 'localhost'
   const wsPort = wsAddr.port
   console.log(`WebSocket tracker: ws://${wsHost}:${wsPort}`)
