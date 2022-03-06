@@ -309,6 +309,12 @@ Install `bittorrent-tracker` globally:
 $ npm install -g bittorrent-tracker
 ```
 
+Install from [AUR](https://wiki.archlinux.org/title/Arch_User_Repository):
+
+```sh
+$ paru -S webtorrent-bittorrent-tracker
+```
+
 Easily start a tracker server:
 
 ```sh
