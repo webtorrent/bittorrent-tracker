@@ -1,3 +1,10 @@
+## [9.18.4](https://github.com/webtorrent/bittorrent-tracker/compare/v9.18.3...v9.18.4) (2022-03-06)
+
+
+### Bug Fixes
+
+* typo in ws example ([#417](https://github.com/webtorrent/bittorrent-tracker/issues/417)) ([023afb9](https://github.com/webtorrent/bittorrent-tracker/commit/023afb9a3228d60392a18e70f85cdb6af5fa79fb))
+
 ## [9.18.3](https://github.com/webtorrent/bittorrent-tracker/compare/v9.18.2...v9.18.3) (2021-10-29)
 
 
