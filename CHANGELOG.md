@@ -1,3 +1,10 @@
+## [9.18.6](https://github.com/webtorrent/bittorrent-tracker/compare/v9.18.5...v9.18.6) (2022-05-11)
+
+
+### Bug Fixes
+
+* revert [#420](https://github.com/webtorrent/bittorrent-tracker/issues/420) ([8d54938](https://github.com/webtorrent/bittorrent-tracker/commit/8d54938f164347d57a7991268d191e44b752de7f))
+
 ## [9.18.5](https://github.com/webtorrent/bittorrent-tracker/compare/v9.18.4...v9.18.5) (2022-03-25)
 
 
