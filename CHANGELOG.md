@@ -1,3 +1,10 @@
+# [9.19.0](https://github.com/webtorrent/bittorrent-tracker/compare/v9.18.6...v9.19.0) (2022-06-01)
+
+
+### Features
+
+* **events:** Support of `paused` client event ([#411](https://github.com/webtorrent/bittorrent-tracker/issues/411)) ([ef76b3f](https://github.com/webtorrent/bittorrent-tracker/commit/ef76b3f3b6beee87f57d74addd0ca2ef2c517b6d))
+
 ## [9.18.6](https://github.com/webtorrent/bittorrent-tracker/compare/v9.18.5...v9.18.6) (2022-05-11)
 
 
