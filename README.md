@@ -47,6 +47,9 @@ Also see [bittorrent-dht](https://www.npmjs.com/package/bittorrent-dht).
 ```
 npm install bittorrent-tracker
 ```
+## docker
+
+Please see [this fork](https://github.com/zackees/docker-bittorrent-tracker) for a repo version that can run in a docker container.
 
 ## usage
 
