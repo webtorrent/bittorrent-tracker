@@ -107,12 +107,6 @@ class Client extends EventEmitter {
         } else if (protocol === 'udp:' && typeof UDPTracker === 'function') {
           return new UDPTracker(this, announceUrl)
         } else if ((protocol === 'ws:' || protocol === 'wss:') && webrtcSupport) {
-          // Skip ws:// trackers on https:// sites because they throw SecurityError
-          if (protocol === 'ws:' && typeof window !== 'undefined' &&
-              window.location.protocol === 'https:') {
-            nextTickWarn(new Error(`Unsupported tracker protocol: ${announceUrl}`))
-            return null
-          }
           return new WebSocketTracker(this, announceUrl)
         } else {
           nextTickWarn(new Error(`Unsupported tracker protocol: ${announceUrl}`))
