@@ -142,8 +142,8 @@ client.on('update', function (data) {
   console.log('number of leechers in the swarm: ' + data.incomplete)
 })
 
-client.once('peer', function (addr) {
-  console.log('found a peer: ' + addr) // 85.10.239.191:48623
+client.once('peer', function (peer) {
+  console.log('found a peer: ' + peer) // object
 })
 
 // announce that download has completed (and you are now a seeder)
