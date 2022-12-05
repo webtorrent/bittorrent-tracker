@@ -70,7 +70,7 @@ class Client extends EventEmitter {
     // Remove trailing slash from trackers to catch duplicates
     announce = announce.map(announceUrl => {
       announceUrl = announceUrl.toString()
-      if (announceUrl[announceUrl.length - 1] === '/index.js') {
+      if (announceUrl[announceUrl.length - 1] === '/') {
         announceUrl = announceUrl.substring(0, announceUrl.length - 1)
       }
       return announceUrl
