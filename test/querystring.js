@@ -1,5 +1,5 @@
-const common = require('../lib/common')
-const test = require('tape')
+import common from '../lib/common.js'
+import test from 'tape'
 
 // https://github.com/webtorrent/webtorrent/issues/196
 test('encode special chars +* in http tracker urls', t => {

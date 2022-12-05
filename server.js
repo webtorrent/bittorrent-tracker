@@ -1,19 +1,21 @@
-const bencode = require('bencode')
-const debug = require('debug')('bittorrent-tracker:server')
-const dgram = require('dgram')
-const EventEmitter = require('events')
-const http = require('http')
-const peerid = require('bittorrent-peerid')
-const series = require('run-series')
-const string2compact = require('string2compact')
-const WebSocketServer = require('ws').Server
+import bencode from 'bencode'
+import Debug from 'debug'
+import dgram from 'dgram'
+import EventEmitter from 'events'
+import http from 'http'
+import peerid from 'bittorrent-peerid'
+import series from 'run-series'
+import string2compact from 'string2compact'
+import ws from 'ws'
 
-const common = require('./lib/common')
-const Swarm = require('./lib/server/swarm')
-const parseHttpRequest = require('./lib/server/parse-http')
-const parseUdpRequest = require('./lib/server/parse-udp')
-const parseWebSocketRequest = require('./lib/server/parse-websocket')
+import common from './lib/common.js'
+import Swarm from './lib/server/swarm.js'
+import parseHttpRequest from './lib/server/parse-http.js'
+import parseUdpRequest from './lib/server/parse-udp.js'
+import parseWebSocketRequest from './lib/server/parse-websocket.js'
 
+const { Server: WebSocketServer } = ws
+const debug = Debug('bittorrent-tracker:server')
 const hasOwnProperty = Object.prototype.hasOwnProperty
 
 /**
@@ -805,4 +807,4 @@ function toNumber (x) {
 
 function noop () {}
 
-module.exports = Server
+export default Server

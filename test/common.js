@@ -1,6 +1,6 @@
-const Server = require('../').Server
+import { Server } from '../index.js'
 
-exports.createServer = (t, opts, cb) => {
+export const createServer = (t, opts, cb) => {
   if (typeof opts === 'string') opts = { serverType: opts }
 
   opts.http = (opts.serverType === 'http')
@@ -27,7 +27,7 @@ exports.createServer = (t, opts, cb) => {
   })
 }
 
-exports.mockWebsocketTracker = client => {
+export const mockWebsocketTracker = client => {
   client._trackers[0]._generateOffers = (numwant, cb) => {
     const offers = []
     for (let i = 0; i < numwant; i++) {
@@ -38,3 +38,5 @@ exports.mockWebsocketTracker = client => {
     })
   }
 }
+
+export default { mockWebsocketTracker, createServer }

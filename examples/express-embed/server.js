@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
-const Server = require('../..').Server
-const express = require('express')
+import { Server } from '../../index.js'
+import express from 'express'
 const app = express()
 
 // https://wiki.theory.org/BitTorrentSpecification#peer_id

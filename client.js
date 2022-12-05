@@ -1,14 +1,16 @@
-const debug = require('debug')('bittorrent-tracker:client')
-const EventEmitter = require('events')
-const once = require('once')
-const parallel = require('run-parallel')
-const Peer = require('simple-peer')
-const queueMicrotask = require('queue-microtask')
+import Debug from 'debug'
+import EventEmitter from 'events'
+import once from 'once'
+import parallel from 'run-parallel'
+import Peer from 'simple-peer'
+import queueMicrotask from 'queue-microtask'
 
-const common = require('./lib/common')
-const HTTPTracker = require('./lib/client/http-tracker') // empty object in browser
-const UDPTracker = require('./lib/client/udp-tracker') // empty object in browser
-const WebSocketTracker = require('./lib/client/websocket-tracker')
+import common from './lib/common.js'
+import HTTPTracker from './lib/client/http-tracker.js' // empty object in browser
+import UDPTracker from './lib/client/udp-tracker.js' // empty object in browser
+import WebSocketTracker from './lib/client/websocket-tracker.js'
+
+const debug = Debug('bittorrent-tracker:client')
 
 /**
  * BitTorrent tracker client.
@@ -68,7 +70,7 @@ class Client extends EventEmitter {
     // Remove trailing slash from trackers to catch duplicates
     announce = announce.map(announceUrl => {
       announceUrl = announceUrl.toString()
-      if (announceUrl[announceUrl.length - 1] === '/') {
+      if (announceUrl[announceUrl.length - 1] === '/index.js') {
         announceUrl = announceUrl.substring(0, announceUrl.length - 1)
       }
       return announceUrl
@@ -289,4 +291,4 @@ Client.scrape = (opts, cb) => {
   return client
 }
 
-module.exports = Client
+export default Client

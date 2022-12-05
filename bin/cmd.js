@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
-const minimist = require('minimist')
-const Server = require('../').Server
+import minimist from 'minimist'
+import { Server } from '../index.js'
 
 const argv = minimist(process.argv.slice(2), {
   alias: {
