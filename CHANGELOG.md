@@ -1,3 +1,19 @@
+# [10.0.0](https://github.com/webtorrent/bittorrent-tracker/compare/v9.19.0...v10.0.0) (2022-12-05)
+
+
+### Features
+
+* esm ([#431](https://github.com/webtorrent/bittorrent-tracker/issues/431)) ([e6d3189](https://github.com/webtorrent/bittorrent-tracker/commit/e6d3189edf1a170197a799b97d84c632692b394f))
+
+
+### BREAKING CHANGES
+
+* ESM only
+
+* feat: esm
+
+* fix: linter oops
+
 # [9.19.0](https://github.com/webtorrent/bittorrent-tracker/compare/v9.18.6...v9.19.0) (2022-06-01)
 
 
