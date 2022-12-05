@@ -1,7 +1,6 @@
 /*! bittorrent-tracker. MIT License. WebTorrent LLC <https://webtorrent.io/opensource> */
-const Client = require('./client')
-const Server = require('./server')
+import Client from './client.js'
+import Server from './server.js'
 
-module.exports = Client
-module.exports.Client = Client
-module.exports.Server = Server
+export default Client
+export { Client, Server }

@@ -1,8 +1,8 @@
-const Client = require('../')
-const common = require('./common')
-const fixtures = require('webtorrent-fixtures')
-const magnet = require('magnet-uri')
-const test = require('tape')
+import Client from '../index.js'
+import common from './common.js'
+import fixtures from 'webtorrent-fixtures'
+import magnet from 'magnet-uri'
+import test from 'tape'
 
 const peerId = Buffer.from('01234567890123456789')
 

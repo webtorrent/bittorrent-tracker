@@ -1,8 +1,8 @@
-const Client = require('../')
-const commonTest = require('./common')
-const fixtures = require('webtorrent-fixtures')
-const get = require('simple-get')
-const test = require('tape')
+import Client from '../index.js'
+import commonTest from './common.js'
+import fixtures from 'webtorrent-fixtures'
+import get from 'simple-get'
+import test from 'tape'
 
 const peerId = Buffer.from('-WW0091-4ea5886ce160')
 const unknownPeerId = Buffer.from('01234567890123456789')
