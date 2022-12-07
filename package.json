@@ -27,7 +27,7 @@
   },
   "type": "module",
   "dependencies": {
-    "bencode": "^2.0.1",
+    "bencode": "^3.0.0",
     "bittorrent-peerid": "^1.3.3",
     "bn.js": "^5.2.0",
     "chrome-dgram": "^3.0.6",
