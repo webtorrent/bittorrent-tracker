@@ -1,3 +1,11 @@
+## [10.0.1](https://github.com/webtorrent/bittorrent-tracker/compare/v10.0.0...v10.0.1) (2022-12-07)
+
+
+### Bug Fixes
+
+* **deps:** update dependency bencode to v3 ([#434](https://github.com/webtorrent/bittorrent-tracker/issues/434)) [skip ci] ([926ceee](https://github.com/webtorrent/bittorrent-tracker/commit/926ceee0bac6dfe49877566aaa3cf645689492d1))
+* **deps:** update dependency string2compact to v2 ([#437](https://github.com/webtorrent/bittorrent-tracker/issues/437)) ([9be843c](https://github.com/webtorrent/bittorrent-tracker/commit/9be843c5e46ac2ab518187bf0d348e1e69e8633d))
+
 # [10.0.0](https://github.com/webtorrent/bittorrent-tracker/compare/v9.19.0...v10.0.0) (2022-12-05)
 
 
