@@ -6,7 +6,7 @@ import http from 'http'
 import peerid from 'bittorrent-peerid'
 import series from 'run-series'
 import string2compact from 'string2compact'
-import ws from 'ws'
+import { WebSocketServer } from 'ws'
 
 import common from './lib/common.js'
 import Swarm from './lib/server/swarm.js'
@@ -14,7 +14,6 @@ import parseHttpRequest from './lib/server/parse-http.js'
 import parseUdpRequest from './lib/server/parse-udp.js'
 import parseWebSocketRequest from './lib/server/parse-websocket.js'
 
-const { Server: WebSocketServer } = ws
 const debug = Debug('bittorrent-tracker:server')
 const hasOwnProperty = Object.prototype.hasOwnProperty
 
