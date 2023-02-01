@@ -1,3 +1,10 @@
+## [10.0.2](https://github.com/webtorrent/bittorrent-tracker/compare/v10.0.1...v10.0.2) (2023-02-01)
+
+
+### Bug Fixes
+
+* **deps:** update dependency ws to v8 ([#448](https://github.com/webtorrent/bittorrent-tracker/issues/448)) ([2209d4f](https://github.com/webtorrent/bittorrent-tracker/commit/2209d4f21bdee10e575c1728c3accf7bd34380c9)), closes [#449](https://github.com/webtorrent/bittorrent-tracker/issues/449)
+
 ## [10.0.1](https://github.com/webtorrent/bittorrent-tracker/compare/v10.0.0...v10.0.1) (2022-12-07)
 
 
