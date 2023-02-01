@@ -47,7 +47,7 @@ function testRequestHandler (t, serverType) {
 
     client1.once('update', data => {
       t.equal(data.complete, 246)
-      t.equal(data.extraData.toString(), 'hi')
+      t.equal(Buffer.from(data.extraData).toString(), 'hi')
 
       client1.destroy(() => {
         t.pass('client1 destroyed')
