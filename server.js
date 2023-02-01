@@ -351,7 +351,7 @@ class Server extends EventEmitter {
   }
 
   createSwarm (infoHash, cb) {
-    if (Buffer.isBuffer(infoHash)) infoHash = infoHash.toString('hex')
+    if (ArrayBuffer.isView(infoHash)) infoHash = infoHash.toString('hex')
 
     process.nextTick(() => {
       const swarm = this.torrents[infoHash] = new Server.Swarm(infoHash, this)
@@ -360,7 +360,7 @@ class Server extends EventEmitter {
   }
 
   getSwarm (infoHash, cb) {
-    if (Buffer.isBuffer(infoHash)) infoHash = infoHash.toString('hex')
+    if (ArrayBuffer.isView(infoHash)) infoHash = infoHash.toString('hex')
 
     process.nextTick(() => {
       cb(null, this.torrents[infoHash])
