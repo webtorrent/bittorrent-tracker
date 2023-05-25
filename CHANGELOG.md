@@ -1,3 +1,10 @@
+## [10.0.3](https://github.com/webtorrent/bittorrent-tracker/compare/v10.0.2...v10.0.3) (2023-05-25)
+
+
+### Performance Improvements
+
+* replace simple websocket with maintained one ([#464](https://github.com/webtorrent/bittorrent-tracker/issues/464)) ([3f01c29](https://github.com/webtorrent/bittorrent-tracker/commit/3f01c29122efd726d805673da82f43ce5592b793))
+
 ## [10.0.2](https://github.com/webtorrent/bittorrent-tracker/compare/v10.0.1...v10.0.2) (2023-02-01)
 
 
