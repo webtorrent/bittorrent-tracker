@@ -5,6 +5,7 @@ import commonLib from '../lib/common.js'
 import fixtures from 'webtorrent-fixtures'
 import get from 'simple-get'
 import test from 'tape'
+import { hex2bin } from 'uint8-util'
 
 const peerId = Buffer.from('01234567890123456789')
 
@@ -152,8 +153,8 @@ test('udp: MULTI scrape using Client.scrape static method', t => {
 test('server: multiple info_hash scrape (manual http request)', t => {
   t.plan(13)
 
-  const binaryInfoHash1 = commonLib.hexToBinary(fixtures.leaves.parsedTorrent.infoHash)
-  const binaryInfoHash2 = commonLib.hexToBinary(fixtures.alice.parsedTorrent.infoHash)
+  const binaryInfoHash1 = hex2bin(fixtures.leaves.parsedTorrent.infoHash)
+  const binaryInfoHash2 = hex2bin(fixtures.alice.parsedTorrent.infoHash)
 
   common.createServer(t, 'http', (server, announceUrl) => {
     const scrapeUrl = announceUrl.replace('/announce', '/scrape')
@@ -189,7 +190,7 @@ test('server: multiple info_hash scrape (manual http request)', t => {
 test('server: all info_hash scrape (manual http request)', t => {
   t.plan(10)
 
-  const binaryInfoHash = commonLib.hexToBinary(fixtures.leaves.parsedTorrent.infoHash)
+  const binaryInfoHash = hex2bin(fixtures.leaves.parsedTorrent.infoHash)
 
   common.createServer(t, 'http', (server, announceUrl) => {
     const scrapeUrl = announceUrl.replace('/announce', '/scrape')
