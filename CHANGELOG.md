@@ -1,3 +1,10 @@
+## [10.0.4](https://github.com/webtorrent/bittorrent-tracker/compare/v10.0.3...v10.0.4) (2023-05-26)
+
+
+### Bug Fixes
+
+* drop buffer ([#465](https://github.com/webtorrent/bittorrent-tracker/issues/465)) ([c99eb89](https://github.com/webtorrent/bittorrent-tracker/commit/c99eb892088ef3c67ea5bf014dfdd86799251a7e))
+
 ## [10.0.3](https://github.com/webtorrent/bittorrent-tracker/compare/v10.0.2...v10.0.3) (2023-05-25)
 
 
