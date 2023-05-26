@@ -7,6 +7,7 @@ import peerid from 'bittorrent-peerid'
 import series from 'run-series'
 import string2compact from 'string2compact'
 import { WebSocketServer } from 'ws'
+import { hex2bin } from 'uint8-util'
 
 import common from './lib/common.js'
 import Swarm from './lib/server/swarm.js'
@@ -488,7 +489,7 @@ class Server extends EventEmitter {
         socket.send(JSON.stringify({
           action: params.action === common.ACTIONS.ANNOUNCE ? 'announce' : 'scrape',
           'failure reason': err.message,
-          info_hash: common.hexToBinary(params.info_hash)
+          info_hash: hex2bin(params.info_hash)
         }), socket.onSend)
 
         this.emit('warning', err)
@@ -506,7 +507,7 @@ class Server extends EventEmitter {
           socket.infoHashes.push(params.info_hash)
         }
 
-        response.info_hash = common.hexToBinary(params.info_hash)
+        response.info_hash = hex2bin(params.info_hash)
 
         // WebSocket tracker should have a shorter interval – default: 2 minutes
         response.interval = Math.ceil(this.intervalMs / 1000 / 5)
@@ -526,8 +527,8 @@ class Server extends EventEmitter {
             action: 'announce',
             offer: params.offers[i].offer,
             offer_id: params.offers[i].offer_id,
-            peer_id: common.hexToBinary(params.peer_id),
-            info_hash: common.hexToBinary(params.info_hash)
+            peer_id: hex2bin(params.peer_id),
+            info_hash: hex2bin(params.info_hash)
           }), peer.socket.onSend)
           debug('sent offer to %s from %s', peer.peerId, params.peer_id)
         })
@@ -559,8 +560,8 @@ class Server extends EventEmitter {
             action: 'announce',
             answer: params.answer,
             offer_id: params.offer_id,
-            peer_id: common.hexToBinary(params.peer_id),
-            info_hash: common.hexToBinary(params.info_hash)
+            peer_id: hex2bin(params.peer_id),
+            info_hash: hex2bin(params.info_hash)
           }), toPeer.socket.onSend)
           debug('sent answer to %s from %s', toPeer.peerId, params.peer_id)
 
@@ -685,7 +686,7 @@ class Server extends EventEmitter {
         } else if (params.compact === 0) {
           // IPv6 peers are not separate for non-compact responses
           response.peers = response.peers.map(peer => ({
-            'peer id': common.hexToBinary(peer.peerId),
+            'peer id': hex2bin(peer.peerId),
             ip: peer.ip,
             port: peer.port
           }))
@@ -729,7 +730,7 @@ class Server extends EventEmitter {
       }
 
       results.forEach(result => {
-        response.files[common.hexToBinary(result.infoHash)] = {
+        response.files[hex2bin(result.infoHash)] = {
           complete: result.complete || 0,
           incomplete: result.incomplete || 0,
           downloaded: result.complete || 0 // TODO: this only provides a lower-bound
