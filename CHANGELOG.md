@@ -1,3 +1,10 @@
+## [10.0.5](https://github.com/webtorrent/bittorrent-tracker/compare/v10.0.4...v10.0.5) (2023-05-27)
+
+
+### Bug Fixes
+
+* only stringify views ([#467](https://github.com/webtorrent/bittorrent-tracker/issues/467)) ([52f5502](https://github.com/webtorrent/bittorrent-tracker/commit/52f55020f38894e4d45e12c87184540d8b0acad3))
+
 ## [10.0.4](https://github.com/webtorrent/bittorrent-tracker/compare/v10.0.3...v10.0.4) (2023-05-26)
 
 
