@@ -1,3 +1,10 @@
+## [10.0.6](https://github.com/webtorrent/bittorrent-tracker/compare/v10.0.5...v10.0.6) (2023-05-27)
+
+
+### Bug Fixes
+
+* replace simple-peer with maintained one ([#466](https://github.com/webtorrent/bittorrent-tracker/issues/466)) ([3b2dedb](https://github.com/webtorrent/bittorrent-tracker/commit/3b2dedb4151615831ca12d3d0a830354b1c04e68))
+
 ## [10.0.5](https://github.com/webtorrent/bittorrent-tracker/compare/v10.0.4...v10.0.5) (2023-05-27)
 
 
