@@ -1,3 +1,10 @@
+## [10.0.7](https://github.com/webtorrent/bittorrent-tracker/compare/v10.0.6...v10.0.7) (2023-06-05)
+
+
+### Bug Fixes
+
+* imports ([#471](https://github.com/webtorrent/bittorrent-tracker/issues/471)) ([a12022a](https://github.com/webtorrent/bittorrent-tracker/commit/a12022ac2c81d7fa3ecb81163852161e64199cf4))
+
 ## [10.0.6](https://github.com/webtorrent/bittorrent-tracker/compare/v10.0.5...v10.0.6) (2023-05-27)
 
 
