@@ -1,3 +1,10 @@
+## [10.0.8](https://github.com/webtorrent/bittorrent-tracker/compare/v10.0.7...v10.0.8) (2023-06-07)
+
+
+### Bug Fixes
+
+* bigInt ([#472](https://github.com/webtorrent/bittorrent-tracker/issues/472)) ([d7061f7](https://github.com/webtorrent/bittorrent-tracker/commit/d7061f73b2ebff072e064971a5960749a7335bae))
+
 ## [10.0.7](https://github.com/webtorrent/bittorrent-tracker/compare/v10.0.6...v10.0.7) (2023-06-05)
 
 
