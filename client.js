@@ -2,7 +2,7 @@ import Debug from 'debug'
 import EventEmitter from 'events'
 import once from 'once'
 import parallel from 'run-parallel'
-import Peer from '@thaunknown/simple-peer'
+import Peer from '@thaunknown/simple-peer/lite.js'
 import queueMicrotask from 'queue-microtask'
 import { hex2arr, hex2bin, text2arr, arr2hex, arr2text } from 'uint8-util'
 
