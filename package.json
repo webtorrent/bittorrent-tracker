@@ -27,7 +27,7 @@
   },
   "type": "module",
   "dependencies": {
-    "@thaunknown/simple-peer": "^9.12.0",
+    "@thaunknown/simple-peer": "^9.12.1",
     "@thaunknown/simple-websocket": "^9.1.0",
     "bencode": "^3.0.3",
     "bittorrent-peerid": "^1.3.3",
