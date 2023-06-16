@@ -1,3 +1,10 @@
+## [10.0.9](https://github.com/webtorrent/bittorrent-tracker/compare/v10.0.8...v10.0.9) (2023-06-16)
+
+
+### Performance Improvements
+
+* use peer/lite ([#474](https://github.com/webtorrent/bittorrent-tracker/issues/474)) ([7c845f0](https://github.com/webtorrent/bittorrent-tracker/commit/7c845f030d07b1bf7060ab880b790ee85a8c7ac0))
+
 ## [10.0.8](https://github.com/webtorrent/bittorrent-tracker/compare/v10.0.7...v10.0.8) (2023-06-07)
 
 
