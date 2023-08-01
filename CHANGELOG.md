@@ -1,3 +1,10 @@
+## [10.0.11](https://github.com/webtorrent/bittorrent-tracker/compare/v10.0.10...v10.0.11) (2023-08-01)
+
+
+### Bug Fixes
+
+* mangled scrape infohashes ([#486](https://github.com/webtorrent/bittorrent-tracker/issues/486)) ([11cce83](https://github.com/webtorrent/bittorrent-tracker/commit/11cce83ddd858813f5684da8a116de4bee6e518b))
+
 ## [10.0.10](https://github.com/webtorrent/bittorrent-tracker/compare/v10.0.9...v10.0.10) (2023-06-16)
 
 
