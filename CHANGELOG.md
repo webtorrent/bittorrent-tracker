@@ -1,3 +1,10 @@
+## [10.0.12](https://github.com/webtorrent/bittorrent-tracker/compare/v10.0.11...v10.0.12) (2023-08-09)
+
+
+### Bug Fixes
+
+* **deps:** update dependency bencode to v4 ([#487](https://github.com/webtorrent/bittorrent-tracker/issues/487)) ([aeccf9c](https://github.com/webtorrent/bittorrent-tracker/commit/aeccf9c1c4b9115fd23b4fe1a0ab990b5add0f17))
+
 ## [10.0.11](https://github.com/webtorrent/bittorrent-tracker/compare/v10.0.10...v10.0.11) (2023-08-01)
 
 
