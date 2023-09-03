@@ -100,7 +100,7 @@ var optionalOpts = {
               
               // UserId used when making a SOCKS 4/4a request. (Optional)
               userid: "someuserid",
-
+              password: "somepassword",
               // SOCKS 5 Specific:
       
               // Authentication used for SOCKS 5 (when it's required) (Optional)
@@ -115,6 +115,7 @@ var optionalOpts = {
           timeout: 10000
       },
       // NodeJS HTTP agents (used to proxy HTTP and Websocket requests in node)
+      // For HTTP trackers this is either an undici Agent if using Node16 or later, or http.Agent if using versions prior to Node 16
       // Populated with Socks.Agent if socksProxy is provided
       httpAgent: {},
       httpsAgent: {}

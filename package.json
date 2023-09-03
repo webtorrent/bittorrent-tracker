@@ -36,6 +36,7 @@
     "compact2string": "^1.4.1",
     "cross-fetch-ponyfill": "^1.0.1",
     "debug": "^4.1.1",
+    "fetch-socks": "^1.2.0",
     "ip": "^1.1.5",
     "lru": "^3.1.0",
     "minimist": "^1.2.5",
@@ -47,6 +48,7 @@
     "socks": "^2.0.0",
     "string2compact": "^2.0.0",
     "uint8-util": "^2.1.9",
+    "undici": "^5.23.0",
     "unordered-array-remove": "^1.0.2",
     "ws": "^8.0.0"
   },
