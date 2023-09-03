@@ -48,7 +48,6 @@
     "socks": "^2.0.0",
     "string2compact": "^2.0.0",
     "uint8-util": "^2.1.9",
-    "undici": "^5.23.0",
     "unordered-array-remove": "^1.0.2",
     "ws": "^8.0.0"
   },
@@ -59,6 +58,7 @@
     "semantic-release": "21.1.1",
     "standard": "*",
     "tape": "5.6.6",
+    "undici": "^5.23.0",
     "webtorrent-fixtures": "2.0.2",
     "wrtc": "0.4.7"
   },
