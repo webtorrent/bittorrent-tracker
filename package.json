@@ -56,7 +56,7 @@
     "magnet-uri": "7.0.5",
     "semantic-release": "21.1.2",
     "standard": "*",
-    "tape": "5.7.1",
+    "tape": "5.7.2",
     "webtorrent-fixtures": "2.0.2",
     "wrtc": "0.4.7"
   },
