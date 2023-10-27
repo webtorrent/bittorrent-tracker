@@ -36,7 +36,6 @@
     "compact2string": "^1.4.1",
     "cross-fetch-ponyfill": "^1.0.1",
     "debug": "^4.1.1",
-    "fetch-socks": "^1.2.0",
     "ip": "^1.1.5",
     "lru": "^3.1.0",
     "minimist": "^1.2.5",
@@ -58,7 +57,6 @@
     "semantic-release": "21.1.1",
     "standard": "*",
     "tape": "5.6.6",
-    "undici": "^5.23.0",
     "webtorrent-fixtures": "2.0.2",
     "wrtc": "0.4.7"
   },
