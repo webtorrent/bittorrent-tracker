@@ -57,6 +57,7 @@
     "semantic-release": "21.1.1",
     "standard": "*",
     "tape": "5.6.6",
+    "undici": "^5.27.0",
     "webtorrent-fixtures": "2.0.2",
     "wrtc": "0.4.7"
   },
