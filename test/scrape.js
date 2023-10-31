@@ -3,7 +3,7 @@ import Client from '../index.js'
 import common from './common.js'
 import commonLib from '../lib/common.js'
 import fixtures from 'webtorrent-fixtures'
-import get from 'simple-get'
+import fetch from 'cross-fetch-ponyfill'
 import test from 'tape'
 import { hex2bin } from 'uint8-util'
 
@@ -151,44 +151,47 @@ test('udp: MULTI scrape using Client.scrape static method', t => {
 })
 
 test('server: multiple info_hash scrape (manual http request)', t => {
-  t.plan(13)
+  t.plan(12)
 
   const binaryInfoHash1 = hex2bin(fixtures.leaves.parsedTorrent.infoHash)
   const binaryInfoHash2 = hex2bin(fixtures.alice.parsedTorrent.infoHash)
 
-  common.createServer(t, 'http', (server, announceUrl) => {
+  common.createServer(t, 'http', async (server, announceUrl) => {
     const scrapeUrl = announceUrl.replace('/announce', '/scrape')
 
     const url = `${scrapeUrl}?${commonLib.querystringStringify({
   info_hash: [binaryInfoHash1, binaryInfoHash2]
 })}`
-
-    get.concat(url, (err, res, data) => {
+    let res
+    try {
+      res = await fetch(url)
+    } catch (err) {
       t.error(err)
+    }
+    let data = Buffer.from(await res.arrayBuffer())
 
-      t.equal(res.statusCode, 200)
+    t.equal(res.status, 200)
 
-      data = bencode.decode(data)
-      t.ok(data.files)
-      t.equal(Object.keys(data.files).length, 2)
+    data = bencode.decode(data)
+    t.ok(data.files)
+    t.equal(Object.keys(data.files).length, 2)
 
-      t.ok(data.files[binaryInfoHash1])
-      t.equal(typeof data.files[binaryInfoHash1].complete, 'number')
-      t.equal(typeof data.files[binaryInfoHash1].incomplete, 'number')
-      t.equal(typeof data.files[binaryInfoHash1].downloaded, 'number')
+    t.ok(data.files[binaryInfoHash1])
+    t.equal(typeof data.files[binaryInfoHash1].complete, 'number')
+    t.equal(typeof data.files[binaryInfoHash1].incomplete, 'number')
+    t.equal(typeof data.files[binaryInfoHash1].downloaded, 'number')
 
-      t.ok(data.files[binaryInfoHash2])
-      t.equal(typeof data.files[binaryInfoHash2].complete, 'number')
-      t.equal(typeof data.files[binaryInfoHash2].incomplete, 'number')
-      t.equal(typeof data.files[binaryInfoHash2].downloaded, 'number')
+    t.ok(data.files[binaryInfoHash2])
+    t.equal(typeof data.files[binaryInfoHash2].complete, 'number')
+    t.equal(typeof data.files[binaryInfoHash2].incomplete, 'number')
+    t.equal(typeof data.files[binaryInfoHash2].downloaded, 'number')
 
-      server.close(() => { t.pass('server closed') })
-    })
+    server.close(() => { t.pass('server closed') })
   })
 })
 
 test('server: all info_hash scrape (manual http request)', t => {
-  t.plan(10)
+  t.plan(9)
 
   const binaryInfoHash = hex2bin(fixtures.leaves.parsedTorrent.infoHash)
 
@@ -207,24 +210,28 @@ test('server: all info_hash scrape (manual http request)', t => {
 
     client.start()
 
-    server.once('start', () => {
+    server.once('start', async () => {
       // now do a scrape of everything by omitting the info_hash param
-      get.concat(scrapeUrl, (err, res, data) => {
+      let res
+      try {
+        res = await fetch(scrapeUrl)
+      } catch (err) {
         t.error(err)
+      }
+      let data = Buffer.from(await res.arrayBuffer())
 
-        t.equal(res.statusCode, 200)
-        data = bencode.decode(data)
-        t.ok(data.files)
-        t.equal(Object.keys(data.files).length, 1)
+      t.equal(res.status, 200)
+      data = bencode.decode(data)
+      t.ok(data.files)
+      t.equal(Object.keys(data.files).length, 1)
 
-        t.ok(data.files[binaryInfoHash])
-        t.equal(typeof data.files[binaryInfoHash].complete, 'number')
-        t.equal(typeof data.files[binaryInfoHash].incomplete, 'number')
-        t.equal(typeof data.files[binaryInfoHash].downloaded, 'number')
+      t.ok(data.files[binaryInfoHash])
+      t.equal(typeof data.files[binaryInfoHash].complete, 'number')
+      t.equal(typeof data.files[binaryInfoHash].incomplete, 'number')
+      t.equal(typeof data.files[binaryInfoHash].downloaded, 'number')
 
-        client.destroy(() => { t.pass('client destroyed') })
-        server.close(() => { t.pass('server closed') })
-      })
+      client.destroy(() => { t.pass('client destroyed') })
+      server.close(() => { t.pass('server closed') })
     })
   })
 })

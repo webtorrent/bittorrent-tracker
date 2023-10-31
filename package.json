@@ -34,6 +34,7 @@
     "chrome-dgram": "^3.0.6",
     "clone": "^2.0.0",
     "compact2string": "^1.4.1",
+    "cross-fetch-ponyfill": "^1.0.1",
     "debug": "^4.1.1",
     "ip": "^1.1.5",
     "lru": "^3.1.0",
@@ -43,7 +44,6 @@
     "random-iterate": "^1.0.1",
     "run-parallel": "^1.2.0",
     "run-series": "^1.1.9",
-    "simple-get": "^4.0.0",
     "socks": "^2.0.0",
     "string2compact": "^2.0.0",
     "uint8-util": "^2.1.9",
@@ -57,6 +57,7 @@
     "semantic-release": "21.1.2",
     "standard": "*",
     "tape": "5.7.2",
+    "undici": "^5.27.0",
     "webtorrent-fixtures": "2.0.2",
     "wrtc": "0.4.7"
   },

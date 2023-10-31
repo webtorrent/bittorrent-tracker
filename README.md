@@ -55,16 +55,16 @@ npm install bittorrent-tracker
 To connect to a tracker, just do this:
 
 ```js
-var Client = require('bittorrent-tracker')
+import Client from 'bittorrent-tracker'
 
-var requiredOpts = {
+const requiredOpts = {
   infoHash: new Buffer('012345678901234567890'), // hex string or Buffer
   peerId: new Buffer('01234567890123456789'), // hex string or Buffer
   announce: [], // list of tracker server urls
   port: 6881 // torrent client port, (in browser, optional)
 }
 
-var optionalOpts = {
+const optionalOpts = {
   // RTCPeerConnection config object (only used in browser)
   rtcConfig: {},
   // User-Agent header for http requests
@@ -81,47 +81,24 @@ var optionalOpts = {
       customParam: 'blah' // custom parameters supported
     }
   },
-  // Proxy config object
+  // Proxy options (used to proxy requests in node)
   proxyOpts: {
-      // Socks proxy options (used to proxy requests in node)
-      socksProxy: {
-          // Configuration from socks module (https://github.com/JoshGlazebrook/socks)
-          proxy: {
-              // IP Address of Proxy (Required)
-              ipaddress: "1.2.3.4",
-              // TCP Port of Proxy (Required)
-              port: 1080,
-              // Proxy Type [4, 5] (Required)
-              // Note: 4 works for both 4 and 4a.
-              // Type 4 does not support UDP association relay 
-              type: 5,
-              
-              // SOCKS 4 Specific:
-              
-              // UserId used when making a SOCKS 4/4a request. (Optional)
-              userid: "someuserid",
-
-              // SOCKS 5 Specific:
-      
-              // Authentication used for SOCKS 5 (when it's required) (Optional)
-              authentication: {
-                  username: "Josh",
-                  password: "somepassword"
-              }
-          },
-          
-          // Amount of time to wait for a connection to be established. (Optional)
-          // - defaults to 10000ms (10 seconds)
-          timeout: 10000
-      },
-      // NodeJS HTTP agents (used to proxy HTTP and Websocket requests in node)
-      // Populated with Socks.Agent if socksProxy is provided
-      httpAgent: {},
-      httpsAgent: {}
+      // For WSS trackers this is always a http.Agent
+      // For UDP trackers this is an object of options for the Socks Connection
+      // For HTTP trackers this is either an undici Agent if using Node16 or later, or http.Agent if using versions prior to Node 16, ex:
+      // import Socks from 'socks'
+      // proxyOpts.socksProxy = new Socks.Agent(optionsObject, isHttps)
+      // or if using Node 16 or later
+      // import { socksDispatcher } from 'fetch-socks'
+      // proxyOpts.socksProxy = socksDispatcher(optionsObject)
+      socksProxy: new SocksProxy(socksOptionsObject),
+      // Populated with socksProxy if it's provided
+      httpAgent: new http.Agent(agentOptionsObject),
+      httpsAgent: new https.Agent(agentOptionsObject)
   },
 }
 
-var client = new Client(requiredOpts)
+const client = new Client(requiredOpts)
 
 client.on('error', function (err) {
   // fatal client error!
@@ -182,7 +159,7 @@ client.on('scrape', function (data) {
 To start a BitTorrent tracker server to track swarms of peers:
 
 ```js
-const Server = require('bittorrent-tracker').Server
+import { Server } from 'bittorrent-tracker'
 
 const server = new Server({
   udp: true, // enable udp server? [default=true]
@@ -289,7 +266,7 @@ The http server will handle requests for the following paths: `/announce`, `/scr
 Scraping multiple torrent info is possible with a static `Client.scrape` method:
 
 ```js
-var Client = require('bittorrent-tracker')
+import Client from 'bittorrent-tracker'
 Client.scrape({ announce: announceUrl, infoHash: [ infoHash1, infoHash2 ]}, function (err, results) {
   results[infoHash1].announce
   results[infoHash1].infoHash

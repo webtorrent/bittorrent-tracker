@@ -4,6 +4,7 @@ import http from 'http'
 import fixtures from 'webtorrent-fixtures'
 import net from 'net'
 import test from 'tape'
+import undici from 'undici'
 
 const peerId1 = Buffer.from('01234567890123456789')
 const peerId2 = Buffer.from('12345678901234567890')
@@ -572,12 +573,29 @@ function testClientStartHttpAgent (t, serverType) {
   t.plan(5)
 
   common.createServer(t, serverType, function (server, announceUrl) {
-    const agent = new http.Agent()
-    let agentUsed = false
-    agent.createConnection = function (opts, fn) {
-      agentUsed = true
-      return net.createConnection(opts, fn)
+    let agent
+    if (global.fetch && serverType !== 'ws') {
+      const connector = undici.buildConnector({ rejectUnauthorized: false })
+      agent = new undici.Agent({
+        connect (opts, cb) {
+          agentUsed = true
+          connector(opts, (err, socket) => {
+            if (err) {
+              cb(err, null)
+            } else {
+              cb(null, socket)
+            }
+          })
+        }
+      })
+    } else {
+      agent = new http.Agent()
+      agent.createConnection = function (opts, fn) {
+        agentUsed = true
+        return net.createConnection(opts, fn)
+      }
     }
+    let agentUsed = false
     const client = new Client({
       infoHash: fixtures.leaves.parsedTorrent.infoHash,
       announce: announceUrl,
