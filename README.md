@@ -1,6 +1,6 @@
 # bittorrent-tracker [![ci][ci-image]][ci-url] [![npm][npm-image]][npm-url] [![downloads][downloads-image]][downloads-url] [![javascript style guide][standard-image]][standard-url]
 
-[ci-image]: https://img.shields.io/github/workflow/status/webtorrent/bittorrent-tracker/ci/master
+[ci-image]: https://img.shields.io/github/actions/workflow/status/webtorrent/bittorrent-tracker/ci.yml
 [ci-url]: https://github.com/webtorrent/bittorrent-tracker/actions
 [npm-image]: https://img.shields.io/npm/v/bittorrent-tracker.svg
 [npm-url]: https://npmjs.org/package/bittorrent-tracker
