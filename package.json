@@ -36,7 +36,7 @@
     "compact2string": "^1.4.1",
     "cross-fetch-ponyfill": "^1.0.1",
     "debug": "^4.1.1",
-    "ip": "^1.1.5",
+    "ip": "^2.0.0",
     "lru": "^3.1.0",
     "minimist": "^1.2.5",
     "once": "^1.4.0",
