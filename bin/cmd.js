@@ -86,22 +86,22 @@ const server = new Server({
 })
 
 server.on('error', err => {
-  if (!argv.silent) console.error(`ERROR: ${err.message}`)
+  if (!argv.silent) console.error(`${new Date().toISOString()} ERROR: ${err.message}`)
 })
 server.on('warning', err => {
-  if (!argv.quiet) console.log(`WARNING: ${err.message}`)
+  if (!argv.quiet) console.log(`${new Date().toISOString()} WARNING: ${err.message}`)
 })
 server.on('update', addr => {
-  if (!argv.quiet) console.log(`update: ${addr}`)
+  if (!argv.quiet) console.log(`${new Date().toISOString()} update: ${addr}`)
 })
 server.on('complete', addr => {
-  if (!argv.quiet) console.log(`complete: ${addr}`)
+  if (!argv.quiet) console.log(`${new Date().toISOString()} complete: ${addr}`)
 })
 server.on('start', addr => {
-  if (!argv.quiet) console.log(`start: ${addr}`)
+  if (!argv.quiet) console.log(`${new Date().toISOString()} start: ${addr}`)
 })
 server.on('stop', addr => {
-  if (!argv.quiet) console.log(`stop: ${addr}`)
+  if (!argv.quiet) console.log(`${new Date().toISOString()} stop: ${addr}`)
 })
 
 const hostname = {
@@ -115,30 +115,30 @@ server.listen(argv.port, hostname, () => {
     const httpAddr = server.http.address()
     const httpHost = httpAddr.address !== '::' ? httpAddr.address : 'localhost'
     const httpPort = httpAddr.port
-    console.log(`HTTP tracker: http://${httpHost}:${httpPort}/announce`)
+    console.log(`${new Date().toISOString()} HTTP tracker: http://${httpHost}:${httpPort}/announce`)
   }
   if (server.udp && !argv.quiet) {
     const udpAddr = server.udp.address()
     const udpHost = udpAddr.address
     const udpPort = udpAddr.port
-    console.log(`UDP tracker: udp://${udpHost}:${udpPort}`)
+    console.log(`${new Date().toISOString()} UDP tracker: udp://${udpHost}:${udpPort}`)
   }
   if (server.udp6 && !argv.quiet) {
     const udp6Addr = server.udp6.address()
     const udp6Host = udp6Addr.address !== '::' ? udp6Addr.address : 'localhost'
     const udp6Port = udp6Addr.port
-    console.log(`UDP6 tracker: udp://${udp6Host}:${udp6Port}`)
+    console.log(`${new Date().toISOString()} UDP6 tracker: udp://${udp6Host}:${udp6Port}`)
   }
   if (server.ws && !argv.quiet) {
     const wsAddr = server.http.address()
     const wsHost = wsAddr.address !== '::' ? wsAddr.address : 'localhost'
     const wsPort = wsAddr.port
-    console.log(`WebSocket tracker: ws://${wsHost}:${wsPort}`)
+    console.log(`${new Date().toISOString()} WebSocket tracker: ws://${wsHost}:${wsPort}`)
   }
   if (server.http && argv.stats && !argv.quiet) {
     const statsAddr = server.http.address()
     const statsHost = statsAddr.address !== '::' ? statsAddr.address : 'localhost'
     const statsPort = statsAddr.port
-    console.log(`Tracker stats: http://${statsHost}:${statsPort}/stats`)
+    console.log(`${new Date().toISOString()} Tracker stats: http://${statsHost}:${statsPort}/stats`)
   }
 })
