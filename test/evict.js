@@ -1,7 +1,7 @@
 import Client from '../index.js'
 import common from './common.js'
 import test from 'tape'
-import wrtc from 'wrtc'
+import wrtc from 'webrtc-polyfill'
 
 const infoHash = '4cb67059ed6bd08362da625b3ae77f6f4a075705'
 const peerId = Buffer.from('01234567890123456789')
