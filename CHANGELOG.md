@@ -1,3 +1,10 @@
+## [11.1.1](https://github.com/webtorrent/bittorrent-tracker/compare/v11.1.0...v11.1.1) (2024-07-01)
+
+
+### Performance Improvements
+
+* drop clone ([#523](https://github.com/webtorrent/bittorrent-tracker/issues/523)) ([83a24ce](https://github.com/webtorrent/bittorrent-tracker/commit/83a24ce77fb1a96b7fe4c383ce92d7c28fc165a7))
+
 # [11.1.0](https://github.com/webtorrent/bittorrent-tracker/compare/v11.0.2...v11.1.0) (2024-05-22)
 
 
