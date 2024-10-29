@@ -64,7 +64,15 @@
     "node": ">=16.0.0"
   },
   "exports": {
-    "import": "./index.js"
+    ".": {
+      "import": "./index.js"
+    },
+    "./client": {
+      "import": "./client.js"
+    },
+    "./server": {
+      "import": "./server.js"
+    }
   },
   "keywords": [
     "bittorrent",

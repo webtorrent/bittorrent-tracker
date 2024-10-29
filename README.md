@@ -160,6 +160,7 @@ To start a BitTorrent tracker server to track swarms of peers:
 
 ```js
 import { Server } from 'bittorrent-tracker'
+// Or import Server from 'bittorrent-tracker/server'
 
 const server = new Server({
   udp: true, // enable udp server? [default=true]
@@ -267,6 +268,8 @@ Scraping multiple torrent info is possible with a static `Client.scrape` method:
 
 ```js
 import Client from 'bittorrent-tracker'
+// Or import Client from 'bittorrent-tracker/client'
+
 Client.scrape({ announce: announceUrl, infoHash: [ infoHash1, infoHash2 ]}, function (err, results) {
   results[infoHash1].announce
   results[infoHash1].infoHash
