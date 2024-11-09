@@ -3,6 +3,7 @@ import Client from '../index.js'
 import common from './common.js'
 import commonLib from '../lib/common.js'
 import fixtures from 'webtorrent-fixtures'
+import fetch from 'cross-fetch-ponyfill'
 import test from 'tape'
 import { hex2bin } from 'uint8-util'
 
