@@ -53,7 +53,7 @@
     "@mapbox/node-pre-gyp": "1.0.11",
     "@webtorrent/semantic-release-config": "1.0.10",
     "magnet-uri": "7.0.5",
-    "semantic-release": "21.1.2",
+    "semantic-release": "24.2.0",
     "standard": "*",
     "tape": "5.9.0",
     "undici": "^6.16.1",
