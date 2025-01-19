@@ -1,3 +1,10 @@
+## [11.2.1](https://github.com/webtorrent/bittorrent-tracker/compare/v11.2.0...v11.2.1) (2025-01-19)
+
+
+### Bug Fixes
+
+* http announce no left ([#548](https://github.com/webtorrent/bittorrent-tracker/issues/548)) ([3cd77f3](https://github.com/webtorrent/bittorrent-tracker/commit/3cd77f3e6f5b52f5d58adaf004b333cd2061a4da))
+
 # [11.2.0](https://github.com/webtorrent/bittorrent-tracker/compare/v11.1.2...v11.2.0) (2024-12-28)
 
 
