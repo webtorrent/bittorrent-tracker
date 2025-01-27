@@ -50,7 +50,7 @@
     "ws": "^8.17.0"
   },
   "devDependencies": {
-    "@mapbox/node-pre-gyp": "1.0.11",
+    "@mapbox/node-pre-gyp": "2.0.0",
     "@webtorrent/semantic-release-config": "1.0.10",
     "magnet-uri": "7.0.7",
     "semantic-release": "21.1.2",
