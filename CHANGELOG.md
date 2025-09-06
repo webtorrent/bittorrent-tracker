@@ -1,3 +1,10 @@
+## [11.2.2](https://github.com/webtorrent/bittorrent-tracker/compare/v11.2.1...v11.2.2) (2025-09-06)
+
+
+### Bug Fixes
+
+* export WebSocketTracker ([#558](https://github.com/webtorrent/bittorrent-tracker/issues/558)) ([1571551](https://github.com/webtorrent/bittorrent-tracker/commit/15715518decfed77d7888ba21d6ab592fa91cc85))
+
 ## [11.2.1](https://github.com/webtorrent/bittorrent-tracker/compare/v11.2.0...v11.2.1) (2025-01-19)
 
 
