@@ -72,6 +72,9 @@
     },
     "./server": {
       "import": "./server.js"
+    },
+    "./websocket-tracker": {
+      "import": "./lib/client/websocket-tracker.js"
     }
   },
   "keywords": [
