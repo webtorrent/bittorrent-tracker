@@ -2,6 +2,7 @@
 
 import minimist from 'minimist'
 import { Server } from '../index.js'
+import { createRequire } from 'module'
 
 const argv = minimist(process.argv.slice(2), {
   alias: {
@@ -34,6 +35,7 @@ const argv = minimist(process.argv.slice(2), {
 })
 
 if (argv.version) {
+  const require = createRequire(import.meta.url)
   console.log(require('../package.json').version)
   process.exit(0)
 }
