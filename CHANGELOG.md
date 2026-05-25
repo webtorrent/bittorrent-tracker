@@ -1,3 +1,10 @@
+## [11.2.3](https://github.com/webtorrent/bittorrent-tracker/compare/v11.2.2...v11.2.3) (2026-05-25)
+
+
+### Bug Fixes
+
+* **deps:** update dependency bittorrent-peerid to v2 ([#576](https://github.com/webtorrent/bittorrent-tracker/issues/576)) ([44d2946](https://github.com/webtorrent/bittorrent-tracker/commit/44d2946b310a8cf252f191e97fc3c14970376657))
+
 ## [11.2.2](https://github.com/webtorrent/bittorrent-tracker/compare/v11.2.1...v11.2.2) (2025-09-06)
 
 
