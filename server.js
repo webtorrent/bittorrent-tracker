@@ -59,7 +59,7 @@ class Server extends EventEmitter {
     this.udp6 = null
     this.ws = null
 
-    // start an http tracker unless the user explictly says no
+    // start an http tracker unless the user explicitly says no
     if (opts.http !== false) {
       this.http = http.createServer(isObject(opts.http) ? opts.http : undefined)
       this.http.on('error', err => { this._onError(err) })
