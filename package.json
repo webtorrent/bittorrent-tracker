@@ -56,7 +56,7 @@
     "semantic-release": "25.0.8",
     "standard": "*",
     "tape": "5.10.2",
-    "undici": "^6.16.1",
+    "undici": "^8.0.0",
     "webrtc-polyfill": "^1.1.5",
     "webtorrent-fixtures": "2.0.3"
   },
