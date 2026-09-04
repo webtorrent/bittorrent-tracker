@@ -45,7 +45,7 @@
     "socks": "^2.8.3",
     "string2compact": "^2.0.1",
     "uint8-util": "^2.2.5",
-    "undici": "^5.29.0",
+    "undici": "^6.28.1",
     "unordered-array-remove": "^1.0.2",
     "ws": "^8.17.0"
   },
@@ -60,7 +60,7 @@
     "webtorrent-fixtures": "2.0.3"
   },
   "engines": {
-    "node": ">=16.0.0"
+    "node": ">=18.17.0"
   },
   "exports": {
     ".": {

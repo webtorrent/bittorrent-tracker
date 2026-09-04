@@ -85,10 +85,10 @@ const optionalOpts = {
   proxyOpts: {
       // For WSS trackers this is always a http.Agent
       // For UDP trackers this is an object of options for the Socks Connection
-      // For HTTP trackers this is either an undici Agent if using Node16 or later, or http.Agent if using versions prior to Node 16, ex:
+      // For HTTP trackers this is an undici Dispatcher, such as undici.Agent, ex:
       // import Socks from 'socks'
       // proxyOpts.socksProxy = new Socks.Agent(optionsObject, isHttps)
-      // or if using Node 16 or later
+      // or
       // import { socksDispatcher } from 'fetch-socks'
       // proxyOpts.socksProxy = socksDispatcher(optionsObject)
       socksProxy: new SocksProxy(socksOptionsObject),
