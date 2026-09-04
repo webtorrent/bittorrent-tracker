@@ -398,7 +398,7 @@ function testClientAnnounceWithNumWant (t, serverType) {
         client3.on('warning', err => { t.error(err) })
 
         client3.start({ numwant: 1 })
-        client3.on('peer', () => {
+        client3.once('peer', () => {
           t.pass('got one peer (this should only fire once)')
 
           let num = 3
@@ -637,4 +637,40 @@ test('http: client.start(httpAgent)', function (t) {
 
 test('ws: client.start(httpAgent)', function (t) {
   testClientStartHttpAgent(t, 'ws')
+})
+
+test('http: failed httpAgent request is cleaned up', function (t) {
+  t.plan(4)
+
+  common.createServer(t, 'http', function (server, announceUrl) {
+    const agent = new undici.Agent({
+      connect (opts, cb) {
+        t.pass('custom agent used')
+        process.nextTick(cb, new Error('expected connect failure'), null)
+      }
+    })
+    const client = new Client({
+      infoHash: fixtures.leaves.parsedTorrent.infoHash,
+      announce: announceUrl,
+      peerId: peerId1,
+      port,
+      wrtc: {},
+      proxyOpts: {
+        httpAgent: agent
+      }
+    })
+
+    client.once('error', err => { t.error(err) })
+    client.once('warning', err => {
+      t.equal(err.cause.message, 'expected connect failure')
+      client.destroy(err => {
+        t.error(err)
+        t.pass('client destroyed after failed request')
+        server.close()
+        agent.close()
+      })
+    })
+
+    client.start()
+  })
 })
