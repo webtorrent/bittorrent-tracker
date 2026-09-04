@@ -1,8 +1,8 @@
 import Client from '../index.js'
 import commonTest from './common.js'
 import fixtures from 'webtorrent-fixtures'
-import fetch from 'cross-fetch-ponyfill'
 import test from 'tape'
+import { fetch } from 'undici'
 
 const peerId = Buffer.from('-WW0091-4ea5886ce160')
 const unknownPeerId = Buffer.from('01234567890123456789')
