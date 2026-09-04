@@ -674,3 +674,36 @@ test('http: failed httpAgent request is cleaned up', function (t) {
     client.start()
   })
 })
+
+test('http: failed response body is cleaned up', function (t) {
+  t.plan(3)
+
+  const server = http.createServer((req, res) => {
+    res.writeHead(200, { 'content-length': 100 })
+    res.flushHeaders()
+    res.write('incomplete')
+    setImmediate(() => res.destroy())
+  })
+  server.on('error', err => { t.error(err) })
+  server.listen(0, '127.0.0.1', () => {
+    const client = new Client({
+      infoHash: fixtures.leaves.parsedTorrent.infoHash,
+      announce: `http://127.0.0.1:${server.address().port}/announce`,
+      peerId: peerId1,
+      port,
+      wrtc: {}
+    })
+
+    client.once('error', err => { t.error(err) })
+    client.once('warning', err => {
+      t.ok(err, 'got response body error')
+      client.destroy(err => {
+        t.error(err)
+        t.pass('client destroyed after response body error')
+        server.close()
+      })
+    })
+
+    client.start()
+  })
+})
